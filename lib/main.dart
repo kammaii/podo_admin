@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:podo_admin/screens/value/color_schemes.g.dart';
+import 'package:podo_admin/screens/main_frame.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,10 +13,11 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        useMaterial3: true,
+        colorScheme: lightColorScheme
       ),
       home: const MainFrame(),
     );
