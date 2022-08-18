@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:podo_admin/items/lesson_title.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
@@ -7,6 +8,10 @@ class Lesson extends StatelessWidget {
   Lesson({Key? key}) : super(key: key);
 
   final LessonStateManager _controller = Get.put(LessonStateManager());
+  final TextEditingController _textEditingControllerTitle = TextEditingController();
+  final TextEditingController _textEditingControllerCategory = TextEditingController();
+  final TextEditingController _textEditingControllerVideoLink = TextEditingController();
+  late final BuildContext buildContext;
 
   Widget getRadioButton(String title) {
     return SizedBox(
@@ -15,10 +20,10 @@ class Lesson extends StatelessWidget {
         title: Text(title),
         leading: Radio(
           value: title,
-          groupValue: _controller.radioValue,
+          activeColor: Theme.of(buildContext).colorScheme.primary,
+          groupValue: _controller.lessonLevel,
           onChanged: (String? value) {
-            _controller.radioValue = value!;
-            _controller.update();
+            _controller.changeLessonLevel(value);
           },
         ),
       ),
@@ -27,6 +32,8 @@ class Lesson extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    buildContext = context;
+
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -42,15 +49,25 @@ class Lesson extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            const Expanded(
-                              child: SizedBox(
-                                width: 300,
-                                child: TextField(
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    labelText: '레슨 타이틀',
-                                  ),
-                                  autofocus: true,
+                            SizedBox(
+                              width: 300,
+                              child: TextField(
+                                controller: _textEditingControllerTitle,
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: '레슨 타이틀',
+                                ),
+                                autofocus: true,
+                              ),
+                            ),
+                            const SizedBox(width: 20),
+                            SizedBox(
+                              width: 300,
+                              child: TextField(
+                                controller: _textEditingControllerCategory,
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: '카테고리',
                                 ),
                               ),
                             ),
@@ -73,8 +90,9 @@ class Lesson extends StatelessWidget {
                         AnimatedOpacity(
                           opacity: controller.isVideoChecked ? 1.0 : 0.0,
                           duration: const Duration(milliseconds: 500),
-                          child: const TextField(
-                            decoration: InputDecoration(
+                          child: TextField(
+                            controller: _textEditingControllerVideoLink,
+                            decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               labelText: '비디오 링크',
                             ),
@@ -86,7 +104,27 @@ class Lesson extends StatelessWidget {
                 ),
                 actions: [
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      String title = _textEditingControllerTitle.text;
+                      String category = _textEditingControllerCategory.text;
+                      String link = _textEditingControllerVideoLink.text;
+
+                      LessonTitle lessonTitle = LessonTitle(
+                        level: _controller.lessonLevel,
+                        orderId: SampleLessonTitles().getTitles().length, //todo: 실재 DB 데이터로 수정
+                        category: category,
+                        title: title,
+                        isVideo: _controller.isVideoChecked,
+                        videoLink: _controller.isVideoChecked ? link : '',
+                        isPublished: false,
+                      );
+
+                      //Get.to(LessonDetail(lessonTitle: lessonTitle));
+
+                      _textEditingControllerTitle.dispose();
+                      _textEditingControllerCategory.dispose();
+                      _textEditingControllerVideoLink.dispose();
+                    },
                     child: const Text('만들기'),
                   ),
                 ],
@@ -118,5 +156,14 @@ class Lesson extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class SampleLessonTitles {
+
+  List<String> titles = [];
+
+  List<String> getTitles() {
+    return titles;
   }
 }

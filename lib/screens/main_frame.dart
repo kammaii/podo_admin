@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:podo_admin/screens/lesson/lesson.dart';
+import 'package:podo_admin/screens/lesson/lesson_main.dart';
 import 'package:podo_admin/screens/notice/notice.dart';
 import 'package:podo_admin/screens/request/request.dart';
 import 'package:podo_admin/screens/user/user.dart';
