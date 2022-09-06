@@ -5,9 +5,19 @@ import 'package:podo_admin/screens/lesson/lesson_detail.dart';
 import 'package:podo_admin/screens/lesson/lesson_main.dart';
 import 'package:podo_admin/screens/value/color_schemes.g.dart';
 import 'package:podo_admin/screens/main_frame.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
 
 void main() {
   runApp(const MyApp());
+  initFirebase();
+}
+
+void initFirebase() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 }
 
 class MyApp extends StatelessWidget {
