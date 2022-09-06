@@ -1,6 +1,5 @@
-import 'package:flutter_html/flutter_html.dart';
-
 class LessonCard {
+
   String lessonId;
   int orderId;
   late String uniqueId;

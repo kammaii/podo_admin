@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:html_editor_enhanced/html_editor.dart';
 import 'package:podo_admin/common_widgets/my_textfield.dart';
 import 'package:podo_admin/items/lesson_card.dart';
 import 'package:podo_admin/items/lesson_summary_item.dart';
@@ -43,6 +44,7 @@ class LessonDetail extends StatelessWidget {
       _controller.cardItems.length,
           (index) {
         LessonCard card = _controller.cardItems[index];
+        print('$index : ${card.kr} : ${card.uniqueId}');
         Widget? innerWidget;
         switch (card.type) {
           case MyStrings.subject:
@@ -56,7 +58,22 @@ class LessonDetail extends StatelessWidget {
             break;
 
           case MyStrings.explain:
-            innerWidget = InnerCardTextField().getExplain(index);
+            //innerWidget = InnerCardTextField().getExplain(index);
+            innerWidget = HtmlEditor(
+              controller: HtmlEditorController(),
+              htmlToolbarOptions: const HtmlToolbarOptions(
+                toolbarType: ToolbarType.nativeGrid,
+                toolbarPosition: ToolbarPosition.belowEditor,
+                defaultToolbarButtons: [
+                  StyleButtons(),
+                  ColorButtons(highlightColor: false),
+                  ListButtons(listStyles: false),
+                  InsertButtons(),
+
+                ]
+              ),
+            );
+
             break;
 
           case MyStrings.repeat:

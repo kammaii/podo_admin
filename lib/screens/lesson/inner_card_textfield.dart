@@ -29,11 +29,16 @@ class InnerCardTextField {
 
   Widget getTextField(int index, String type, {String lab = ''}) {
     String? cardValue = '';
+    Function(String)? f;
     String label = lab;
     switch (type) {
       case MyStrings.korean:
         cardValue = _controller.cardItems[index].kr;
         label = label == '' ? MyStrings.korean : label;
+        f = (text) {
+          _controller.cardItems[index].kr = text;
+          _controller.update();
+        };
         break;
 
       case MyStrings.english:
@@ -60,9 +65,7 @@ class InnerCardTextField {
     return MyTextField().getTextField(
       label: label,
       autoFocus: true,
-      onChangedFunction: (text) {
-        cardValue = text;
-      },
+      onChangedFunction: f,
     );
   }
 
