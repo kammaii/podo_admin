@@ -26,6 +26,15 @@ class LessonCard {
     this.examples,
     this.isFavorite,
   }) {
+    setUniqueId();
+  }
+
+  void changeOrderId(int order) {
+    orderId = order;
+    setUniqueId();
+  }
+
+  void setUniqueId() {
     uniqueId = '${lessonId}_${orderId.toString()}';
   }
 }

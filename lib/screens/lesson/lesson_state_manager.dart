@@ -23,7 +23,7 @@ class LessonStateManager extends GetxController {
   void setNewIndex() {
     int newIndex = 0;
     for(LessonCard card in cardItems) {
-      card.orderId = newIndex;
+      card.changeOrderId(newIndex);
       newIndex++;
     }
   }
@@ -41,7 +41,7 @@ class LessonStateManager extends GetxController {
   void reorderCardItem(int oldIndex, int newIndex) {
     if (oldIndex < newIndex) {
       newIndex -= 1;
-    } //todo: 이거 무슨 뜻이지?
+    }
     final LessonCard card = cardItems.removeAt(oldIndex);
     cardItems.insert(newIndex, card);
     setNewIndex();
