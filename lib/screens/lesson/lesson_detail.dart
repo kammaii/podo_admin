@@ -2,7 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:html_editor_enhanced/html_editor.dart';
-import 'package:podo_admin/common_widgets/my_textfield.dart';
+import 'package:podo_admin/common/database.dart';
+import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/items/lesson_card.dart';
 import 'package:podo_admin/items/lesson_summary_item.dart';
 import 'package:podo_admin/screens/lesson/inner_card_textfield.dart';
@@ -20,10 +21,13 @@ class LessonDetail extends StatelessWidget {
   final ScrollController scrollController = ScrollController();
   late final Color primaryColor;
   late final Color onPrimaryColor;
+  late final Color backgroundColor;
+  late final Color surfaceVariantColor;
+  late Map<String,HtmlEditorController> htmlControllers;
 
   Widget getRadioButton({required String value, bool isCardType = true}) {
     return SizedBox(
-      width: 150,
+      width: 160,
       child: ListTile(
         title: Text(value),
         leading: Radio(
@@ -44,7 +48,6 @@ class LessonDetail extends StatelessWidget {
       _controller.cardItems.length,
           (index) {
         LessonCard card = _controller.cardItems[index];
-        print('$index : ${card.kr} : ${card.uniqueId}');
         Widget? innerWidget;
         switch (card.type) {
           case MyStrings.subject:
@@ -58,9 +61,13 @@ class LessonDetail extends StatelessWidget {
             break;
 
           case MyStrings.explain:
-            //innerWidget = InnerCardTextField().getExplain(index);
+            HtmlEditorController controller = HtmlEditorController();
+            htmlControllers[card.uniqueId] = controller;
             innerWidget = HtmlEditor(
-              controller: HtmlEditorController(),
+              controller: controller,
+              htmlEditorOptions: const HtmlEditorOptions(
+                hint: MyStrings.explain,
+              ),
               htmlToolbarOptions: const HtmlToolbarOptions(
                 toolbarType: ToolbarType.nativeGrid,
                 toolbarPosition: ToolbarPosition.belowEditor,
@@ -69,11 +76,15 @@ class LessonDetail extends StatelessWidget {
                   ColorButtons(highlightColor: false),
                   ListButtons(listStyles: false),
                   InsertButtons(),
-
                 ]
               ),
+              callbacks: Callbacks(
+                onChangeContent: (String? content) {
+                  print(content);
+                  card.explain = content;
+                }
+              ),
             );
-
             break;
 
           case MyStrings.repeat:
@@ -132,9 +143,9 @@ class LessonDetail extends StatelessWidget {
                         const SizedBox(height: 10),
                         _controller.quizQuestionLang == MyStrings.korean
                             ? InnerCardTextField()
-                            .getKr(index, label: '${MyStrings.question} in ${MyStrings.korean}')
+                            .getKr(index, lab: '${MyStrings.question} in ${MyStrings.korean}')
                             : InnerCardTextField()
-                            .getEn(index, label: '${MyStrings.question} in ${MyStrings.english}'),
+                            .getEn(index, lab: '${MyStrings.question} in ${MyStrings.english}'),
                       ],
                     );
                   },
@@ -165,14 +176,6 @@ class LessonDetail extends StatelessWidget {
             List<Widget> children = [];
             for (LessonCard card in _controller.cardItems) {
               if (card.type == MyStrings.subject) {
-                // LessonSummaryItem item = LessonSummaryItem(
-                //   lessonId: card.lessonId,
-                //   contents: [
-                //     {MyStrings.title: [card.kr!, card.en!]},
-                //     {MyStrings.exp: [card.explain!]},
-                //   ],
-                // );
-                // items.add(item);
                 children.add(Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -221,7 +224,6 @@ class LessonDetail extends StatelessWidget {
                 children: children,
               ),
             );
-
             break;
         }
 
@@ -246,6 +248,7 @@ class LessonDetail extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Card(
+                  color: card.type == MyStrings.summary ? surfaceVariantColor : backgroundColor,
                   child: Padding(
                     padding: const EdgeInsets.all(20),
                     child: SizedBox(
@@ -268,6 +271,9 @@ class LessonDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     primaryColor = Theme.of(context).colorScheme.primary;
     onPrimaryColor = Theme.of(context).colorScheme.onPrimary;
+    backgroundColor = Theme.of(context).colorScheme.background;
+    surfaceVariantColor = Theme.of(context).colorScheme.surfaceVariant;
+    htmlControllers = {};
     setCards();
 
     return Scaffold(
@@ -298,7 +304,7 @@ class LessonDetail extends StatelessWidget {
                       children: const [
                         Icon(Icons.add),
                         SizedBox(width: 10),
-                        Text('추가'),
+                        Text(MyStrings.add),
                       ],
                     ),
                   )
@@ -324,17 +330,16 @@ class LessonDetail extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(30),
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     for (LessonCard card in _controller.cardItems) {
-                      print(card.orderId);
-                      print(card.kr);
-                      print(card.en);
+                      //todo: save contents to firestore
+                      Database().saveLessonCard(card);
                     }
                   },
                   child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     child: Text(
-                      '저장',
+                      MyStrings.save,
                       style: TextStyle(fontSize: 20),
                     ),
                   ),

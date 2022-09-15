@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/items/lesson_title.dart';
 import 'package:podo_admin/screens/lesson/lesson_detail.dart';
 import 'package:podo_admin/screens/lesson/lesson_main.dart';
@@ -10,8 +11,9 @@ import 'firebase_options.dart';
 
 
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
   initFirebase();
+  runApp(const MyApp());
 }
 
 void initFirebase() async {
@@ -23,7 +25,6 @@ void initFirebase() async {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(

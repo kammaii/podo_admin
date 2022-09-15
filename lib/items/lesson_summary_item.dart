@@ -1,9 +1,16 @@
+import 'package:podo_admin/screens/value/my_strings.dart';
+
 class LessonSummaryItem {
-  final String lessonId;
-  final List<Map<String, List<String>>> contents; // subject: [kr, en], explain: , example: [], audio: []
+  String lessonId;
+  List<Map<String, List<String>>>? contents; // subject: [kr, en], explain: [] , examples: [], audios: []
 
   LessonSummaryItem({
     required this.lessonId,
-    required this.contents,
-  });
+    this.contents,
+  }) {
+    contents ??= [];
+  }
+
+  void setSubject({required int index, String? kr, String? en}) {
+  }
 }

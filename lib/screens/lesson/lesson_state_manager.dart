@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:podo_admin/items/lesson_card.dart';
+import 'package:podo_admin/items/lesson_summary_item.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
 class LessonStateManager extends GetxController {
@@ -8,6 +9,7 @@ class LessonStateManager extends GetxController {
   late bool isVideoChecked;
   late String cardType;
   late List<LessonCard> cardItems;
+  late LessonSummaryItem summaryItem;
   late String quizQuestionLang;
 
   @override
@@ -29,8 +31,13 @@ class LessonStateManager extends GetxController {
   }
 
   void addCardItem() {
-    LessonCard card = LessonCard(lessonId: 'b_01', orderId: cardItems.length, type: cardType); //todo: lessonId는 lessonMain 에서 가져오기
-    cardItems.add(card);
+    // if(cardType == MyStrings.summary) {
+    //
+    // } else {
+      LessonCard card = LessonCard(
+          lessonId: 'b_01', orderId: cardItems.length, type: cardType); //todo: lessonId는 lessonMain 에서 가져오기
+      cardItems.add(card);
+    // }
   }
 
   void removeCardItem(int index) {
