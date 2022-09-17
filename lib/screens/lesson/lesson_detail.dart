@@ -23,7 +23,6 @@ class LessonDetail extends StatelessWidget {
   late final Color onPrimaryColor;
   late final Color backgroundColor;
   late final Color surfaceVariantColor;
-  late Map<String,HtmlEditorController> htmlControllers;
 
   Widget getRadioButton({required String value, bool isCardType = true}) {
     return SizedBox(
@@ -46,7 +45,7 @@ class LessonDetail extends StatelessWidget {
     cards = [];
     cards = List<Widget>.generate(
       _controller.cardItems.length,
-          (index) {
+      (index) {
         LessonCard card = _controller.cardItems[index];
         Widget? innerWidget;
         switch (card.type) {
@@ -62,28 +61,30 @@ class LessonDetail extends StatelessWidget {
 
           case MyStrings.explain:
             HtmlEditorController controller = HtmlEditorController();
-            htmlControllers[card.uniqueId] = controller;
-            innerWidget = HtmlEditor(
-              controller: controller,
-              htmlEditorOptions: const HtmlEditorOptions(
-                hint: MyStrings.explain,
-              ),
-              htmlToolbarOptions: const HtmlToolbarOptions(
-                toolbarType: ToolbarType.nativeGrid,
-                toolbarPosition: ToolbarPosition.belowEditor,
-                defaultToolbarButtons: [
-                  StyleButtons(),
-                  ColorButtons(highlightColor: false),
-                  ListButtons(listStyles: false),
-                  InsertButtons(),
-                ]
-              ),
-              callbacks: Callbacks(
-                onChangeContent: (String? content) {
-                  print(content);
-                  card.explain = content;
-                }
-              ),
+            String explain = card.explain ?? '';
+            innerWidget = Column(
+              children: [
+                _controller.isEditMode.containsKey(card.uniqueId) && _controller.isEditMode[card.uniqueId]!
+                    ? HtmlEditor(
+                        controller: controller,
+                        htmlEditorOptions: HtmlEditorOptions(
+                          hint: MyStrings.explain,
+                          initialText: explain
+                        ),
+                        htmlToolbarOptions: const HtmlToolbarOptions(toolbarType: ToolbarType.nativeGrid,
+                            // toolbarPosition: ToolbarPosition.belowEditor,
+                            defaultToolbarButtons: [
+                              StyleButtons(),
+                              ColorButtons(highlightColor: false),
+                              ListButtons(listStyles: false),
+                              InsertButtons(),
+                            ]),
+                        callbacks: Callbacks(onChangeContent: (String? content) {
+                          card.explain = content;
+                        }),
+                      )
+                    : Text(explain)
+              ],
             );
             break;
 
@@ -143,9 +144,9 @@ class LessonDetail extends StatelessWidget {
                         const SizedBox(height: 10),
                         _controller.quizQuestionLang == MyStrings.korean
                             ? InnerCardTextField()
-                            .getKr(index, lab: '${MyStrings.question} in ${MyStrings.korean}')
+                                .getKr(index, lab: '${MyStrings.question} in ${MyStrings.korean}')
                             : InnerCardTextField()
-                            .getEn(index, lab: '${MyStrings.question} in ${MyStrings.english}'),
+                                .getEn(index, lab: '${MyStrings.question} in ${MyStrings.english}'),
                       ],
                     );
                   },
@@ -194,8 +195,7 @@ class LessonDetail extends StatelessWidget {
                           child: MyTextField().getTextField(
                             label: MyStrings.example,
                             autoFocus: true,
-                            onChangedFunction: (text) {
-                            },
+                            onChangedFunction: (text) {},
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -203,16 +203,19 @@ class LessonDetail extends StatelessWidget {
                           child: MyTextField().getTextField(
                             label: MyStrings.audio,
                             autoFocus: true,
-                            onChangedFunction: (text) {
-                            },
+                            onChangedFunction: (text) {},
                           ),
                         ),
                         const SizedBox(width: 10),
-                        IconButton(onPressed: (){}, icon: Icon(Icons.volume_up_rounded, color: primaryColor)),
+                        IconButton(
+                            onPressed: () {}, icon: Icon(Icons.volume_up_rounded, color: primaryColor)),
                       ],
                     ),
                     const SizedBox(height: 10),
-                    Align(alignment: Alignment.center, child: IconButton(onPressed: (){}, icon: Icon(Icons.add_circle_rounded, color: primaryColor))),
+                    Align(
+                        alignment: Alignment.center,
+                        child: IconButton(
+                            onPressed: () {}, icon: Icon(Icons.add_circle_rounded, color: primaryColor))),
                     const SizedBox(height: 20),
                   ],
                 ));
@@ -242,6 +245,16 @@ class LessonDetail extends StatelessWidget {
                   },
                   icon: const Icon(Icons.delete, color: Colors.red),
                 ),
+                card.type == MyStrings.explain
+                    ? TextButton(
+                        onPressed: () {
+                          _controller.setEditMode(id: card.uniqueId);
+                          setCards();
+                          _controller.update();
+                        },
+                        child: const Text(MyStrings.edit),
+                      )
+                    : const SizedBox.shrink(),
               ],
             ),
             Expanded(
@@ -273,7 +286,6 @@ class LessonDetail extends StatelessWidget {
     onPrimaryColor = Theme.of(context).colorScheme.onPrimary;
     backgroundColor = Theme.of(context).colorScheme.background;
     surfaceVariantColor = Theme.of(context).colorScheme.surfaceVariant;
-    htmlControllers = {};
     setCards();
 
     return Scaffold(
@@ -333,7 +345,10 @@ class LessonDetail extends StatelessWidget {
                   onPressed: () async {
                     for (LessonCard card in _controller.cardItems) {
                       //todo: save contents to firestore
-                      Database().saveLessonCard(card);
+                      //Database().saveLessonCard(card);
+                      if(card.type == MyStrings.explain) {
+                        print(card.explain);
+                      }
                     }
                   },
                   child: const Padding(

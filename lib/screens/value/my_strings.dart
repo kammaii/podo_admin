@@ -24,7 +24,6 @@ class MyStrings {
   static const String example = 'example';
   static const String add = 'add';
   static const String save = 'save';
-  static const String readOnly = 'read-only';
-  static const String editMode = 'edit mode';
+  static const String edit = 'edit';
 
 }

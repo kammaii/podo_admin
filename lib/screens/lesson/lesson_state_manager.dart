@@ -11,6 +11,7 @@ class LessonStateManager extends GetxController {
   late List<LessonCard> cardItems;
   late LessonSummaryItem summaryItem;
   late String quizQuestionLang;
+  late Map<String, bool> isEditMode;
 
   @override
   void onInit() {
@@ -20,6 +21,12 @@ class LessonStateManager extends GetxController {
     cardType = MyStrings.subject;
     cardItems = [];
     quizQuestionLang = MyStrings.korean;
+    isEditMode = {};
+  }
+
+  void setEditMode({String? id}) {
+    isEditMode.updateAll((key, value) => value = false);
+    id != null ? isEditMode[id] = true : '';
   }
 
   void setNewIndex() {
@@ -28,15 +35,19 @@ class LessonStateManager extends GetxController {
       card.changeOrderId(newIndex);
       newIndex++;
     }
+    setEditMode();
   }
 
   void addCardItem() {
     // if(cardType == MyStrings.summary) {
     //
     // } else {
-      LessonCard card = LessonCard(
-          lessonId: 'b_01', orderId: cardItems.length, type: cardType); //todo: lessonId는 lessonMain 에서 가져오기
+      LessonCard card = LessonCard(lessonId: 'b_01', orderId: cardItems.length, type: cardType);
+      //todo: lessonId는 lessonMain 에서 가져오기
       cardItems.add(card);
+      if(cardType == MyStrings.explain) {
+        setEditMode(id: card.uniqueId);
+      }
     // }
   }
 
