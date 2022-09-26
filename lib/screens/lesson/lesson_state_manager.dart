@@ -1,27 +1,37 @@
 import 'package:get/get.dart';
 import 'package:podo_admin/items/lesson_card.dart';
-import 'package:podo_admin/items/lesson_summary_item.dart';
+import 'package:podo_admin/items/lesson_summary.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
 class LessonStateManager extends GetxController {
-
   late String lessonLevel;
   late bool isVideoChecked;
+  late String lessonId;
   late String cardType;
   late List<LessonCard> cardItems;
-  late LessonSummaryItem summaryItem;
   late String quizQuestionLang;
   late Map<String, bool> isEditMode;
+  late LessonSummary lessonSummary;
+
+  //LessonStateManager({required this.lessonId});
+  //todo: 코멘트 해제하기
 
   @override
   void onInit() {
     super.onInit();
     lessonLevel = MyStrings.hangul;
     isVideoChecked = false;
+    lessonId = '';
     cardType = MyStrings.subject;
     cardItems = [];
     quizQuestionLang = MyStrings.korean;
     isEditMode = {};
+    lessonId = 'b_01'; //todo: 이 줄 삭제하고 lessonMain 에서  setLessonId로 설정하기
+    lessonSummary = LessonSummary(lessonId: lessonId, contents: []);
+  }
+
+  void setLessonId(String id) {
+    lessonId = id;
   }
 
   void setEditMode({String? id}) {
@@ -31,7 +41,7 @@ class LessonStateManager extends GetxController {
 
   void setNewIndex() {
     int newIndex = 0;
-    for(LessonCard card in cardItems) {
+    for (LessonCard card in cardItems) {
       card.changeOrderId(newIndex);
       newIndex++;
     }
@@ -39,16 +49,23 @@ class LessonStateManager extends GetxController {
   }
 
   void addCardItem() {
-    // if(cardType == MyStrings.summary) {
-    //
-    // } else {
-      LessonCard card = LessonCard(lessonId: 'b_01', orderId: cardItems.length, type: cardType);
-      //todo: lessonId는 lessonMain 에서 가져오기
-      cardItems.add(card);
-      if(cardType == MyStrings.explain) {
-        setEditMode(id: card.uniqueId);
+    LessonCard card = LessonCard(lessonId: lessonId, orderId: cardItems.length, type: cardType);
+    cardItems.add(card);
+
+    if (cardType == MyStrings.explain) {
+      setEditMode(id: card.uniqueId);
+    }
+
+    if (cardType == MyStrings.summary) {
+      lessonSummary.contents = [];
+      for (LessonCard card in cardItems) {
+        if (card.type == MyStrings.subject) {
+          String kr = card.kr ?? '';
+          String en = card.en ?? '';
+          lessonSummary.contents.add(LessonSummaryItem(subjectKr: kr, subjectEn: en));
+        }
       }
-    // }
+    }
   }
 
   void removeCardItem(int index) {

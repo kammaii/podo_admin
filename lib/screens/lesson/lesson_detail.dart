@@ -5,7 +5,7 @@ import 'package:html_editor_enhanced/html_editor.dart';
 import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/items/lesson_card.dart';
-import 'package:podo_admin/items/lesson_summary_item.dart';
+import 'package:podo_admin/items/lesson_summary.dart';
 import 'package:podo_admin/screens/lesson/inner_card_textfield.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
@@ -41,6 +41,47 @@ class LessonDetail extends StatelessWidget {
     );
   }
 
+  void changeTextColor(HtmlEditorController controller, String textColor) async {
+    String KEY = '!SELECTED!';
+    String selectedText = await controller.getSelectedTextWeb();
+    if(selectedText.isNotEmpty) {
+      controller.insertHtml(KEY);
+      String wholeText = await controller.getText();
+      List<String> splitText = wholeText.split(KEY);
+      String newText = '${splitText[0]}<span style="color:$textColor">$selectedText</span>${splitText[1]}';
+      controller.setText(newText);
+    }
+  }
+
+  Widget redButton(HtmlEditorController controller) {
+    return TextButton(
+      onPressed: () async {
+        changeTextColor(controller, 'red');
+      },
+      child: const Text('RED'),
+    );
+  }
+
+  Widget blackButton(HtmlEditorController controller) {
+    return TextButton(
+      onPressed: () async {
+        changeTextColor(controller, 'black');
+      },
+      child: const Text('BLACK'),
+    );
+  }
+
+  Widget blueButton(HtmlEditorController controller) {
+    return TextButton(
+      onPressed: () async {
+        changeTextColor(controller, 'blue');
+      },
+      child: const Text('BLUE'),
+    );
+  }
+
+
+
   void setCards() {
     cards = [];
     cards = List<Widget>.generate(
@@ -64,26 +105,30 @@ class LessonDetail extends StatelessWidget {
             String explain = card.explain ?? '';
             innerWidget = Column(
               children: [
-                _controller.isEditMode.containsKey(card.uniqueId) && _controller.isEditMode[card.uniqueId]!
-                    ? HtmlEditor(
-                        controller: controller,
-                        htmlEditorOptions: HtmlEditorOptions(
-                          hint: MyStrings.explain,
-                          initialText: explain
-                        ),
-                        htmlToolbarOptions: const HtmlToolbarOptions(toolbarType: ToolbarType.nativeGrid,
-                            // toolbarPosition: ToolbarPosition.belowEditor,
-                            defaultToolbarButtons: [
-                              StyleButtons(),
-                              ColorButtons(highlightColor: false),
-                              ListButtons(listStyles: false),
-                              InsertButtons(),
-                            ]),
-                        callbacks: Callbacks(onChangeContent: (String? content) {
-                          card.explain = content;
-                        }),
-                      )
-                    : Text(explain)
+                if (_controller.isEditMode.containsKey(card.uniqueId) &&
+                    _controller.isEditMode[card.uniqueId]!)
+                  HtmlEditor(
+                    controller: controller,
+                    htmlEditorOptions: HtmlEditorOptions(hint: MyStrings.explain, initialText: explain),
+                    htmlToolbarOptions: HtmlToolbarOptions(
+                      toolbarType: ToolbarType.nativeGrid,
+                      defaultToolbarButtons: [
+                        const StyleButtons(),
+                        const ListButtons(listStyles: false),
+                        const InsertButtons(),
+                      ],
+                      customToolbarButtons: [
+                        redButton(controller),
+                        blackButton(controller),
+                        blueButton(controller),
+                      ],
+                    ),
+                    callbacks: Callbacks(onChangeContent: (String? content) {
+                      card.explain = content;
+                    }),
+                  )
+                else
+                  Text(explain)
               ],
             );
             break;
@@ -172,55 +217,71 @@ class LessonDetail extends StatelessWidget {
             break;
 
           case MyStrings.summary:
-            int subjectCount = 1;
-            List<LessonSummaryItem> items = [];
+            int subjectCount = 0;
             List<Widget> children = [];
-            for (LessonCard card in _controller.cardItems) {
-              if (card.type == MyStrings.subject) {
-                children.add(Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(subjectCount.toString()),
-                    InnerCardTextField().getKr(index),
-                    const SizedBox(height: 10),
-                    InnerCardTextField().getEn(index),
-                    const SizedBox(height: 10),
-                    InnerCardTextField().getExplain(index),
-                    const SizedBox(height: 10),
-                    const Text('${MyStrings.example}s)'),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: MyTextField().getTextField(
-                            label: MyStrings.example,
-                            autoFocus: true,
-                            onChangedFunction: (text) {},
+            List<LessonSummaryItem> items = _controller.lessonSummary.contents;
+
+            for (LessonSummaryItem item in items) {
+              children.add(Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    subjectCount.toString(),
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                  const SizedBox(height: 10),
+                  InnerCardTextField().getSummary(
+                      textValue: item.subjectKr,
+                      lab: MyStrings.korean,
+                      function: (text) {
+                        item.subjectKr = text;
+                      }),
+                  const SizedBox(height: 10),
+                  InnerCardTextField().getSummary(
+                      textValue: item.subjectEn,
+                      lab: MyStrings.english,
+                      function: (text) {
+                        item.subjectEn = text;
+                      }),
+                  const SizedBox(height: 10),
+                  InnerCardTextField().getSummary(
+                      textValue: item.explain,
+                      lab: MyStrings.explain,
+                      function: (text) {
+                        item.explain = text;
+                      }),
+                  const SizedBox(height: 10),
+                  const Text('${MyStrings.example}s)'),
+                  const SizedBox(height: 10),
+                  item.examples.isEmpty
+                      ? getExampleList(
+                          item: item,
+                          textValue: '',
+                          audio: '${card.lessonId}_${subjectCount}_0',
+                          f: (text) => item.examples[0] = text,
+                        )
+                      : Expanded(
+                          child: ListView.builder(
+                            itemCount: item.examples.length,
+                            itemBuilder: (context, index) {
+                              return getExampleList(
+                                item: item,
+                                textValue: item.examples[index],
+                                audio: '${card.lessonId}_${subjectCount}_$index',
+                                f: (text) => item.examples[index] = text,
+                              );
+                            },
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: MyTextField().getTextField(
-                            label: MyStrings.audio,
-                            autoFocus: true,
-                            onChangedFunction: (text) {},
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        IconButton(
-                            onPressed: () {}, icon: Icon(Icons.volume_up_rounded, color: primaryColor)),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Align(
-                        alignment: Alignment.center,
-                        child: IconButton(
-                            onPressed: () {}, icon: Icon(Icons.add_circle_rounded, color: primaryColor))),
-                    const SizedBox(height: 20),
-                  ],
-                ));
-                subjectCount++;
-              }
+                  const SizedBox(height: 10),
+                  Align(
+                      alignment: Alignment.center,
+                      child: IconButton(
+                          onPressed: () {}, icon: Icon(Icons.add_circle_rounded, color: primaryColor))),
+                  const SizedBox(height: 20),
+                ],
+              ));
+              subjectCount++;
             }
             innerWidget = SingleChildScrollView(
               child: Column(
@@ -277,6 +338,28 @@ class LessonDetail extends StatelessWidget {
         return widget;
       },
       growable: true,
+    );
+  }
+
+  Widget getExampleList({
+    required LessonSummaryItem item,
+    required String textValue,
+    required String audio,
+    required Function(String) f,
+  }) {
+    return Row(
+      children: [
+        Expanded(
+            child:
+                InnerCardTextField().getSummary(textValue: textValue, lab: MyStrings.example, function: f)),
+        const SizedBox(width: 10),
+        Text(audio),
+        IconButton(
+            onPressed: () {
+              //todo: 오디오 재생
+            },
+            icon: Icon(Icons.volume_up_rounded, color: primaryColor)),
+      ],
     );
   }
 
@@ -346,7 +429,7 @@ class LessonDetail extends StatelessWidget {
                     for (LessonCard card in _controller.cardItems) {
                       //todo: save contents to firestore
                       //Database().saveLessonCard(card);
-                      if(card.type == MyStrings.explain) {
+                      if (card.type == MyStrings.explain) {
                         print(card.explain);
                       }
                     }

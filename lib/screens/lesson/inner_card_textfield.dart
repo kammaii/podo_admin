@@ -17,7 +17,7 @@ class InnerCardTextField {
       _controller.cardItems[index].kr = text;
       _controller.update();
     };
-    return getTextField(index, MyStrings.korean);
+    return getTextField(MyStrings.korean);
   }
 
   Widget getEn(int index, {String lab = ''}) {
@@ -27,7 +27,7 @@ class InnerCardTextField {
       _controller.cardItems[index].en = text;
       _controller.update();
     };
-    return getTextField(index, MyStrings.english);
+    return getTextField(MyStrings.english);
   }
 
   Widget getExplain(int index) {
@@ -37,7 +37,7 @@ class InnerCardTextField {
       _controller.cardItems[index].explain = text;
       _controller.update();
     };
-    return getTextField(index, MyStrings.explain);
+    return getTextField(MyStrings.explain);
   }
 
   Widget getPronun(int index) {
@@ -47,7 +47,7 @@ class InnerCardTextField {
       _controller.cardItems[index].pronun = text;
       _controller.update();
     };
-    return getTextField(index, MyStrings.pronun);
+    return getTextField(MyStrings.pronun);
   }
 
   Widget getAudio(int index) {
@@ -57,10 +57,17 @@ class InnerCardTextField {
       _controller.cardItems[index].audio = text;
       _controller.update();
     };
-    return getTextField(index, MyStrings.audio);
+    return getTextField(MyStrings.audio);
   }
 
-  Widget getTextField(int index, String type, {String lab = ''}) {
+  Widget getSummary({required String textValue, required String lab, required Function(String) function}) {
+    cardValue = textValue;
+    label = lab;
+    f = function;
+    return getTextField(MyStrings.korean);
+  }
+
+  Widget getTextField(String type, {String lab = ''}) {
 
     TextEditingController controller = TextEditingController(text: cardValue);
 

@@ -1,21 +1,23 @@
 class LessonSummary {
   String lessonId;
-  List<LessonSummaryItem>? contents;
+  List<LessonSummaryItem> contents;
 
   LessonSummary({
     required this.lessonId,
-    this.contents,
+    required this.contents,
   });
-
-  void initContents(int length) {
-    contents = List<LessonSummaryItem>.generate(length, (index) => LessonSummaryItem());
-  }
 }
 
 class LessonSummaryItem {
-  String? subjectKr;
-  String? subjectEn;
-  String? explain;
-  List<String>? examples;
-  List<String>? audios;
+  String subjectKr;
+  String subjectEn;
+  String explain;
+  List<String> examples;
+
+  LessonSummaryItem({
+    this.subjectKr = '',
+    this.subjectEn = '',
+    this.explain = '',
+    this.examples = const [],
+  });
 }
