@@ -51,21 +51,7 @@ class LessonStateManager extends GetxController {
   void addCardItem() {
     LessonCard card = LessonCard(lessonId: lessonId, orderId: cardItems.length, type: cardType);
     cardItems.add(card);
-
-    if (cardType == MyStrings.explain) {
-      setEditMode(id: card.uniqueId);
-    }
-
-    if (cardType == MyStrings.summary) {
-      lessonSummary.contents = [];
-      for (LessonCard card in cardItems) {
-        if (card.type == MyStrings.subject) {
-          String kr = card.kr ?? '';
-          String en = card.en ?? '';
-          lessonSummary.contents.add(LessonSummaryItem(subjectKr: kr, subjectEn: en));
-        }
-      }
-    }
+    setEditMode(id: card.uniqueId);
   }
 
   void removeCardItem(int index) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/my_textfield.dart';
+import 'package:podo_admin/items/lesson_card.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
@@ -17,7 +18,7 @@ class InnerCardTextField {
       _controller.cardItems[index].kr = text;
       _controller.update();
     };
-    return getTextField(MyStrings.korean);
+    return getTextField();
   }
 
   Widget getEn(int index, {String lab = ''}) {
@@ -27,7 +28,7 @@ class InnerCardTextField {
       _controller.cardItems[index].en = text;
       _controller.update();
     };
-    return getTextField(MyStrings.english);
+    return getTextField();
   }
 
   Widget getExplain(int index) {
@@ -37,7 +38,7 @@ class InnerCardTextField {
       _controller.cardItems[index].explain = text;
       _controller.update();
     };
-    return getTextField(MyStrings.explain);
+    return getTextField();
   }
 
   Widget getPronun(int index) {
@@ -47,7 +48,7 @@ class InnerCardTextField {
       _controller.cardItems[index].pronun = text;
       _controller.update();
     };
-    return getTextField(MyStrings.pronun);
+    return getTextField();
   }
 
   Widget getAudio(int index) {
@@ -57,17 +58,17 @@ class InnerCardTextField {
       _controller.cardItems[index].audio = text;
       _controller.update();
     };
-    return getTextField(MyStrings.audio);
+    return getTextField();
   }
 
   Widget getSummary({required String textValue, required String lab, required Function(String) function}) {
     cardValue = textValue;
     label = lab;
     f = function;
-    return getTextField(MyStrings.korean);
+    return getTextField();
   }
 
-  Widget getTextField(String type, {String lab = ''}) {
+  Widget getTextField() {
 
     TextEditingController controller = TextEditingController(text: cardValue);
 

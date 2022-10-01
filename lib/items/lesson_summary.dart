@@ -11,13 +11,14 @@ class LessonSummary {
 class LessonSummaryItem {
   String subjectKr;
   String subjectEn;
-  String explain;
-  List<String> examples;
+  late String explain;
+  late List<String> examples;
 
   LessonSummaryItem({
     this.subjectKr = '',
     this.subjectEn = '',
-    this.explain = '',
-    this.examples = const [],
-  });
+  }) {
+    explain = '';
+    examples = [];
+  }
 }
