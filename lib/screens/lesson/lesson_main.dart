@@ -4,23 +4,22 @@ import 'package:podo_admin/items/lesson_title.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
-class Lesson extends StatelessWidget {
-  Lesson({Key? key}) : super(key: key);
+class LessonMain extends StatelessWidget {
+  LessonMain({Key? key}) : super(key: key);
 
   final LessonStateManager _controller = Get.put(LessonStateManager());
   final TextEditingController _textEditingControllerTitle = TextEditingController();
   final TextEditingController _textEditingControllerCategory = TextEditingController();
   final TextEditingController _textEditingControllerVideoLink = TextEditingController();
-  late final BuildContext buildContext;
 
-  Widget getRadioButton(String title) {
+  Widget getRadioButton(BuildContext context, String title) {
     return SizedBox(
-      width: 150,
+      width: 200,
       child: ListTile(
         title: Text(title),
         leading: Radio(
           value: title,
-          activeColor: Theme.of(buildContext).colorScheme.primary,
+          activeColor: Theme.of(context).colorScheme.primary,
           groupValue: _controller.lessonLevel,
           onChanged: (String? value) {
             _controller.changeLessonLevel(value);
@@ -32,8 +31,6 @@ class Lesson extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    buildContext = context;
-
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -136,7 +133,7 @@ class Lesson extends StatelessWidget {
         label: const Text('레슨만들기'),
       ),
       appBar: AppBar(
-        title: const Text('레슨'),
+        title: const Text(MyStrings.lesson),
       ),
       body: Column(
         mainAxisSize: MainAxisSize.min,
@@ -145,10 +142,10 @@ class Lesson extends StatelessWidget {
             builder: (controller) {
               return Row(
                 children: [
-                  getRadioButton(MyStrings.hangul),
-                  getRadioButton(MyStrings.basic),
-                  getRadioButton(MyStrings.intermediate),
-                  getRadioButton(MyStrings.advanced),
+                  getRadioButton(context, MyStrings.hangul),
+                  getRadioButton(context, MyStrings.basic),
+                  getRadioButton(context, MyStrings.intermediate),
+                  getRadioButton(context, MyStrings.advanced),
                 ],
               );
             },

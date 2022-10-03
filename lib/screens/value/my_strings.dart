@@ -25,5 +25,7 @@ class MyStrings {
   static const String add = 'add';
   static const String save = 'save';
   static const String edit = 'edit';
-
+  static const String lesson = '레슨';
+  static const String message = '메시지';
+  static const String complete = 'complete';
 }

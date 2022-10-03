@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         colorScheme: lightColorScheme
       ),
-      home: LessonDetail(),
+      home: const MainFrame(),
     );
   }
 }

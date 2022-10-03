@@ -1,4 +1,4 @@
-package com.example.podo_admin
+package net.awesomekorean.podo_admin
 
 import io.flutter.embedding.android.FlutterActivity
 

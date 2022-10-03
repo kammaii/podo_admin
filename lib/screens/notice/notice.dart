@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:podo_admin/screens/value/my_strings.dart';
 
 class Notice extends StatelessWidget {
   const Notice({Key? key}) : super(key: key);

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:podo_admin/screens/lesson/lesson_main.dart';
 import 'package:podo_admin/screens/notice/notice.dart';
-import 'package:podo_admin/screens/request/request.dart';
+import 'package:podo_admin/screens/message/message_main.dart';
 import 'package:podo_admin/screens/user/user.dart';
+import 'package:podo_admin/screens/value/my_strings.dart';
 
 class MainFrame extends StatefulWidget {
   const MainFrame({Key? key}) : super(key: key);
@@ -13,10 +14,10 @@ class MainFrame extends StatefulWidget {
 
 class _MainFrameState extends State<MainFrame> {
   final List<Widget> _buildScreens = [
-    Lesson(),
-    const Request(),
+    MessageMain(),
     const User(),
     const Notice(),
+    LessonMain(),
   ];
 
   int _selectedIndex = 0;
@@ -30,9 +31,9 @@ class _MainFrameState extends State<MainFrame> {
             labelType: NavigationRailLabelType.selected,
             destinations: const [
               NavigationRailDestination(
-                icon: Icon(Icons.task_outlined),
-                selectedIcon: Icon(Icons.task_rounded),
-                label: Text('요청'),
+                icon: Icon(Icons.message_outlined),
+                selectedIcon: Icon(Icons.message_rounded),
+                label: Text('메시지'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.people_outline),
