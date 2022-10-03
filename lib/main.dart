@@ -4,6 +4,8 @@ import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/items/lesson_title.dart';
 import 'package:podo_admin/screens/lesson/lesson_detail.dart';
 import 'package:podo_admin/screens/lesson/lesson_main.dart';
+import 'package:podo_admin/screens/message/message_detail.dart';
+import 'package:podo_admin/screens/message/message_finder.dart';
 import 'package:podo_admin/screens/value/color_schemes.g.dart';
 import 'package:podo_admin/screens/main_frame.dart';
 import 'package:firebase_core/firebase_core.dart';

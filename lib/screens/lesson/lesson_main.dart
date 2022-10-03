@@ -133,7 +133,7 @@ class LessonMain extends StatelessWidget {
         label: const Text('레슨만들기'),
       ),
       appBar: AppBar(
-        title: const Text(MyStrings.lesson),
+        title: const Text('레슨'),
       ),
       body: Column(
         mainAxisSize: MainAxisSize.min,

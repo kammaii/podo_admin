@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:html_editor_enhanced/html_editor.dart';
 import 'package:podo_admin/common/database.dart';
+import 'package:podo_admin/common/my_html_color.dart';
 import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/items/lesson_card.dart';
 import 'package:podo_admin/items/lesson_summary.dart';
@@ -39,49 +40,6 @@ class LessonDetail extends StatelessWidget {
           },
         ),
       ),
-    );
-  }
-
-  void changeTextColor(HtmlEditorController controller, String textColor) async {
-    String KEY = '!SELECTED!';
-    String selectedText1 = await controller.getSelectedTextWeb();
-    String selectedText2 = await controller.getSelectedTextWeb(withHtmlTags: true);
-    print('selectedText1 : $selectedText1');
-    print('selectedText2 : $selectedText2');
-    if (selectedText1.isNotEmpty) {
-      controller.insertHtml(KEY);
-      String wholeText = await controller.getText();
-      print('wholeText : $wholeText');
-      List<String> splitText = wholeText.split(KEY);
-      String newText = '${splitText[0]}<span style="color:$textColor">$selectedText1</span>${splitText[1]}';
-      controller.setText(newText);
-    }
-  }
-
-  Widget redButton(HtmlEditorController controller) {
-    return TextButton(
-      onPressed: () async {
-        changeTextColor(controller, 'red');
-      },
-      child: const Text('RED'),
-    );
-  }
-
-  Widget blackButton(HtmlEditorController controller) {
-    return TextButton(
-      onPressed: () async {
-        changeTextColor(controller, 'black');
-      },
-      child: const Text('BLACK'),
-    );
-  }
-
-  Widget blueButton(HtmlEditorController controller) {
-    return TextButton(
-      onPressed: () async {
-        changeTextColor(controller, 'blue');
-      },
-      child: const Text('BLUE'),
     );
   }
 
@@ -128,9 +86,9 @@ class LessonDetail extends StatelessWidget {
                             help: false),
                       ],
                       customToolbarButtons: [
-                        redButton(controller),
-                        blackButton(controller),
-                        blueButton(controller),
+                        MyHtmlColor().colorButton(controller: controller, color: MyStrings.red),
+                        MyHtmlColor().colorButton(controller: controller, color: MyStrings.blue),
+                        MyHtmlColor().colorButton(controller: controller, color: MyStrings.black),
                       ],
                     ),
                     callbacks: Callbacks(onChangeContent: (String? content) {
@@ -165,7 +123,7 @@ class LessonDetail extends StatelessWidget {
                     primary: primaryColor,
                     onPrimary: onPrimaryColor,
                   ),
-                  child: const Text(MyStrings.makeSpeakingCard),
+                  child: const Text('말하기카드만들기'),
                 )
               ],
             );
@@ -249,7 +207,7 @@ class LessonDetail extends StatelessWidget {
                           setCards();
                           _controller.update();
                         },
-                        child: const Text(MyStrings.edit),
+                        child: const Text('수정'),
                       )
                     : const SizedBox.shrink(),
               ],
@@ -455,7 +413,7 @@ class LessonDetail extends StatelessWidget {
                       children: const [
                         Icon(Icons.add),
                         SizedBox(width: 10),
-                        Text(MyStrings.add),
+                        Text('카드추가'),
                       ],
                     ),
                   )
@@ -511,7 +469,7 @@ class LessonDetail extends StatelessWidget {
                   child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     child: Text(
-                      MyStrings.save,
+                      '저장',
                       style: TextStyle(fontSize: 20),
                     ),
                   ),

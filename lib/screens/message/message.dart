@@ -10,10 +10,11 @@ class Message {
   late DateTime sendTime;
   late DateTime? replyTime;
   late String status;
+  late bool isFavorite;
 
   Message();
 
-  void sendReply(String reply) {
+  void setReply(String reply) {
     reply = reply;
     replyTime = DateTime.now();
     status = MyStrings.complete;
@@ -21,21 +22,23 @@ class Message {
 
   List<Message> getSampleMessages() {
     Map<String, dynamic> sampleJson1 = {
-      MESSAGEID : '0000-0000-0000',
-      TAG : 'correction',
-      USEREMAIL : 'sample1@gmail.com',
-      MESSAGE : '안냥하세여',
-      SENDTIME : Timestamp.now(),
-      STATUS : 'new',
+      MESSAGEID: '0000-0000-0000',
+      TAG: 'correction',
+      USEREMAIL: 'sample1@gmail.com',
+      MESSAGE: '안냥하세여',
+      SENDTIME: Timestamp.now(),
+      STATUS: 'new',
+      ISFAVORITE: false,
     };
 
     Map<String, dynamic> sampleJson2 = {
-      MESSAGEID : '1111-1111-1111',
-      TAG : 'question',
-      USEREMAIL : 'sample2@gmail.com',
-      MESSAGE : '질문~~~~',
-      SENDTIME : Timestamp.now(),
-      STATUS : 'new',
+      MESSAGEID: '1111-1111-1111',
+      TAG: 'question',
+      USEREMAIL: 'sample2@gmail.com',
+      MESSAGE: '질문~~~~',
+      SENDTIME: Timestamp.now(),
+      STATUS: 'new',
+      ISFAVORITE: true,
     };
     return [Message.fromJson(sampleJson1), Message.fromJson(sampleJson2)];
   }
@@ -48,7 +51,7 @@ class Message {
   static const String SENDTIME = 'sendTime';
   static const String REPLYTIME = 'replyTime';
   static const String STATUS = 'status';
-
+  static const String ISFAVORITE = 'isFavorite';
 
   Message.fromJson(Map<String, dynamic> json) {
     messageId = json[MESSAGEID];
@@ -61,6 +64,7 @@ class Message {
     sendTime = sendStamp.toDate();
     replyTime = replyStamp?.toDate();
     status = json[STATUS];
+    isFavorite = json[ISFAVORITE];
   }
 
   Map<String, dynamic> toJson() => {
@@ -71,5 +75,6 @@ class Message {
         REPLY: reply!,
         SENDTIME: Timestamp.fromDate(sendTime),
         REPLYTIME: Timestamp.fromDate(replyTime!),
+        ISFAVORITE: isFavorite,
       };
 }

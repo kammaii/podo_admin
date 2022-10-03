@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/screens/message/message.dart';
+import 'package:podo_admin/screens/message/message_detail.dart';
 import 'package:podo_admin/screens/message/message_state_manager.dart';
-import 'package:podo_admin/screens/value/my_strings.dart';
 import 'package:data_table_2/data_table_2.dart';
 
 class MessageMain extends StatelessWidget {
@@ -33,7 +33,7 @@ class MessageMain extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(MyStrings.message),
+        title: const Text('메시지'),
       ),
       body: GetBuilder<MessageStateManager>(
         builder: (controller) {
@@ -54,7 +54,7 @@ class MessageMain extends StatelessWidget {
                       controller: _searchController,
                       decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.search),
-                        labelText: '검색',
+                        labelText: '내용 or 유저 검색',
                       ),
                       onChanged: (text) {
                         //todo: 검색실행
@@ -87,12 +87,12 @@ class MessageMain extends StatelessWidget {
                       DataCell(Text(message.sendTime.toString())),
                       DataCell(Text(message.tag)),
                       DataCell(Text(message.message), onTap: () {
-                        print('상세보기');
+                        Get.to(MessageDetail(), arguments: message);
                       }),
                       DataCell(Text(message.userEmail), onTap: () {
-                        print('유저로검색');
+                        //todo: '유저로검색'
                       }, onDoubleTap: () {
-                        print('유저정보열기');
+                        //todo: '유저정보열기'
                       }),
                       DataCell(Text(message.status)),
                     ]);

@@ -19,13 +19,13 @@ class MyStrings {
   static const String ex3 = 'ex3';
   static const String ex4 = 'ex4';
   static const String question = 'question';
-  static const String makeSpeakingCard = 'Make speaking card';
   static const String title = 'title';
   static const String example = 'example';
-  static const String add = 'add';
-  static const String save = 'save';
-  static const String edit = 'edit';
-  static const String lesson = '레슨';
-  static const String message = '메시지';
+
   static const String complete = 'complete';
+  static const String correction = 'correction';
+  static const String red = 'red';
+  static const String blue = 'blue';
+  static const String black = 'black';
+
 }

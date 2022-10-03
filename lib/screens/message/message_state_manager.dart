@@ -7,11 +7,13 @@ class MessageStateManager extends GetxController {
   late String tagRadio;
   late String statusRadio;
   List<Message> messages = Message().getSampleMessages(); //todo: stream 으로 구현하기
+  late bool isFavoriteMessage;
 
   @override
   void onInit() {
     tagRadio = '전체';
     statusRadio = '신규';
+    isFavoriteMessage = false;
   }
 }
 
