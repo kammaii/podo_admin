@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:podo_admin/screens/value/my_strings.dart';
 
-class Notice extends StatelessWidget {
-  const Notice({Key? key}) : super(key: key);
+class NoticeMain extends StatelessWidget {
+  const NoticeMain({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:podo_admin/screens/lesson/lesson_main.dart';
-import 'package:podo_admin/screens/notice/notice.dart';
+import 'package:podo_admin/screens/notice/notice_main.dart';
 import 'package:podo_admin/screens/message/message_main.dart';
-import 'package:podo_admin/screens/user/user.dart';
-import 'package:podo_admin/screens/value/my_strings.dart';
+import 'package:podo_admin/screens/user/user_main.dart';
 
 class MainFrame extends StatefulWidget {
   const MainFrame({Key? key}) : super(key: key);
@@ -15,8 +14,8 @@ class MainFrame extends StatefulWidget {
 class _MainFrameState extends State<MainFrame> {
   final List<Widget> _buildScreens = [
     MessageMain(),
-    const User(),
-    const Notice(),
+    UserMain(),
+    const NoticeMain(),
     LessonMain(),
   ];
 
