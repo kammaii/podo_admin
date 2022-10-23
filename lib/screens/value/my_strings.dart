@@ -1,8 +1,4 @@
 class MyStrings {
-  static const String hangul = 'hangul';
-  static const String basic = 'basic';
-  static const String intermediate = 'intermediate';
-  static const String advanced = 'advanced';
   static const String subject = 'subject';
   static const String explain = 'explain';
   static const String repeat = 'repeat';
@@ -27,5 +23,9 @@ class MyStrings {
   static const String red = 'red';
   static const String blue = 'blue';
   static const String black = 'black';
+
+  static const String tagInfo = '#info';
+  static const String tagQuiz = '#quiz';
+  static const String tagLiveLesson = '#liveLesson';
 
 }

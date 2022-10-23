@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:podo_admin/common/my_date_format.dart';
+import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/screens/message/message.dart';
 import 'package:podo_admin/screens/message/message_detail.dart';
 import 'package:podo_admin/screens/message/message_state_manager.dart';
@@ -10,24 +12,6 @@ class MessageMain extends StatelessWidget {
 
   final MessageStateManager _controller = Get.put(MessageStateManager());
   final TextEditingController _searchController = TextEditingController();
-
-  Widget getRadioButton(BuildContext context, bool isTag, String title) {
-    return SizedBox(
-      width: 150,
-      child: ListTile(
-        title: Text(title),
-        leading: Radio(
-          value: title,
-          activeColor: Theme.of(context).colorScheme.primary,
-          groupValue: isTag ? _controller.tagRadio : _controller.statusRadio,
-          onChanged: (String? newValue) {
-            isTag ? _controller.tagRadio = newValue! : _controller.statusRadio = newValue!;
-            _controller.update();
-          },
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,12 +25,12 @@ class MessageMain extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  getRadioButton(context, true, '전체'),
-                  getRadioButton(context, true, '교정'),
-                  getRadioButton(context, true, '질문'),
+                  MyRadioBtn().getRadioButton(context: context, title: '전체', radio: _controller.tagRadio, f: _controller.changeTagRadio()),
+                  MyRadioBtn().getRadioButton(context: context, title: '교정', radio: _controller.tagRadio, f: _controller.changeTagRadio()),
+                  MyRadioBtn().getRadioButton(context: context, title: '질문', radio: _controller.tagRadio, f: _controller.changeTagRadio()),
                   const SizedBox(height: 30, child: VerticalDivider()),
-                  getRadioButton(context, false, '신규'),
-                  getRadioButton(context, false, '완료'),
+                  MyRadioBtn().getRadioButton(context: context, title: '신규', radio: _controller.statusRadio, f: _controller.changeStatusRadio()),
+                  MyRadioBtn().getRadioButton(context: context, title: '완료', radio: _controller.statusRadio, f: _controller.changeStatusRadio()),
                   const SizedBox(height: 30, child: VerticalDivider()),
                   SizedBox(
                     width: 200,
@@ -84,7 +68,7 @@ class MessageMain extends StatelessWidget {
                     Message message = _controller.messages[index];
 
                     return DataRow(cells: [
-                      DataCell(Text(message.sendTime.toString())),
+                      DataCell(Text(MyDateFormat().getDateFormat(message.sendTime))),
                       DataCell(Text(message.tag)),
                       DataCell(Text(message.message), onTap: () {
                         Get.to(MessageDetail(), arguments: message);

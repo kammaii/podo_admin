@@ -21,11 +21,20 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        return android;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for android - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.iOS:
-        return ios;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for ios - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.macOS:
-        return macos;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
@@ -44,40 +53,12 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAE2T3tcH2o0Yb6MT2NzsgPvR8WehCIRS4',
-    appId: '1:107866395626:web:c917ff36e22687f05a9893',
-    messagingSenderId: '107866395626',
-    projectId: 'podo-e49b2',
-    authDomain: 'podo-e49b2.firebaseapp.com',
-    storageBucket: 'podo-e49b2.appspot.com',
-    measurementId: 'G-SMW734Q34J',
-  );
-
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBZpVvsXgXKCXeP-dDL-KWjt0RzD8Buvec',
-    appId: '1:107866395626:android:73cdd8bf960c1c7b5a9893',
-    messagingSenderId: '107866395626',
-    projectId: 'podo-e49b2',
-    storageBucket: 'podo-e49b2.appspot.com',
-  );
-
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBsqAX8QDjEjmgd4X1-n89ewCwcH616Pyc',
-    appId: '1:107866395626:ios:da7cf5804378ce4f5a9893',
-    messagingSenderId: '107866395626',
-    projectId: 'podo-e49b2',
-    storageBucket: 'podo-e49b2.appspot.com',
-    iosClientId: '107866395626-9ktc8e3slvmn4fl6sij5n1hb61blkij9.apps.googleusercontent.com',
-    iosBundleId: 'com.example.podoAdmin',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyBsqAX8QDjEjmgd4X1-n89ewCwcH616Pyc',
-    appId: '1:107866395626:ios:da7cf5804378ce4f5a9893',
-    messagingSenderId: '107866395626',
-    projectId: 'podo-e49b2',
-    storageBucket: 'podo-e49b2.appspot.com',
-    iosClientId: '107866395626-9ktc8e3slvmn4fl6sij5n1hb61blkij9.apps.googleusercontent.com',
-    iosBundleId: 'com.example.podoAdmin',
+    apiKey: 'AIzaSyCYuJcFMihqxeYCzl35TcN2o16IsI9-WCg',
+    appId: '1:1025269170157:web:14efada846a0dd97fcf1e4',
+    messagingSenderId: '1025269170157',
+    projectId: 'podo-49335',
+    authDomain: 'podo-49335.firebaseapp.com',
+    storageBucket: 'podo-49335.appspot.com',
+    measurementId: 'G-5RL1NL4E5D',
   );
 }

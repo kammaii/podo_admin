@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/items/lesson_title.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
@@ -11,23 +12,6 @@ class LessonMain extends StatelessWidget {
   final TextEditingController _textEditingControllerTitle = TextEditingController();
   final TextEditingController _textEditingControllerCategory = TextEditingController();
   final TextEditingController _textEditingControllerVideoLink = TextEditingController();
-
-  Widget getRadioButton(BuildContext context, String title) {
-    return SizedBox(
-      width: 200,
-      child: ListTile(
-        title: Text(title),
-        leading: Radio(
-          value: title,
-          activeColor: Theme.of(context).colorScheme.primary,
-          groupValue: _controller.lessonLevel,
-          onChanged: (String? value) {
-            _controller.changeLessonLevel(value);
-          },
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,8 +91,9 @@ class LessonMain extends StatelessWidget {
                       String link = _textEditingControllerVideoLink.text;
 
                       LessonTitle lessonTitle = LessonTitle(
-                        level: _controller.lessonLevel,
-                        orderId: SampleLessonTitles().getTitles().length, //todo: 실재 DB 데이터로 수정
+                        lessonGroup: _controller.lessonGroup,
+                        orderId: SampleLessonTitles().getTitles().length,
+                        //todo: 실재 DB 데이터로 수정
                         category: category,
                         title: title,
                         isVideo: _controller.isVideoChecked,
@@ -142,10 +127,26 @@ class LessonMain extends StatelessWidget {
             builder: (controller) {
               return Row(
                 children: [
-                  getRadioButton(context, MyStrings.hangul),
-                  getRadioButton(context, MyStrings.basic),
-                  getRadioButton(context, MyStrings.intermediate),
-                  getRadioButton(context, MyStrings.advanced),
+                  MyRadioBtn().getRadioButton(
+                      context: context,
+                      title: '한글',
+                      radio: _controller.lessonGroup,
+                      f: _controller.changeLessonGroupRadio()),
+                  MyRadioBtn().getRadioButton(
+                      context: context,
+                      title: '기초',
+                      radio: _controller.lessonGroup,
+                      f: _controller.changeLessonGroupRadio()),
+                  MyRadioBtn().getRadioButton(
+                      context: context,
+                      title: '여행',
+                      radio: _controller.lessonGroup,
+                      f: _controller.changeLessonGroupRadio()),
+                  MyRadioBtn().getRadioButton(
+                      context: context,
+                      title: '음식',
+                      radio: _controller.lessonGroup,
+                      f: _controller.changeLessonGroupRadio()),
                 ],
               );
             },
@@ -157,7 +158,6 @@ class LessonMain extends StatelessWidget {
 }
 
 class SampleLessonTitles {
-
   List<String> titles = [];
 
   List<String> getTitles() {

@@ -15,5 +15,19 @@ class MessageStateManager extends GetxController {
     statusRadio = '신규';
     isFavoriteMessage = false;
   }
+
+  Function(String? value) changeTagRadio() {
+    return (String? value) {
+      tagRadio = value!;
+      update();
+    };
+  }
+
+  Function(String? value) changeStatusRadio() {
+    return (String? value) {
+      statusRadio = value!;
+      update();
+    };
+  }
 }
 

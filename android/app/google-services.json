@@ -1,37 +1,37 @@
 {
   "project_info": {
-    "project_number": "107866395626",
-    "project_id": "podo-e49b2",
-    "storage_bucket": "podo-e49b2.appspot.com"
+    "project_number": "1025269170157",
+    "project_id": "podo-49335",
+    "storage_bucket": "podo-49335.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:107866395626:android:73cdd8bf960c1c7b5a9893",
+        "mobilesdk_app_id": "1:1025269170157:android:55d085b01732fbacfcf1e4",
         "android_client_info": {
-          "package_name": "com.example.podo_admin"
+          "package_name": "net.awesomekorean.podo_admin"
         }
       },
       "oauth_client": [
         {
-          "client_id": "107866395626-tjpghh6ego67egg4bs2epg72vaea07q6.apps.googleusercontent.com",
+          "client_id": "1025269170157-gs1mu6cifu03d73sa1dg58s05335rp88.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBZpVvsXgXKCXeP-dDL-KWjt0RzD8Buvec"
+          "current_key": "AIzaSyA8UMNwruFZ9e07l_-cEAHhYz_71O9D2bM"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "107866395626-tjpghh6ego67egg4bs2epg72vaea07q6.apps.googleusercontent.com",
+              "client_id": "1025269170157-gs1mu6cifu03d73sa1dg58s05335rp88.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "107866395626-9ktc8e3slvmn4fl6sij5n1hb61blkij9.apps.googleusercontent.com",
+              "client_id": "1025269170157-c9v76aisudo5gjb5jonk868m8s7fdnv8.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
                 "bundle_id": "com.example.podoAdmin"

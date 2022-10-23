@@ -2,9 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:html_editor_enhanced/html_editor.dart';
-import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/my_html_color.dart';
-import 'package:podo_admin/common/my_textfield.dart';
+import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/items/lesson_card.dart';
 import 'package:podo_admin/items/lesson_summary.dart';
 import 'package:podo_admin/screens/lesson/inner_card_textfield.dart';
@@ -25,23 +24,7 @@ class LessonDetail extends StatelessWidget {
   late final Color backgroundColor;
   late final Color surfaceVariantColor;
   final double cardWidth = 350;
-
-  Widget getRadioButton({required String value, bool isCardType = true}) {
-    return SizedBox(
-      width: 160,
-      child: ListTile(
-        title: Text(value),
-        leading: Radio(
-          activeColor: primaryColor,
-          value: value,
-          groupValue: isCardType ? _controller.cardType : _controller.quizQuestionLang,
-          onChanged: (String? value) {
-            isCardType ? _controller.changeCardType(value) : _controller.changeQuizQuestionLang(value);
-          },
-        ),
-      ),
-    );
-  }
+  late final BuildContext _context;
 
   void setCards() {
     cards = [];
@@ -120,8 +103,8 @@ class LessonDetail extends StatelessWidget {
                     _controller.update();
                   },
                   style: ElevatedButton.styleFrom(
-                    primary: primaryColor,
-                    onPrimary: onPrimaryColor,
+                    foregroundColor: onPrimaryColor,
+                    backgroundColor: primaryColor,
                   ),
                   child: const Text('말하기카드만들기'),
                 )
@@ -150,8 +133,16 @@ class LessonDetail extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            getRadioButton(value: MyStrings.korean, isCardType: false),
-                            getRadioButton(value: MyStrings.english, isCardType: false),
+                            MyRadioBtn().getRadioButton(
+                                context: _context,
+                                title: MyStrings.korean,
+                                radio: _controller.quizQuestionLang,
+                                f: _controller.changeQuizQuestionLangRadio()),
+                            MyRadioBtn().getRadioButton(
+                                context: _context,
+                                title: MyStrings.english,
+                                radio: _controller.quizQuestionLang,
+                                f: _controller.changeQuizQuestionLangRadio()),
                           ],
                         ),
                         const SizedBox(height: 10),
@@ -294,7 +285,6 @@ class LessonDetail extends StatelessWidget {
         if (items.length > subjectCardCount) {
           items[subjectCardCount].subjectKr = kr;
           items[subjectCardCount].subjectEn = en;
-
         } else {
           items.add(LessonSummaryItem(subjectKr: kr, subjectEn: en));
         }
@@ -380,6 +370,7 @@ class LessonDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    _context = context;
     primaryColor = Theme.of(context).colorScheme.primary;
     onPrimaryColor = Theme.of(context).colorScheme.onPrimary;
     backgroundColor = Theme.of(context).colorScheme.background;
@@ -397,11 +388,31 @@ class LessonDetail extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  getRadioButton(value: MyStrings.subject),
-                  getRadioButton(value: MyStrings.explain),
-                  getRadioButton(value: MyStrings.repeat),
-                  getRadioButton(value: MyStrings.speaking),
-                  getRadioButton(value: MyStrings.quiz),
+                  MyRadioBtn().getRadioButton(
+                      context: context,
+                      title: MyStrings.subject,
+                      radio: _controller.cardType,
+                      f: _controller.changeCardTypeRadio()),
+                  MyRadioBtn().getRadioButton(
+                      context: context,
+                      title: MyStrings.explain,
+                      radio: _controller.cardType,
+                      f: _controller.changeCardTypeRadio()),
+                  MyRadioBtn().getRadioButton(
+                      context: context,
+                      title: MyStrings.repeat,
+                      radio: _controller.cardType,
+                      f: _controller.changeCardTypeRadio()),
+                  MyRadioBtn().getRadioButton(
+                      context: context,
+                      title: MyStrings.speaking,
+                      radio: _controller.cardType,
+                      f: _controller.changeCardTypeRadio()),
+                  MyRadioBtn().getRadioButton(
+                      context: context,
+                      title: MyStrings.quiz,
+                      radio: _controller.cardType,
+                      f: _controller.changeCardTypeRadio()),
                   const SizedBox(width: 20),
                   ElevatedButton(
                     onPressed: () {
@@ -450,11 +461,11 @@ class LessonDetail extends StatelessWidget {
                 padding: const EdgeInsets.all(30),
                 child: ElevatedButton(
                   onPressed: () async {
-                    for(LessonSummaryItem item in _controller.lessonSummary.contents) {
+                    for (LessonSummaryItem item in _controller.lessonSummary.contents) {
                       print('kr : ${item.subjectKr}');
                       print('en : ${item.subjectEn}');
                       print('explain : ${item.explain}');
-                      for(String example in item.examples) {
+                      for (String example in item.examples) {
                         print(example);
                       }
                     }

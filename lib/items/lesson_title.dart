@@ -1,7 +1,7 @@
 class LessonTitle {
 
   late final String lessonId;
-  late String level;
+  late String lessonGroup;
   late int orderId;
   late String category;
   late String title;
@@ -10,7 +10,7 @@ class LessonTitle {
   late bool isPublished;
 
   LessonTitle({
-    required this.level,
+    required this.lessonGroup,
     required this.orderId,
     required this.category,
     required this.title,
@@ -18,6 +18,6 @@ class LessonTitle {
     this.videoLink,
     required this.isPublished,
   }) {
-    lessonId = '${level}_${orderId.toString()}';
+    lessonId = '${lessonGroup}_${orderId.toString()}';
   }
 }

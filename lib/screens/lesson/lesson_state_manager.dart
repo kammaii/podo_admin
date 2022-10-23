@@ -4,7 +4,7 @@ import 'package:podo_admin/items/lesson_summary.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
 class LessonStateManager extends GetxController {
-  late String lessonLevel;
+  late String lessonGroup;
   late bool isVideoChecked;
   late String lessonId;
   late String cardType;
@@ -19,7 +19,7 @@ class LessonStateManager extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    lessonLevel = MyStrings.hangul;
+    lessonGroup = '한글';
     isVideoChecked = false;
     lessonId = '';
     cardType = MyStrings.subject;
@@ -68,19 +68,25 @@ class LessonStateManager extends GetxController {
     setNewIndex();
   }
 
-  void changeQuizQuestionLang(String? lang) {
-    quizQuestionLang = lang!;
-    update();
+  Function(String? value) changeQuizQuestionLangRadio() {
+    return (String? value) {
+      quizQuestionLang = value!;
+      update();
+    };
   }
 
-  void changeCardType(String? type) {
-    cardType = type!;
-    update();
+  Function(String? value) changeCardTypeRadio() {
+    return (String? value) {
+      cardType = value!;
+      update();
+    };
   }
 
-  void changeLessonLevel(String? level) {
-    lessonLevel = level!;
-    update();
+  Function(String? value) changeLessonGroupRadio() {
+    return (String? value) {
+      lessonGroup = value!;
+      update();
+    };
   }
 
   void setVideoChecked(bool b) {

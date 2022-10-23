@@ -15,7 +15,7 @@ class _MainFrameState extends State<MainFrame> {
   final List<Widget> _buildScreens = [
     MessageMain(),
     UserMain(),
-    const NoticeMain(),
+    NoticeMain(),
     LessonMain(),
   ];
 
@@ -27,7 +27,12 @@ class _MainFrameState extends State<MainFrame> {
       body: Row(
         children: [
           NavigationRail(
-            labelType: NavigationRailLabelType.selected,
+            selectedLabelTextStyle: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold,
+            ),
+            minWidth: 100,
+            labelType: NavigationRailLabelType.all,
             destinations: const [
               NavigationRailDestination(
                 icon: Icon(Icons.message_outlined),
