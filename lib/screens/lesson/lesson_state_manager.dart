@@ -11,7 +11,7 @@ class LessonStateManager extends GetxController {
   late List<LessonCard> cardItems;
   late String quizQuestionLang;
   late Map<String, bool> isEditMode;
-  late LessonSummary lessonSummary;
+  late List<LessonSummary> lessonSummaries;
 
   //LessonStateManager({required this.lessonId});
   //todo: 코멘트 해제하기
@@ -27,7 +27,7 @@ class LessonStateManager extends GetxController {
     quizQuestionLang = MyStrings.korean;
     isEditMode = {};
     lessonId = 'b_01'; //todo: 이 줄 삭제하고 lessonMain 에서  setLessonId로 설정하기
-    lessonSummary = LessonSummary(lessonId: lessonId, contents: []);
+    lessonSummaries = [];
   }
 
   void setLessonId(String id) {

@@ -1,24 +1,39 @@
 class LessonSummary {
   String lessonId;
-  List<LessonSummaryItem> contents;
+  int orderId;
+  String? subjectKr;
+  String? subjectEn;
+  String? explain;
+  List<String>? examples;
 
   LessonSummary({
     required this.lessonId,
-    required this.contents,
+    required this.orderId,
+    required this.subjectKr,
+    required this.subjectEn,
   });
-}
 
-class LessonSummaryItem {
-  String subjectKr;
-  String subjectEn;
-  late String explain;
-  late List<String> examples;
+  static const String LESSONID = 'lessonId';
+  static const String ORDERID = 'orderId';
+  static const String SUBJECTKR = 'subjectKr';
+  static const String SUBJECTEN = 'subjectEn';
+  static const String EXPLAIN = 'explain';
+  static const String EXAMPLES = 'examples';
 
-  LessonSummaryItem({
-    this.subjectKr = '',
-    this.subjectEn = '',
-  }) {
-    explain = '';
-    examples = [];
-  }
+  LessonSummary.fromJson(Map<String, dynamic> json) :
+        lessonId = json[LESSONID],
+        orderId = json[ORDERID],
+        subjectKr = json[SUBJECTKR],
+        subjectEn = json[SUBJECTEN],
+        explain = json[EXPLAIN],
+        examples = json[EXAMPLES];
+
+  Map<String, dynamic> toJson() => {
+    LESSONID : lessonId,
+    ORDERID : orderId,
+    SUBJECTKR : subjectKr,
+    SUBJECTEN : subjectEn,
+    EXPLAIN : explain,
+    EXAMPLES : examples,
+  };
 }

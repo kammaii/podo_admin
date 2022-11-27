@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:html_editor_enhanced/html_editor.dart';
+import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/my_html_color.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/items/lesson_card.dart';
@@ -226,8 +228,10 @@ class LessonDetail extends StatelessWidget {
   }
 
   Widget getExampleList({required int subjectIndex}) {
-    List<String> list = _controller.lessonSummary.contents[subjectIndex].examples;
+    List<String> list = _controller.lessonSummaries[subjectIndex].examples ?? [];
     if (list.isEmpty) {
+      _controller.lessonSummaries[subjectIndex].examples = [];
+      _controller.lessonSummaries[subjectIndex].examples!.add('');
       list.add('');
     }
 
@@ -244,7 +248,7 @@ class LessonDetail extends StatelessWidget {
                         textValue: list[index],
                         lab: '${MyStrings.example}$index',
                         function: (text) {
-                          list[index] = text;
+                          _controller.lessonSummaries[subjectIndex].examples![index] = text;
                         })),
                 const SizedBox(width: 10),
                 IconButton(
@@ -275,30 +279,32 @@ class LessonDetail extends StatelessWidget {
   }
 
   Widget getSummaryCard() {
-    List<LessonSummaryItem> items = _controller.lessonSummary.contents;
-    int subjectCardCount = 0;
+    List<LessonSummary> summaries = _controller.lessonSummaries;
+    int summaryCount = 0;
 
     for (LessonCard card in _controller.cardItems) {
       if (card.type == MyStrings.subject) {
         String kr = card.kr ?? '';
         String en = card.en ?? '';
-        if (items.length > subjectCardCount) {
-          items[subjectCardCount].subjectKr = kr;
-          items[subjectCardCount].subjectEn = en;
+
+        if (summaries.length > summaryCount) {
+          summaries[summaryCount].orderId = summaryCount;
+          summaries[summaryCount].subjectKr = card.kr ?? '';
+          summaries[summaryCount].subjectEn = card.en ?? '';
         } else {
-          items.add(LessonSummaryItem(subjectKr: kr, subjectEn: en));
+          summaries.add(LessonSummary(lessonId: card.lessonId, orderId: summaryCount, subjectKr: kr, subjectEn: en));
         }
-        subjectCardCount++;
+        summaryCount++;
       }
     }
-    int itemsLength = items.length;
-    if (itemsLength > subjectCardCount) {
-      for (int i = itemsLength - subjectCardCount; i > 0; i--) {
-        items.removeLast();
+    int summariesLength = summaries.length;
+    if (summariesLength > summaryCount) {
+      for (int i = summariesLength - summaryCount; i > 0; i--) {
+        summaries.removeLast();
       }
     }
 
-    return items.isNotEmpty
+    return summaries.isNotEmpty
         ? Column(
             children: [
               const Text(MyStrings.summary),
@@ -310,9 +316,9 @@ class LessonDetail extends StatelessWidget {
                     child: SizedBox(
                       width: cardWidth,
                       child: ListView.builder(
-                          itemCount: items.length,
+                          itemCount: summaries.length,
                           itemBuilder: (context, index) {
-                            LessonSummaryItem item = items[index];
+                            LessonSummary summary = summaries[index];
 
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -323,24 +329,24 @@ class LessonDetail extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 10),
                                 InnerCardTextField().getSummary(
-                                    textValue: item.subjectKr,
+                                    textValue: summary.subjectKr!,
                                     lab: MyStrings.korean,
                                     function: (text) {
-                                      item.subjectKr = text;
+                                      summary.subjectKr = text;
                                     }),
                                 const SizedBox(height: 10),
                                 InnerCardTextField().getSummary(
-                                    textValue: item.subjectEn,
+                                    textValue: summary.subjectEn!,
                                     lab: MyStrings.english,
                                     function: (text) {
-                                      item.subjectEn = text;
+                                      summary.subjectEn = text;
                                     }),
                                 const SizedBox(height: 10),
                                 InnerCardTextField().getSummary(
-                                    textValue: item.explain,
+                                    textValue: summary.explain ?? '',
                                     lab: MyStrings.explain,
                                     function: (text) {
-                                      item.explain = text;
+                                      summary.explain = text;
                                     }),
                                 const SizedBox(height: 15),
                                 const Text('${MyStrings.example}s)'),
@@ -350,7 +356,7 @@ class LessonDetail extends StatelessWidget {
                                     alignment: Alignment.center,
                                     child: IconButton(
                                       onPressed: () {
-                                        item.examples.add('');
+                                        _controller.lessonSummaries[index].examples!.add('');
                                         _controller.update();
                                       },
                                       icon: Icon(Icons.add_circle_rounded, color: primaryColor),
@@ -461,21 +467,25 @@ class LessonDetail extends StatelessWidget {
                 padding: const EdgeInsets.all(30),
                 child: ElevatedButton(
                   onPressed: () async {
-                    for (LessonSummaryItem item in _controller.lessonSummary.contents) {
-                      print('kr : ${item.subjectKr}');
-                      print('en : ${item.subjectEn}');
-                      print('explain : ${item.explain}');
-                      for (String example in item.examples) {
-                        print(example);
-                      }
-                    }
-
-                    // for (LessonCard card in _controller.cardItems) {
-                    //   todo: save contents to firestore
-                    //   Database().saveLessonCard(card);
-                    //   if (card.type == MyStrings.summary) {
+                    // for (LessonSummaryItem item in _controller.lessonSummary.contents) {
+                    //   print('kr : ${item.subjectKr}');
+                    //   print('en : ${item.subjectEn}');
+                    //   print('explain : ${item.explain}');
+                    //   for (String example in item.examples) {
+                    //     print(example);
                     //   }
                     // }
+                    // final firestore = FirebaseFirestore.instance;
+                    // LessonCard card = _controller.cardItems[0];
+                    // firestore.collection('lessonCard').doc(card.lessonId).set(card.toJson());
+
+                    for (LessonCard card in _controller.cardItems) {
+                      Database().saveLessonCard(card);
+                    }
+
+                    for (LessonSummary summary in _controller.lessonSummaries) {
+                      Database().saveLessonSummary(summary);
+                    }
                   },
                   child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),

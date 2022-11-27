@@ -14,8 +14,10 @@ import 'firebase_options.dart';
 
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
+  print('Main is starting');
   initFirebase();
+  print('Init firebase!');
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -36,7 +38,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         colorScheme: lightColorScheme
       ),
-      home: const MainFrame(),
+      home: LessonDetail(),
     );
   }
 }
