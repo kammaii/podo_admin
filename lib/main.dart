@@ -1,15 +1,9 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:podo_admin/common/database.dart';
-import 'package:podo_admin/items/lesson_title.dart';
-import 'package:podo_admin/screens/lesson/lesson_detail.dart';
-import 'package:podo_admin/screens/lesson/lesson_main.dart';
-import 'package:podo_admin/screens/message/message_detail.dart';
-import 'package:podo_admin/screens/message/message_finder.dart';
-import 'package:podo_admin/screens/user/user_main.dart';
-import 'package:podo_admin/screens/value/color_schemes.g.dart';
 import 'package:podo_admin/screens/main_frame.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:podo_admin/screens/value/color_schemes.g.dart';
+
 import 'firebase_options.dart';
 
 
@@ -38,7 +32,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         colorScheme: lightColorScheme
       ),
-      home: LessonDetail(),
+      home: const MainFrame(),
     );
   }
 }

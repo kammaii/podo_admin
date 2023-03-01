@@ -1,8 +1,8 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 
-class MessageFinder extends StatelessWidget {
-  MessageFinder({Key? key}) : super(key: key);
+class WritingFinder extends StatelessWidget {
+  WritingFinder({Key? key}) : super(key: key);
 
   final TextEditingController _searchController = TextEditingController();
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:podo_admin/screens/lesson/lesson_main.dart';
 import 'package:podo_admin/screens/notice/notice_main.dart';
-import 'package:podo_admin/screens/message/message_main.dart';
 import 'package:podo_admin/screens/user/user_main.dart';
+import 'package:podo_admin/screens/writing/writing_main.dart';
 
 class MainFrame extends StatefulWidget {
   const MainFrame({Key? key}) : super(key: key);
@@ -13,7 +13,7 @@ class MainFrame extends StatefulWidget {
 
 class _MainFrameState extends State<MainFrame> {
   final List<Widget> _buildScreens = [
-    MessageMain(),
+    WritingMain(),
     UserMain(),
     NoticeMain(),
     LessonMain(),
@@ -37,7 +37,12 @@ class _MainFrameState extends State<MainFrame> {
               NavigationRailDestination(
                 icon: Icon(Icons.message_outlined),
                 selectedIcon: Icon(Icons.message_rounded),
-                label: Text('메시지'),
+                label: Text('교정'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.question_mark_outlined),
+                selectedIcon: Icon(Icons.question_mark_rounded),
+                label: Text('질문'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.people_outline),

@@ -32,8 +32,10 @@ class Notice {
     title = json[TITLE];
     contents = json[CONTENTS];
     isActive = json[ISACTIVE];
-    Timestamp deadLineStamp = json[DEADLINE];
-    deadLine = deadLineStamp?.toDate();
+    if(json[DEADLINE] != null) {
+      Timestamp deadLineStamp = json[DEADLINE];
+      deadLine = deadLineStamp?.toDate();
+    }
   }
 
   Map<String, dynamic> toJson() {
