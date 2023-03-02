@@ -15,8 +15,8 @@ class WritingDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //Message message = Get.arguments;
-    Writing writing = Writing().getSampleWritings()[0];
+    Writing writing = Get.arguments;
+    //Writing writing = Writing().getSampleWritings()[0];
     const double boxSize = 1000;
     HtmlEditorController htmlController = HtmlEditorController();
 
@@ -27,7 +27,51 @@ class WritingDetail extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(' 원본', textScaleFactor: 2),
+            Row(
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: _controller.statusColor[writing.status],
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(_controller.statusMap[writing.status]!, textScaleFactor: 2),
+              ],
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: boxSize,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(writing.writingTitle, textScaleFactor: 2),
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          //todo: 이전글 가져오기
+                        },
+                        icon: const Icon(Icons.arrow_circle_left_outlined),
+                        iconSize: 30,
+                        tooltip: '이전글',
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          //todo: 다음글 가져오기
+                        },
+                        icon: const Icon(Icons.arrow_circle_right_outlined),
+                        iconSize: 30,
+                        tooltip: '다음글',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
             Expanded(
               child: Container(
                 width: boxSize,

@@ -56,15 +56,18 @@ class WritingMain extends StatelessWidget {
                 child: DataTable2(
                   columns: const [
                     DataColumn2(label: Text('날짜'), size: ColumnSize.S),
+                    DataColumn2(label: Text('타이틀'), size: ColumnSize.S),
                     DataColumn2(label: Text('내용'), size: ColumnSize.L),
                     DataColumn2(label: Text('유저'), size: ColumnSize.S),
                     DataColumn2(label: Text('상태'), size: ColumnSize.S),
                   ],
                   rows: List<DataRow>.generate(_controller.writings.length, (index) {
                     Writing writing = _controller.writings[index];
+                    String? status = _controller.statusMap[writing.status];
 
                     return DataRow(cells: [
                       DataCell(Text(MyDateFormat().getDateFormat(writing.writingDate))),
+                      DataCell(Text(writing.writingTitle)),
                       DataCell(Text(writing.userWriting), onTap: () {
                         Get.to(WritingDetail(), arguments: writing);
                       }),
@@ -73,7 +76,7 @@ class WritingMain extends StatelessWidget {
                       }, onDoubleTap: () {
                         //todo: '유저정보열기'
                       }),
-                      DataCell(Text(writing.status.toString())),
+                      DataCell(Text(status!)),
                     ]);
                   }),
                 ),
