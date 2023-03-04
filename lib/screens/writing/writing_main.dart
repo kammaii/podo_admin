@@ -61,15 +61,16 @@ class WritingMain extends StatelessWidget {
                     DataColumn2(label: Text('유저'), size: ColumnSize.S),
                     DataColumn2(label: Text('상태'), size: ColumnSize.S),
                   ],
-                  rows: List<DataRow>.generate(_controller.writings.length, (index) {
-                    Writing writing = _controller.writings[index];
+                  rows: List<DataRow>.generate(_controller.writingsOnTable.length, (index) {
+                    Writing writing = _controller.writingsOnTable[index];
                     String? status = _controller.statusMap[writing.status];
 
                     return DataRow(cells: [
                       DataCell(Text(MyDateFormat().getDateFormat(writing.writingDate))),
                       DataCell(Text(writing.writingTitle)),
                       DataCell(Text(writing.userWriting), onTap: () {
-                        Get.to(WritingDetail(), arguments: writing);
+                        _controller.writing = writing;
+                        Get.to(WritingDetail());
                       }),
                       DataCell(Text(writing.userEmail), onTap: () {
                         //todo: '유저로검색'

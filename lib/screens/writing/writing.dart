@@ -8,17 +8,13 @@ class Writing {
   late String userWriting;
   late String? correction;
   late DateTime writingDate;
-  late DateTime? correctionDate;
+  late DateTime? replyDate;
   late int status;
 
   Writing();
 
-  void setCorrection(String correction) {
-    correction = correction;
-    correctionDate = DateTime.now();
-    status = 1;
-  }
 
+  //todo: 삭제하기
   List<Writing> getSampleWritings() {
     Map<String, dynamic> sampleJson1 = {
       WRITINGID: '0000-0000-0000',
@@ -46,7 +42,7 @@ class Writing {
   static const String USERWRITING = 'userWriting';
   static const String CORRECTION = 'correction';
   static const String WRITINGDATE = 'writingDate';
-  static const String CORRECTIONDATE = 'correctionDate';
+  static const String REPLYDATE = 'replyDate';
   static const String STATUS = 'status';
 
   Writing.fromJson(Map<String, dynamic> json) {
@@ -57,9 +53,9 @@ class Writing {
     correction = json[CORRECTION];
     Timestamp writingStamp = json[WRITINGDATE];
     writingDate = writingStamp.toDate();
-    if (json[CORRECTIONDATE] != null) {
-      Timestamp replyStamp = json[CORRECTIONDATE];
-      correctionDate = replyStamp.toDate();
+    if (json[REPLYDATE] != null) {
+      Timestamp replyStamp = json[REPLYDATE];
+      replyDate = replyStamp.toDate();
     }
     status = json[STATUS];
   }
@@ -71,7 +67,7 @@ class Writing {
         USERWRITING: userWriting,
         CORRECTION: correction!,
         WRITINGDATE: Timestamp.fromDate(writingDate),
-        CORRECTIONDATE: Timestamp.fromDate(correctionDate!),
+        REPLYDATE: Timestamp.fromDate(replyDate!),
         STATUS: status,
       };
 }
