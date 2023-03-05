@@ -18,7 +18,6 @@ class WritingStateManager extends GetxController {
 
   @override
   void onInit() {
-    print('wsm init');
     tagRadio = '신규';
     getNewWritings();
     writingsOnTable = List.from(newWritings);

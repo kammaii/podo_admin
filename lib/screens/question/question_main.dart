@@ -1,33 +1,38 @@
+import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/my_date_format.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
-import 'package:data_table_2/data_table_2.dart';
-import 'package:podo_admin/screens/writing/writing.dart';
-import 'package:podo_admin/screens/writing/writing_detail.dart';
+import 'package:podo_admin/screens/question/question.dart';
+import 'package:podo_admin/screens/question/question_detail.dart';
+import 'package:podo_admin/screens/question/question_state_manager.dart';
 import 'package:podo_admin/screens/writing/writing_state_manager.dart';
 
-class WritingMain extends StatelessWidget {
-  WritingMain({Key? key}) : super(key: key);
+class QuestionMain extends StatelessWidget {
+  QuestionMain({Key? key}) : super(key: key);
 
   final TextEditingController _searchController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    Get.put(WritingStateManager());
+    Get.put(QuestionStateManager());
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('교정'),
+        title: const Text('질문'),
       ),
-      body: GetBuilder<WritingStateManager>(
+      body: GetBuilder<QuestionStateManager>(
         builder: (controller) {
           return Column(
             children: [
               Row(
                 children: [
-                  MyRadioBtn().getRadioButton(context: context, title: '신규', radio: controller.tagRadio, f: controller.changeTagRadio()),
-                  MyRadioBtn().getRadioButton(context: context, title: '완료', radio: controller.tagRadio, f: controller.changeTagRadio()),
-                  MyRadioBtn().getRadioButton(context: context, title: '전체', radio: controller.tagRadio, f: controller.changeTagRadio()),
+                  MyRadioBtn().getRadioButton(context: context, title: '신규', radio: controller.searchRadio, f: controller.changeSearchRadio()),
+                  MyRadioBtn().getRadioButton(context: context, title: '미선정', radio: controller.searchRadio, f: controller.changeSearchRadio()),
+                  MyRadioBtn().getRadioButton(context: context, title: '선정', radio: controller.searchRadio, f: controller.changeSearchRadio()),
+                  MyRadioBtn().getRadioButton(context: context, title: '게시중', radio: controller.searchRadio, f: controller.changeSearchRadio()),
+                  MyRadioBtn().getRadioButton(context: context, title: '전체', radio: controller.searchRadio, f: controller.changeSearchRadio()),
+                  const SizedBox(width: 30),
                   const SizedBox(height: 30, child: VerticalDivider()),
                   SizedBox(
                     width: 200,
@@ -56,23 +61,21 @@ class WritingMain extends StatelessWidget {
                 child: DataTable2(
                   columns: const [
                     DataColumn2(label: Text('날짜'), size: ColumnSize.S),
-                    DataColumn2(label: Text('타이틀'), size: ColumnSize.S),
                     DataColumn2(label: Text('내용'), size: ColumnSize.L),
                     DataColumn2(label: Text('유저'), size: ColumnSize.S),
                     DataColumn2(label: Text('상태'), size: ColumnSize.S),
                   ],
-                  rows: List<DataRow>.generate(controller.writingsOnTable.length, (index) {
-                    Writing writing = controller.writingsOnTable[index];
-                    String? status = controller.statusMap[writing.status];
+                  rows: List<DataRow>.generate(controller.questions.length, (index) {
+                    Question question = controller.questions[index];
+                    String? status = controller.statusMap[question.status];
 
                     return DataRow(cells: [
-                      DataCell(Text(MyDateFormat().getDateFormat(writing.writingDate))),
-                      DataCell(Text(writing.writingTitle)),
-                      DataCell(Text(writing.userWriting), onTap: () {
-                        controller.writing = writing;
-                        Get.to(WritingDetail());
+                      DataCell(Text(MyDateFormat().getDateFormat(question.questionDate))),
+                      DataCell(Text(question.question), onTap: () {
+                        controller.index = index;
+                        Get.to(QuestionDetail());
                       }),
-                      DataCell(Text(writing.userEmail), onTap: () {
+                      DataCell(Text(question.userEmail), onTap: () {
                         //todo: '유저로검색'
                       }, onDoubleTap: () {
                         //todo: '유저정보열기'

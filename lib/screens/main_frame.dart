@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:podo_admin/screens/lesson/lesson_main.dart';
 import 'package:podo_admin/screens/notice/notice_main.dart';
+import 'package:podo_admin/screens/question/question_main.dart';
 import 'package:podo_admin/screens/user/user_main.dart';
 import 'package:podo_admin/screens/writing/writing_main.dart';
 
@@ -13,7 +14,9 @@ class MainFrame extends StatefulWidget {
 
 class _MainFrameState extends State<MainFrame> {
   final List<Widget> _buildScreens = [
+    QuestionMain(),
     WritingMain(),
+
     UserMain(),
     NoticeMain(),
     LessonMain(),
