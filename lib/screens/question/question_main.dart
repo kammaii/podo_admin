@@ -6,7 +6,6 @@ import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/screens/question/question.dart';
 import 'package:podo_admin/screens/question/question_detail.dart';
 import 'package:podo_admin/screens/question/question_state_manager.dart';
-import 'package:podo_admin/screens/writing/writing_state_manager.dart';
 
 class QuestionMain extends StatelessWidget {
   QuestionMain({Key? key}) : super(key: key);

@@ -20,7 +20,7 @@ class WritingDetail extends StatelessWidget {
     HtmlEditorController htmlController = HtmlEditorController();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('교정 상세')),
+      appBar: AppBar(title: const Text('교정_상세')),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: SizedBox(

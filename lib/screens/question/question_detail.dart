@@ -7,8 +7,6 @@ import 'package:podo_admin/screens/main_frame.dart';
 import 'package:podo_admin/screens/question/question.dart';
 import 'package:podo_admin/screens/question/question_state_manager.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
-import 'package:podo_admin/screens/writing/writing.dart';
-import 'package:podo_admin/screens/writing/writing_state_manager.dart';
 
 class QuestionDetail extends StatelessWidget {
   QuestionDetail({Key? key}) : super(key: key);
@@ -25,7 +23,7 @@ class QuestionDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('질문 상세')),
+      appBar: AppBar(title: const Text('질문_상세')),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: GetBuilder<QuestionStateManager>(
@@ -188,7 +186,7 @@ class QuestionDetail extends StatelessWidget {
                                   onPressed: () {
                                     Get.dialog(
                                       AlertDialog(
-                                        content: const Text('교정을 완료하겠습니까?'),
+                                        content: const Text('저장 하겠습니까?'),
                                         actions: [
                                           TextButton(
                                             onPressed: () {
@@ -198,9 +196,7 @@ class QuestionDetail extends StatelessWidget {
                                           ),
                                           TextButton(
                                             onPressed: () {
-                                              controller.setAnswer(
-                                                  questionId: question.questionId,
-                                                  answer: htmlController.getText().toString());
+                                              controller.saveAnswer();
                                               Get.offAll(const MainFrame());
                                             },
                                             child: const Text('네'),

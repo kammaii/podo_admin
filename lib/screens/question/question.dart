@@ -4,10 +4,10 @@ class Question {
   late String questionId;
   late String userEmail;
   late String question;
-  late String? answer;
+  String? answer;
   late DateTime questionDate;
-  late DateTime? answerDate;
-  late String? tag;
+  DateTime? answerDate;
+  String? tag;
   late int status;
 
   Question();

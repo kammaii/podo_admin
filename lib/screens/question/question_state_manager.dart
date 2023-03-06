@@ -7,6 +7,7 @@ class QuestionStateManager extends GetxController {
   late String searchRadio;
   late String selectRadio;
   late List<Question> questions;
+  late Question question;
   late int index;
   Map<int, String> statusMap = {0: '신규', 1: '선정', 2: '미선정', 3: '게시중'};
   Map<int, Color> statusColor = {
@@ -21,21 +22,22 @@ class QuestionStateManager extends GetxController {
     'speaking',
     'reading',
     'writing',
-    'listening'
+    'listening',
     'others',
   ];
-  final List<bool> selectedTags = [false, false, false, false, false, false];
+  final List<bool> selectedTags = [false, false, false, false, false, false, false];
 
 
   @override
   void onInit() {
     searchRadio = '신규';
-    selectRadio = '미선정';
+    selectRadio = '';
     index = 0;
-    getQuestions();
+    getQuestionList();
   }
 
-  void getQuestions() {
+  void getQuestionList() {
+    //todo: DB에서 searchRadio로 검색해서가져오기
     questions = Question().getSampleQuestions();
   }
 
@@ -46,42 +48,59 @@ class QuestionStateManager extends GetxController {
     } else if(index >= questions.length) {
       index = 0;
     }
-    Question question = questions[index];
+    question = questions[index];
     (question.status == 0) ? selectRadio = '' : selectRadio = statusMap[question.status]!;
+    initTagToggle();
+    if(question.tag != null && tags.contains(question.tag)) {
+      selectedTags[tags.indexOf(question.tag!)] = true;
+    }
     update();
   }
 
-  void setAnswer({required String questionId, required String answer}) {
+  void saveAnswer() {
     //todo: writingId 로 검색하고 업데이트
     //Writing writing =
     //correction = correction;
     //replyDate = DateTime.now();
     //status = 1;
-    update();
+    // update();
   }
 
   Function(String? value) changeSearchRadio() {
     return (String? value) {
       searchRadio = value!;
-
       update();
     };
   }
 
   Function(String? value) changeSelectRadio() {
     return (String? value) {
+      int key = statusMap.keys.firstWhere((key) => statusMap[key] == value);
+      questions[index].status = key;
       selectRadio = value!;
       update();
     };
   }
 
   Function(int? value) changeTagToggle() {
-    return (int? index) {
-      for (int i = 0; i < selectedTags.length; i++) {
-        selectedTags[i] = i == index;
+    return (int? idx) {
+      if(tags[idx!] == question.tag) {
+        initTagToggle();
+        question.tag = null;
+      } else {
+        for (int i = 0; i < selectedTags.length; i++) {
+          selectedTags[i] = i == idx;
+        }
+        question.tag = tags[idx!];
       }
       update();
     };
+  }
+
+  void initTagToggle() {
+    for(int i=0; i<selectedTags.length; i++) {
+      selectedTags[i] = false;
+    }
   }
 
   List<Widget> getTagWidgets() {
