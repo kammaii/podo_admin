@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/screens/question/question.dart';
 
 class QuestionStateManager extends GetxController {
@@ -8,6 +9,7 @@ class QuestionStateManager extends GetxController {
   RxString statusRadio = ''.obs;
   RxBool isSelectedQuestion = false.obs;
   RxBool isChecked = true.obs;
+  late Future<List<Question>> futureQuestions;
   late List<Question> questions;
   late int questionIndex;
   Map<int, String> statusMap = {0: '신규', 1: '선정', 2: '미선정', 3: '게시중'};
@@ -30,17 +32,10 @@ class QuestionStateManager extends GetxController {
 
 
   @override
-  void onInit() {
-    questions = [];
+  void onInit() async {
     questionIndex = 0;
-    getQuestionList();
+    futureQuestions = Database().getQuestions(0);
   }
-
-  void getQuestionList() {
-    //todo: DB에서 searchRadio로 검색해서가져오기
-    questions = Question().getSampleQuestions();
-  }
-
 
   void getQuestion({required isNext}) {
     isNext ? questionIndex++ : questionIndex--;
@@ -71,8 +66,9 @@ class QuestionStateManager extends GetxController {
 
   Function(String? value) changeSearchRadio() {
     return (String? value) {
-      //todo: questionList 변경하기
       searchRadio.value = value!;
+      int key = statusMap.keys.firstWhere((key) => statusMap[key] == value);
+      futureQuestions = Database().getQuestions(key);
     };
   }
 

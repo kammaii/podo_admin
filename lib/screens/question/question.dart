@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Question {
-  late String questionId;
   late String userEmail;
   late String question;
   String? answer;
@@ -12,39 +11,6 @@ class Question {
 
   Question();
 
-  //todo: 삭제하기
-  List<Question> getSampleQuestions() {
-    Map<String, dynamic> sampleJson1 = {
-      QUESTIONID: '0000-0000-0000',
-      QUESTION: 'question1 ~~',
-      USEREMAIL: 'sample1@gmail.com',
-      QUESTIONDATE: Timestamp.now(),
-      STATUS: 0,
-    };
-
-    Map<String, dynamic> sampleJson2 = {
-      QUESTIONID: '1111-1111-1111',
-      QUESTION: 'question2 ~~',
-      USEREMAIL: 'sample2@gmail.com',
-      QUESTIONDATE: Timestamp.now(),
-      STATUS: 0,
-    };
-
-    Map<String, dynamic> sampleJson3 = {
-      QUESTIONID: '2222-2222-2222',
-      QUESTION: 'question3 ~~',
-      USEREMAIL: 'sample2@gmail.com',
-      QUESTIONDATE: Timestamp.now(),
-      ANSWER: 'answer~~',
-      ANSWERDATE: Timestamp.now(),
-      TAG: 'grammar',
-      STATUS: 1,
-    };
-
-    return [Question.fromJson(sampleJson1), Question.fromJson(sampleJson2), Question.fromJson(sampleJson3)];
-  }
-
-  static const String QUESTIONID = 'questionId';
   static const String USEREMAIL = 'userEmail';
   static const String QUESTION = 'question';
   static const String ANSWER = 'answer';
@@ -54,7 +20,6 @@ class Question {
   static const String STATUS = 'status';
 
   Question.fromJson(Map<String, dynamic> json) {
-    questionId = json[QUESTIONID];
     userEmail = json[USEREMAIL];
     question = json[QUESTION];
     answer = json[ANSWER];
@@ -68,14 +33,33 @@ class Question {
     status = json[STATUS];
   }
 
-  Map<String, dynamic> toJson() => {
-        QUESTIONID: questionId,
-        USEREMAIL: userEmail,
-        QUESTION: question,
-        ANSWER: answer!,
-        QUESTIONDATE: Timestamp.fromDate(questionDate),
-        ANSWERDATE: Timestamp.fromDate(answerDate!),
-        TAG: tag!,
-        STATUS: status,
-      };
+  // Map<String, dynamic> toJson() => {
+  //       USEREMAIL: userEmail,
+  //       QUESTION: question,
+  //       ANSWER: answer!,
+  //       QUESTIONDATE: Timestamp.fromDate(questionDate),
+  //       ANSWERDATE: Timestamp.fromDate(answerDate!),
+  //       TAG: tag!,
+  //       STATUS: status,
+  //     };
+
+  Map<String, dynamic> toJson() {
+    Map<String, dynamic> map = {
+      USEREMAIL: userEmail,
+      QUESTION: question,
+      QUESTIONDATE: Timestamp.fromDate(questionDate),
+      STATUS: status,
+    };
+    if(answer != null) {
+      map[ANSWER] = answer;
+    }
+    if(tag != null) {
+      map[TAG] = tag;
+    }
+    if(answerDate != null) {
+      map[ANSWERDATE] = Timestamp.fromDate(answerDate!);
+    }
+    return map;
+  }
+
 }

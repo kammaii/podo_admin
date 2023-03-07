@@ -1,6 +1,7 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/my_date_format.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/screens/question/question.dart';
@@ -59,31 +60,44 @@ class QuestionMain extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Expanded(
-                child: DataTable2(
-                  columns: const [
-                    DataColumn2(label: Text('날짜'), size: ColumnSize.S),
-                    DataColumn2(label: Text('내용'), size: ColumnSize.L),
-                    DataColumn2(label: Text('유저'), size: ColumnSize.S),
-                    DataColumn2(label: Text('상태'), size: ColumnSize.S),
-                  ],
-                  rows: List<DataRow>.generate(controller.questions.length, (index) {
-                    Question question = controller.questions[index];
-                    String? status = controller.statusMap[question.status];
+                child: FutureBuilder(
+                  future: controller.futureQuestions,
+                  builder: (BuildContext context, AsyncSnapshot snapshot) {
+                    if(snapshot.hasData == true) {
+                      List<Question> questions = snapshot.data;
+                      controller.questions = questions;
+                      return DataTable2(
+                        columns: const [
+                          DataColumn2(label: Text('날짜'), size: ColumnSize.S),
+                          DataColumn2(label: Text('내용'), size: ColumnSize.L),
+                          DataColumn2(label: Text('유저'), size: ColumnSize.S),
+                          DataColumn2(label: Text('상태'), size: ColumnSize.S),
+                        ],
+                        rows: List<DataRow>.generate(controller.questions.length, (index) {
+                          Question question = controller.questions[index];
+                          String? status = controller.statusMap[question.status];
 
-                    return DataRow(cells: [
-                      DataCell(Text(MyDateFormat().getDateFormat(question.questionDate))),
-                      DataCell(Text(question.question), onTap: () {
-                        controller.questionIndex = index;
-                        Get.to(QuestionDetail());
-                      }),
-                      DataCell(Text(question.userEmail), onTap: () {
-                        //todo: '유저로검색'
-                      }, onDoubleTap: () {
-                        //todo: '유저정보열기'
-                      }),
-                      DataCell(Text(status!)),
-                    ]);
-                  }),
+                          return DataRow(cells: [
+                            DataCell(Text(MyDateFormat().getDateFormat(question.questionDate))),
+                            DataCell(Text(question.question), onTap: () {
+                              controller.questionIndex = index;
+                              Get.to(QuestionDetail());
+                            }),
+                            DataCell(Text(question.userEmail), onTap: () {
+                              //todo: '유저로검색'
+                            }, onDoubleTap: () {
+                              //todo: '유저정보열기'
+                            }),
+                            DataCell(Text(status!)),
+                          ]);
+                        }),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Text('에러: ${snapshot.error}');
+                    } else {
+                      return const Text('아직 데이터 없음');
+                    }
+                  },
                 ),
               ),
             ],
