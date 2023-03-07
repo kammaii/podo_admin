@@ -4,11 +4,13 @@ import 'package:podo_admin/screens/question/question.dart';
 
 class QuestionStateManager extends GetxController {
 
-  late String searchRadio;
-  late String selectRadio;
+  RxString searchRadio = '신규'.obs;
+  RxString statusRadio = ''.obs;
+  RxBool isSelectedQuestion = false.obs;
+  RxBool isChecked = true.obs;
   late List<Question> questions;
   late Question question;
-  late int index;
+  late int questionIndex;
   Map<int, String> statusMap = {0: '신규', 1: '선정', 2: '미선정', 3: '게시중'};
   Map<int, Color> statusColor = {
     0: Colors.orange,
@@ -25,14 +27,13 @@ class QuestionStateManager extends GetxController {
     'listening',
     'others',
   ];
-  final List<bool> selectedTags = [false, false, false, false, false, false, false];
+  RxList<bool> selectedTags = [false, false, false, false, false, false, false].obs;
 
 
   @override
   void onInit() {
-    searchRadio = '신규';
-    selectRadio = '';
-    index = 0;
+    questions = [];
+    questionIndex = 0;
     getQuestionList();
   }
 
@@ -43,16 +44,17 @@ class QuestionStateManager extends GetxController {
 
 
   void getQuestion() {
-    if(index < 0) {
-      index = questions.length - 1;
-    } else if(index >= questions.length) {
-      index = 0;
+    if(questionIndex < 0) {
+      questionIndex = questions.length - 1;
+    } else if(questionIndex >= questions.length) {
+      questionIndex = 0;
     }
-    question = questions[index];
-    (question.status == 0) ? selectRadio = '' : selectRadio = statusMap[question.status]!;
+    question = questions[questionIndex];
+    (question.status == 0) ? statusRadio.value = '' : statusRadio.value = statusMap[question.status]!;
+    (question.status == 1 || question.status == 3) ? isSelectedQuestion.value = true : isSelectedQuestion.value = false;
     initTagToggle();
     if(question.tag != null && tags.contains(question.tag)) {
-      selectedTags[tags.indexOf(question.tag!)] = true;
+     selectedTags[tags.indexOf(question.tag!)] = true;
     }
     update();
   }
@@ -68,17 +70,18 @@ class QuestionStateManager extends GetxController {
 
   Function(String? value) changeSearchRadio() {
     return (String? value) {
-      searchRadio = value!;
-      update();
+      //todo: questionList 변경하기
+      searchRadio.value = value!;
     };
   }
 
-  Function(String? value) changeSelectRadio() {
+  Function(String? value) changeStatusRadio() {
     return (String? value) {
       int key = statusMap.keys.firstWhere((key) => statusMap[key] == value);
-      questions[index].status = key;
-      selectRadio = value!;
-      update();
+      Question question = questions[questionIndex];
+      question.status = key;
+      (key == 1 || key == 3) ? isSelectedQuestion.value = true : isSelectedQuestion.value = false;
+      statusRadio.value = value!;
     };
   }
 
@@ -93,7 +96,6 @@ class QuestionStateManager extends GetxController {
         }
         question.tag = tags[idx!];
       }
-      update();
     };
   }
 

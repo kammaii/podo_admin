@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:podo_admin/screens/lesson/lesson_main.dart';
 import 'package:podo_admin/screens/notice/notice_main.dart';
 import 'package:podo_admin/screens/question/question_main.dart';
+import 'package:podo_admin/screens/test/testdb.dart';
 import 'package:podo_admin/screens/user/user_main.dart';
 import 'package:podo_admin/screens/writing/writing_main.dart';
 
@@ -14,12 +15,12 @@ class MainFrame extends StatefulWidget {
 
 class _MainFrameState extends State<MainFrame> {
   final List<Widget> _buildScreens = [
-    QuestionMain(),
     WritingMain(),
-
+    QuestionMain(),
     UserMain(),
     NoticeMain(),
     LessonMain(),
+    const TestDB(),
   ];
 
   int _selectedIndex = 0;
@@ -61,6 +62,11 @@ class _MainFrameState extends State<MainFrame> {
                 icon: Icon(Icons.play_lesson_outlined),
                 selectedIcon: Icon(Icons.play_lesson),
                 label: Text('레슨'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.balance_outlined),
+                selectedIcon: Icon(Icons.balance_rounded),
+                label: Text('샘플만들기'),
               ),
             ],
             selectedIndex: _selectedIndex,

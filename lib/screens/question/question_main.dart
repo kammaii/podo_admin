@@ -20,17 +20,19 @@ class QuestionMain extends StatelessWidget {
       appBar: AppBar(
         title: const Text('질문'),
       ),
-      body: GetBuilder<QuestionStateManager>(
+      body: GetX<QuestionStateManager>(
         builder: (controller) {
+          String radioString = controller.searchRadio.value;
+          Function(String?) radioFn = controller.changeSearchRadio();
           return Column(
             children: [
               Row(
                 children: [
-                  MyRadioBtn().getRadioButton(context: context, title: '신규', radio: controller.searchRadio, f: controller.changeSearchRadio()),
-                  MyRadioBtn().getRadioButton(context: context, title: '미선정', radio: controller.searchRadio, f: controller.changeSearchRadio()),
-                  MyRadioBtn().getRadioButton(context: context, title: '선정', radio: controller.searchRadio, f: controller.changeSearchRadio()),
-                  MyRadioBtn().getRadioButton(context: context, title: '게시중', radio: controller.searchRadio, f: controller.changeSearchRadio()),
-                  MyRadioBtn().getRadioButton(context: context, title: '전체', radio: controller.searchRadio, f: controller.changeSearchRadio()),
+                  MyRadioBtn().getRadioButton(context: context, title: '신규', radio: radioString, f: radioFn),
+                  MyRadioBtn().getRadioButton(context: context, title: '미선정', radio: radioString, f: radioFn),
+                  MyRadioBtn().getRadioButton(context: context, title: '선정', radio: radioString, f: radioFn),
+                  MyRadioBtn().getRadioButton(context: context, title: '게시중', radio: radioString, f: radioFn),
+                  MyRadioBtn().getRadioButton(context: context, title: '전체', radio: radioString, f: radioFn),
                   const SizedBox(width: 30),
                   const SizedBox(height: 30, child: VerticalDivider()),
                   SizedBox(
@@ -71,7 +73,7 @@ class QuestionMain extends StatelessWidget {
                     return DataRow(cells: [
                       DataCell(Text(MyDateFormat().getDateFormat(question.questionDate))),
                       DataCell(Text(question.question), onTap: () {
-                        controller.index = index;
+                        controller.questionIndex = index;
                         Get.to(QuestionDetail());
                       }),
                       DataCell(Text(question.userEmail), onTap: () {
@@ -83,10 +85,10 @@ class QuestionMain extends StatelessWidget {
                     ]);
                   }),
                 ),
-              )
+              ),
             ],
           );
-        },
+        }
       ),
     );
   }
