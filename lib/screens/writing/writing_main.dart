@@ -19,15 +19,15 @@ class WritingMain extends StatelessWidget {
       appBar: AppBar(
         title: const Text('교정'),
       ),
-      body: GetBuilder<WritingStateManager>(
+      body: GetX<WritingStateManager>(
         builder: (controller) {
           return Column(
             children: [
               Row(
                 children: [
-                  MyRadioBtn().getRadioButton(context: context, title: '신규', radio: controller.tagRadio, f: controller.changeTagRadio()),
-                  MyRadioBtn().getRadioButton(context: context, title: '완료', radio: controller.tagRadio, f: controller.changeTagRadio()),
-                  MyRadioBtn().getRadioButton(context: context, title: '전체', radio: controller.tagRadio, f: controller.changeTagRadio()),
+                  MyRadioBtn().getRadioButton(context: context, title: '신규', radio: controller.statusRadio.value, f: controller.changeStatusRadio()),
+                  MyRadioBtn().getRadioButton(context: context, title: '완료', radio: controller.statusRadio.value, f: controller.changeStatusRadio()),
+                  MyRadioBtn().getRadioButton(context: context, title: '전체', radio: controller.statusRadio.value, f: controller.changeStatusRadio()),
                   const SizedBox(height: 30, child: VerticalDivider()),
                   SizedBox(
                     width: 200,
@@ -61,15 +61,15 @@ class WritingMain extends StatelessWidget {
                     DataColumn2(label: Text('유저'), size: ColumnSize.S),
                     DataColumn2(label: Text('상태'), size: ColumnSize.S),
                   ],
-                  rows: List<DataRow>.generate(controller.writingsOnTable.length, (index) {
-                    Writing writing = controller.writingsOnTable[index];
+                  rows: List<DataRow>.generate(controller.writings.length, (index) {
+                    Writing writing = controller.writings[index];
                     String? status = controller.statusMap[writing.status];
 
                     return DataRow(cells: [
                       DataCell(Text(MyDateFormat().getDateFormat(writing.writingDate))),
                       DataCell(Text(writing.writingTitle)),
                       DataCell(Text(writing.userWriting), onTap: () {
-                        controller.writing = writing;
+                        controller.writingIndex = index;
                         Get.to(WritingDetail());
                       }),
                       DataCell(Text(writing.userEmail), onTap: () {

@@ -4,10 +4,9 @@ import 'package:podo_admin/screens/writing/writing.dart';
 
 class WritingStateManager extends GetxController {
 
-  late String tagRadio;
-  late List<Writing> newWritings;
-  late List<Writing> writingsOnTable;
-  late Writing writing;
+  RxString statusRadio = '신규'.obs;
+  late int writingIndex;
+  late List<Writing> writings;
   Map<int, String> statusMap = {0: '교정중', 1: '교정완료', 2: '요청취소', 3: '교정불가'};
   Map<int, Color> statusColor = {
     0: Colors.orange,
@@ -18,27 +17,22 @@ class WritingStateManager extends GetxController {
 
   @override
   void onInit() {
-    tagRadio = '신규';
-    getNewWritings();
-    writingsOnTable = List.from(newWritings);
-    writing = Writing();
+    getWritingList();
+    writingIndex = 0;
   }
 
-  void getNewWritings() {
+  void getWritingList() {
     //todo: firebase에서 stream 으로 구독
-    newWritings = Writing().getSampleWritings();
-    update();
+    writings = Writing().getSampleWritings();
   }
 
-  void changeWriting({required isNext}) {
-    int index = newWritings.indexOf(writing);
-    isNext ? index++ : index--;
-    if(index < 0) {
-      index = newWritings.length - 1;
-    } else if(index >= newWritings.length) {
-      index = 0;
+  void getWriting({required isNext}) {
+    isNext ? writingIndex++ : writingIndex--;
+    if(writingIndex < 0) {
+      writingIndex = writings.length - 1;
+    } else if(writingIndex >= writings.length) {
+      writingIndex = 0;
     }
-    writing = newWritings[index];
     update();
   }
 
@@ -60,10 +54,9 @@ class WritingStateManager extends GetxController {
     update();
   }
 
-  Function(String? value) changeTagRadio() {
+  Function(String? value) changeStatusRadio() {
     return (String? value) {
-      tagRadio = value!;
-      update();
+      statusRadio.value = value!;
     };
   }
 }
