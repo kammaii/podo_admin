@@ -9,7 +9,6 @@ class QuestionStateManager extends GetxController {
   RxBool isSelectedQuestion = false.obs;
   RxBool isChecked = true.obs;
   late List<Question> questions;
-  late Question question;
   late int questionIndex;
   Map<int, String> statusMap = {0: '신규', 1: '선정', 2: '미선정', 3: '게시중'};
   Map<int, Color> statusColor = {
@@ -43,13 +42,15 @@ class QuestionStateManager extends GetxController {
   }
 
 
-  void getQuestion() {
+  void getQuestion({required isNext}) {
+    isNext ? questionIndex++ : questionIndex--;
+
     if(questionIndex < 0) {
       questionIndex = questions.length - 1;
     } else if(questionIndex >= questions.length) {
       questionIndex = 0;
     }
-    question = questions[questionIndex];
+    Question question = questions[questionIndex];
     (question.status == 0) ? statusRadio.value = '' : statusRadio.value = statusMap[question.status]!;
     (question.status == 1 || question.status == 3) ? isSelectedQuestion.value = true : isSelectedQuestion.value = false;
     initTagToggle();
@@ -87,6 +88,8 @@ class QuestionStateManager extends GetxController {
 
   Function(int? value) changeTagToggle() {
     return (int? idx) {
+      Question question = questions[questionIndex];
+
       if(tags[idx!] == question.tag) {
         initTagToggle();
         question.tag = null;

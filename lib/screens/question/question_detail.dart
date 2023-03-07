@@ -12,26 +12,39 @@ import 'package:podo_admin/screens/value/my_strings.dart';
 class QuestionDetail extends StatelessWidget {
   QuestionDetail({Key? key}) : super(key: key);
 
-  //final WritingStateManager _controller = Get.find<WritingStateManager>();
-  //final WritingStateManager _controller = Get.put(WritingStateManager()); //todo: Get.find로 바꾸기
   late Question question;
   final double boxSize = 1000;
   final TextEditingController questionController = TextEditingController();
   final HtmlEditorController htmlController = HtmlEditorController();
 
+  saveDialog() {
+    Get.dialog(
+      AlertDialog(
+        content: Get.find<QuestionStateManager>().isChecked.value
+            ? const Text('전체 질문을 저장 하겠습니까?')
+            : const Text('이 질문만 저장 하겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Get.back();
+            },
+            child: const Text('아니요'),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.find<QuestionStateManager>().saveAnswer();
+              Get.offAll(const MainFrame());
+            },
+            child: const Text('네'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Get.find<QuestionStateManager>();
-
-    void clickArrow({required bool isLeft}) {
-      QuestionStateManager controller = Get.find<QuestionStateManager>();
-      if (isLeft) {
-        controller.questionIndex--;
-      } else {
-        controller.questionIndex++;
-      }
-      controller.getQuestion();
-    }
 
     return Scaffold(
       appBar: AppBar(title: const Text('질문_상세')),
@@ -39,11 +52,14 @@ class QuestionDetail extends StatelessWidget {
         focusNode: FocusNode(),
         autofocus: true,
         onKey: (event) {
+          QuestionStateManager controller = Get.find<QuestionStateManager>();
           if (event is RawKeyDownEvent) {
             if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-              clickArrow(isLeft: true);
+              controller.getQuestion(isNext: false);
             } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-              clickArrow(isLeft: false);
+              controller.getQuestion(isNext: true);
+            } else if (event.logicalKey == LogicalKeyboardKey.enter) {
+              saveDialog();
             }
           }
         },
@@ -127,7 +143,7 @@ class QuestionDetail extends StatelessWidget {
                                 children: [
                                   IconButton(
                                     onPressed: () {
-                                      clickArrow(isLeft: true);
+                                      Get.find<QuestionStateManager>().getQuestion(isNext: false);
                                     },
                                     icon: const Icon(Icons.arrow_circle_left_outlined),
                                     iconSize: 30,
@@ -135,7 +151,7 @@ class QuestionDetail extends StatelessWidget {
                                   ),
                                   IconButton(
                                     onPressed: () {
-                                      clickArrow(isLeft: false);
+                                      Get.find<QuestionStateManager>().getQuestion(isNext: true);
                                     },
                                     icon: const Icon(Icons.arrow_circle_right_outlined),
                                     iconSize: 30,
@@ -229,28 +245,7 @@ class QuestionDetail extends StatelessWidget {
                               children: [
                                 ElevatedButton(
                                   onPressed: () {
-                                    Get.dialog(
-                                      AlertDialog(
-                                        content: Get.find<QuestionStateManager>().isChecked.value
-                                            ? const Text('전체 질문을 저장 하겠습니까?')
-                                            : const Text('이 질문만 저장 하겠습니까?'),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () {
-                                              Get.back();
-                                            },
-                                            child: const Text('아니요'),
-                                          ),
-                                          TextButton(
-                                            onPressed: () {
-                                              Get.find<QuestionStateManager>().saveAnswer();
-                                              Get.offAll(const MainFrame());
-                                            },
-                                            child: const Text('네'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
+                                    saveDialog();
                                   },
                                   child: const Padding(
                                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
