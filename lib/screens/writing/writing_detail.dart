@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:html_editor_enhanced/html_editor.dart';
+import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/my_html_color.dart';
-import 'package:podo_admin/screens/main_frame.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 import 'package:podo_admin/screens/writing/writing.dart';
 import 'package:podo_admin/screens/writing/writing_state_manager.dart';
@@ -13,31 +13,58 @@ class WritingDetail extends StatelessWidget {
 
   late Writing writing;
   HtmlEditorController htmlController = HtmlEditorController();
+  WritingStateManager controller = Get.find<WritingStateManager>();
 
   completeCorrection() {
+    String title;
+    if (writing.status == 1) {
+      title = '교정을 수정하겠습니까?';
+    } else if (writing.status == 3) {
+      title = '교정완료 상태로 변경하겠습니까?';
+    } else {
+      title = '교정을 완료하겠습니까?';
+    }
     Get.dialog(
-      AlertDialog(
-        content: const Text('교정을 완료하겠습니까?'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Get.back();
-            },
-            child: const Text('아니요'),
-          ),
-          TextButton(
-            onPressed: () {
-              Get.find<WritingStateManager>().setCorrection(
-                  writingId: writing.writingId,
-                  correction: htmlController.getText().toString());
-              Get.offAll(const MainFrame());
-            },
-            child: const Text('네'),
-          ),
-        ],
+      RawKeyboardListener(
+        focusNode: FocusNode(),
+        autofocus: true,
+        onKey: (event) {
+          if (event is RawKeyDownEvent) {
+            if (event.logicalKey == LogicalKeyboardKey.enter) {
+              runSave();
+            }
+          }
+        },
+        child: AlertDialog(
+          content: Text(title),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Get.back();
+              },
+              child: const Text('아니요'),
+            ),
+            TextButton(
+              onPressed: () {
+                runSave();
+              },
+              child: const Text('네'),
+            ),
+          ],
+        ),
       ),
     );
+  }
 
+  runSave() async {
+    Get.back();
+    Get.defaultDialog(title: '저장중', content: const Center(child: CircularProgressIndicator()));
+    await Database()
+        .updateCorrection(writingId: writing.writingId, correction: writing.correction);
+    controller.writings.removeAt(controller.writingIndex);
+    controller.getWriting();
+    Get.back();
+    Get.snackbar('저장을 완료했습니다.', '');
   }
 
   @override
@@ -50,7 +77,6 @@ class WritingDetail extends StatelessWidget {
         focusNode: FocusNode(),
         autofocus: true,
         onKey: (event) {
-          WritingStateManager controller = Get.find<WritingStateManager>();
           if (event is RawKeyDownEvent) {
             if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
               controller.getWriting(isNext: false);
@@ -66,8 +92,16 @@ class WritingDetail extends StatelessWidget {
           child: SizedBox(
             width: boxSize,
             child: GetBuilder<WritingStateManager>(
+              dispose: (_) {
+                print('dISPOSE!');
+              },
               builder: (controller) {
                 writing = controller.writings[controller.writingIndex];
+                htmlController.clear();
+                (writing.correction == null)
+                    ? htmlController.setText(writing.userWriting)
+                    : htmlController.setText(writing.correction!);
+
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -84,9 +118,12 @@ class WritingDetail extends StatelessWidget {
                         const SizedBox(width: 10),
                         Text(controller.statusMap[writing.status]!, textScaleFactor: 2),
                         const SizedBox(width: 20),
-                        Text(
-                          '(남은 교정 수 : ${controller.writings.length})',
-                          style: const TextStyle(color: Colors.red),
+                        Visibility(
+                          visible: controller.statusRadio.value == '신규',
+                          child: Text(
+                            '(남은 교정 수 : ${controller.writings.length})',
+                            style: const TextStyle(color: Colors.red),
+                          ),
                         ),
                       ],
                     ),
@@ -94,25 +131,29 @@ class WritingDetail extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(writing.writingTitle, textScaleFactor: 2),
+                        Row(
+                          children: [
+                            Text(writing.writingTitle, textScaleFactor: 2),
+                            const SizedBox(width: 20),
+                            Text('( ${writing.userEmail} )'),
+                          ],
+                        ),
                         Row(
                           children: [
                             IconButton(
                               onPressed: () {
-                                writing.status == 0 ? controller.getWriting(isNext: false) : null;
+                                controller.getWriting(isNext: false);
                               },
                               icon: const Icon(Icons.arrow_circle_left_outlined),
                               iconSize: 30,
-                              color: writing.status == 0 ? Colors.black : Colors.grey,
                               tooltip: '이전교정',
                             ),
                             IconButton(
                               onPressed: () {
-                                writing.status == 0 ? controller.getWriting(isNext: true) : null;
+                                controller.getWriting(isNext: true);
                               },
                               icon: const Icon(Icons.arrow_circle_right_outlined),
                               iconSize: 30,
-                              color: writing.status == 0 ? Colors.black : Colors.grey,
                               tooltip: '다음교정',
                             ),
                           ],
@@ -136,32 +177,38 @@ class WritingDetail extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(' 교정하기', textScaleFactor: 2),
-                        TextButton(
-                          onPressed: () {
-                            Get.dialog(
-                              AlertDialog(
-                                content: const Text('교정불가로 체크하겠습니까?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Get.back();
-                                    },
-                                    child: const Text('아니요'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      controller.setUncorrectable(writingId: writing.writingId);
-                                      Get.offAll(const MainFrame());
-                                    },
-                                    child: const Text('네'),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                          child: const Text(
-                            '교정불가',
-                            style: TextStyle(color: Colors.red),
+                        Visibility(
+                          visible: writing.status != 3,
+                          child: TextButton(
+                            onPressed: () {
+                              Get.dialog(
+                                AlertDialog(
+                                  content: const Text('교정불가로 체크하겠습니까?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Get.back();
+                                      },
+                                      child: const Text('아니요'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Database().updateCorrection(
+                                            writingId: writing.writingId, isUncorrectable: true);
+                                        controller.writings.removeAt(controller.writingIndex);
+                                        controller.getWriting();
+                                        Get.back();
+                                      },
+                                      child: const Text('네'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              '교정불가',
+                              style: TextStyle(color: Colors.red),
+                            ),
                           ),
                         ),
                       ],
@@ -178,7 +225,10 @@ class WritingDetail extends StatelessWidget {
                         child: HtmlEditor(
                           controller: htmlController,
                           htmlEditorOptions: HtmlEditorOptions(
-                              initialText: writing.correction, hint: '문장을 교정하세요.'),
+                            initialText:
+                                (writing.correction == null) ? writing.userWriting : writing.correction,
+                            hint: (writing.correction == null) ? '문장을 교정하세요.' : '',
+                          ),
                           htmlToolbarOptions: HtmlToolbarOptions(
                             defaultToolbarButtons: [
                               const OtherButtons(
@@ -190,12 +240,9 @@ class WritingDetail extends StatelessWidget {
                                   help: false),
                             ],
                             customToolbarButtons: [
-                              MyHtmlColor()
-                                  .colorButton(controller: htmlController, color: MyStrings.red),
-                              MyHtmlColor().colorButton(
-                                  controller: htmlController, color: MyStrings.blue),
-                              MyHtmlColor().colorButton(
-                                  controller: htmlController, color: MyStrings.black),
+                              MyHtmlColor().colorButton(controller: htmlController, color: MyStrings.red),
+                              MyHtmlColor().colorButton(controller: htmlController, color: MyStrings.blue),
+                              MyHtmlColor().colorButton(controller: htmlController, color: MyStrings.black),
                             ],
                           ),
                           callbacks: Callbacks(onChangeContent: (String? content) {
@@ -207,15 +254,18 @@ class WritingDetail extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.all(30),
                       child: Center(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            completeCorrection();
-                          },
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                            child: Text(
-                              '완료',
-                              style: TextStyle(fontSize: 20),
+                        child: Visibility(
+                          visible: writing.status != 2,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              completeCorrection();
+                            },
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                              child: Text(
+                                '저장',
+                                style: TextStyle(fontSize: 20),
+                              ),
                             ),
                           ),
                         ),

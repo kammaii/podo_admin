@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Question {
+  late String questionId;
   late String userEmail;
   late String question;
   String? answer;
@@ -9,8 +10,7 @@ class Question {
   String? tag;
   late int status;
 
-  Question();
-
+  static const String QUESTIONID = 'questionId';
   static const String USEREMAIL = 'userEmail';
   static const String QUESTION = 'question';
   static const String ANSWER = 'answer';
@@ -20,6 +20,7 @@ class Question {
   static const String STATUS = 'status';
 
   Question.fromJson(Map<String, dynamic> json) {
+    questionId = json[QUESTIONID];
     userEmail = json[USEREMAIL];
     question = json[QUESTION];
     answer = json[ANSWER];
@@ -33,18 +34,9 @@ class Question {
     status = json[STATUS];
   }
 
-  // Map<String, dynamic> toJson() => {
-  //       USEREMAIL: userEmail,
-  //       QUESTION: question,
-  //       ANSWER: answer!,
-  //       QUESTIONDATE: Timestamp.fromDate(questionDate),
-  //       ANSWERDATE: Timestamp.fromDate(answerDate!),
-  //       TAG: tag!,
-  //       STATUS: status,
-  //     };
-
   Map<String, dynamic> toJson() {
     Map<String, dynamic> map = {
+      QUESTIONID: questionId,
       USEREMAIL: userEmail,
       QUESTION: question,
       QUESTIONDATE: Timestamp.fromDate(questionDate),

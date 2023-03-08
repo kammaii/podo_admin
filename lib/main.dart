@@ -1,26 +1,19 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/screens/main_frame.dart';
 import 'package:podo_admin/screens/value/color_schemes.g.dart';
-
 import 'firebase_options.dart';
 
 
-void main() {
+void main() async {
   print('Main is starting');
-  initFirebase();
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
-}
-
-void initFirebase() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  Database.init();
   print('Init firebase!');
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {

@@ -6,12 +6,12 @@ import 'package:podo_admin/screens/question/question.dart';
 class QuestionStateManager extends GetxController {
 
   RxString searchRadio = '신규'.obs;
-  RxString statusRadio = ''.obs;
-  RxBool isSelectedQuestion = false.obs;
-  RxBool isChecked = true.obs;
-  late Future<List<Question>> futureQuestions;
-  late List<Question> questions;
-  late int questionIndex;
+  String statusRadio = '';
+  bool isSelectedQuestion = false;
+  bool isChecked = true;
+  late Future<List<dynamic>> futureQuestions;
+  List<Question> questions = [];
+  int questionIndex = 0;
   Map<int, String> statusMap = {0: '신규', 1: '선정', 2: '미선정', 3: '게시중'};
   Map<int, Color> statusColor = {
     0: Colors.orange,
@@ -28,47 +28,43 @@ class QuestionStateManager extends GetxController {
     'listening',
     'others',
   ];
-  RxList<bool> selectedTags = [false, false, false, false, false, false, false].obs;
+  List<bool> selectedTags = [false, false, false, false, false, false, false];
 
 
   @override
   void onInit() async {
-    questionIndex = 0;
-    futureQuestions = Database().getQuestions(0);
+    futureQuestions = Database().getDocumentsFromDb(status: 0, reference: 'Questions', orderBy: 'questionDate');
   }
 
-  void getQuestion({required isNext}) {
+  void changeQuestionIndex({required isNext}) {
     isNext ? questionIndex++ : questionIndex--;
-
     if(questionIndex < 0) {
       questionIndex = questions.length - 1;
     } else if(questionIndex >= questions.length) {
       questionIndex = 0;
     }
-    Question question = questions[questionIndex];
-    (question.status == 0) ? statusRadio.value = '' : statusRadio.value = statusMap[question.status]!;
-    (question.status == 1 || question.status == 3) ? isSelectedQuestion.value = true : isSelectedQuestion.value = false;
-    initTagToggle();
-    if(question.tag != null && tags.contains(question.tag)) {
-     selectedTags[tags.indexOf(question.tag!)] = true;
-    }
     update();
   }
 
-  void saveAnswer() {
-    //todo: writingId 로 검색하고 업데이트
-    //Writing writing =
-    //correction = correction;
-    //replyDate = DateTime.now();
-    //status = 1;
-    // update();
+  void setQuestionOptions() {
+    Question question = questions[questionIndex];
+    (question.status == 0) ? statusRadio = '' : statusRadio = statusMap[question.status]!;
+    (question.status == 1 || question.status == 3) ? isSelectedQuestion = true : isSelectedQuestion = false;
+    initTagToggle();
+    if(question.tag != null && tags.contains(question.tag)) {
+      selectedTags[tags.indexOf(question.tag!)] = true;
+    }
   }
 
   Function(String? value) changeSearchRadio() {
     return (String? value) {
       searchRadio.value = value!;
-      int key = statusMap.keys.firstWhere((key) => statusMap[key] == value);
-      futureQuestions = Database().getQuestions(key);
+      if(value != '전체') {
+        int key = statusMap.keys.firstWhere((key) => statusMap[key] == value);
+        futureQuestions = Database().getDocumentsFromDb(status: key, reference: 'Questions', orderBy: 'questionDate');
+      } else {
+        futureQuestions = Database().getDocumentsFromDb(reference: 'Questions', orderBy: 'questionDate');
+      }
     };
   }
 
@@ -77,8 +73,9 @@ class QuestionStateManager extends GetxController {
       int key = statusMap.keys.firstWhere((key) => statusMap[key] == value);
       Question question = questions[questionIndex];
       question.status = key;
-      (key == 1 || key == 3) ? isSelectedQuestion.value = true : isSelectedQuestion.value = false;
-      statusRadio.value = value!;
+      (key == 1 || key == 3) ? isSelectedQuestion = true : isSelectedQuestion = false;
+      statusRadio = value!;
+      update();
     };
   }
 
@@ -95,6 +92,7 @@ class QuestionStateManager extends GetxController {
         }
         question.tag = tags[idx!];
       }
+      update();
     };
   }
 

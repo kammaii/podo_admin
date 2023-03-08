@@ -18,7 +18,6 @@ class _MainFrameState extends State<MainFrame> {
 
     WritingMain(),
     QuestionMain(),
-
     UserMain(),
     NoticeMain(),
     LessonMain(),

@@ -4,7 +4,7 @@ import 'package:podo_admin/items/lesson_card.dart';
 import 'package:podo_admin/items/lesson_summary.dart';
 import 'package:podo_admin/screens/question/question.dart';
 import 'package:podo_admin/screens/question/question_state_manager.dart';
-
+import 'package:podo_admin/screens/value/my_strings.dart';
 
 class Database {
   static final Database _instance = Database.init();
@@ -19,18 +19,63 @@ class Database {
     print('Database 초기화');
   }
 
-  Future<List<Question>> getQuestions(int status) async {
-    List<Question> questions = [];
-    final ref = firestore.collection('Questions');
-    final query = ref.where('status', isEqualTo: status);
+  Future<List<dynamic>> getDocumentsFromDb(
+      {int? status, required String reference, required String orderBy}) async {
+    List<dynamic> documents = [];
+    final ref = firestore.collection(reference);
+    final query;
+    if (status != null) {
+      query = ref.where('status', isEqualTo: status).orderBy(orderBy, descending: true);
+    } else {
+      query = ref.orderBy(orderBy, descending: true);
+    }
     await query.get().then((QuerySnapshot snapshot) {
+      print('quiring');
       for (QueryDocumentSnapshot documentSnapshot in snapshot.docs) {
-        Question question = Question.fromJson(documentSnapshot.data() as Map<String, dynamic>);
-        questions.add(question);
+        documents.add(documentSnapshot.data() as Map<String, dynamic>);
       }
     }, onError: (e) => print('ERROR : $e'));
-    // Get.find<QuestionStateManager>().questions = questions;
-    return questions;
+    return documents;
+  }
+
+  updateCorrection({required String writingId, String? correction, bool isUncorrectable = false}) {
+    DocumentReference ref = firestore.collection('Writings').doc(writingId);
+    if (isUncorrectable) {
+      return ref
+          .update({'correction': MyStrings.unCorrectable, 'replyDate': Timestamp.now(), 'status': 3})
+          .then((value) => print('Correction updated'))
+          .catchError((e) => print('ERROR : $e'));
+    } else {
+      return ref
+          .update({'correction': correction, 'replyDate': Timestamp.now(), 'status': 1})
+          .then((value) => print('Correction updated'))
+          .catchError((e) => print('ERROR : $e'));
+    }
+  }
+
+  updateQuestion({required Question question}) {
+    DocumentReference ref = firestore.collection('Questions').doc(question.questionId);
+    if (question.status != 0) {
+      if (question.status == 2) {
+        // 미선정
+        return ref
+            .update({'status': 2, 'answerDate': Timestamp.now()})
+            .then((value) => print('Answer updated'))
+            .catchError((e) => print('ERROR : $e'));
+      } else {
+        // 선정, 게시중
+        return ref
+            .update({
+              'question': question.question,
+              'answer': (question.answer != null) ? question.answer : null,
+              'answerDate': Timestamp.now(),
+              'tag': (question.tag != null) ? question.tag : null,
+              'status': question.status
+            })
+            .then((value) => print('Correction updated'))
+            .catchError((e) => print('ERROR : $e'));
+      }
+    }
   }
 
   Future<void> saveLessonCard(LessonCard card) {
@@ -48,8 +93,8 @@ class Database {
     }).catchError((e) => print(e));
   }
 
-  Future<void> saveSampleQuestion(Question question) {
-    CollectionReference ref = firestore.collection('Questions');
-    return ref.add(question.toJson()).then((value) {}).catchError((e) => print(e));
+  Future<void> saveSampleDb({required String id, required dynamic sample, required String reference}) {
+    DocumentReference ref = firestore.collection(reference).doc(id);
+    return ref.set(sample.toJson()).then((value) {}).catchError((e) => print(e));
   }
 }

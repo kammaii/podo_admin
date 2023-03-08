@@ -1,4 +1,9 @@
 class MyStrings {
+  // 스크린에 표기되는 것들은 번역을 위해 이곳에 입력하기
+  static const String unCorrectable = 'I\'m sorry, but I\'m having trouble understanding the sentence you provided, which makes it difficult for me to make corrections. Could you please try rephrasing your sentence using simpler language?';
+
+
+
   static const String subject = 'subject';
   static const String explain = 'explain';
   static const String repeat = 'repeat';
