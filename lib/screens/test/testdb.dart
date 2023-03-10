@@ -27,9 +27,20 @@ class TestDB extends StatelessWidget {
           },
           child: const Text('make writing db'),
         ),
+        const SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: (){
+            makeUserDb();
+          },
+          child: const Text('make user db'),
+        ),
 
       ],
     );
+  }
+
+  makeUserDb() {
+    //Database().saveSampleDb(id: question.questionId, sample: question, reference: 'Questions');
   }
 
   makeQuestionDb() {
@@ -56,7 +67,7 @@ class TestDB extends StatelessWidget {
 
   List<Writing> getSampleWritings() {
     Map<String, dynamic> sampleJson1 = {
-      WRITINGID: const Uuid().v1(),
+      WRITINGID: const Uuid().v4(),
       WRITINGTITLE: 'writingTitle1',
       USEREMAIL: 'sample1@gmail.com',
       USERWRITING: '안냥하세여',
@@ -65,7 +76,7 @@ class TestDB extends StatelessWidget {
     };
 
     Map<String, dynamic> sampleJson2 = {
-      WRITINGID: const Uuid().v1(),
+      WRITINGID: const Uuid().v4(),
       WRITINGTITLE: 'writingTitle2',
       USEREMAIL: 'sample2@gmail.com',
       USERWRITING: '저는 미국사라미에여',
@@ -74,7 +85,7 @@ class TestDB extends StatelessWidget {
     };
 
     Map<String, dynamic> sampleJson3 = {
-      WRITINGID: const Uuid().v1(),
+      WRITINGID: const Uuid().v4(),
       WRITINGTITLE: 'writingTitle3',
       USEREMAIL: 'sample3@gmail.com',
       USERWRITING: '한구거',
@@ -95,7 +106,7 @@ class TestDB extends StatelessWidget {
 
   List<Question> getSampleQuestions() {
     Map<String, dynamic> sampleJson1 = {
-      QUESTIONID: const Uuid().v1(),
+      QUESTIONID: const Uuid().v4(),
       QUESTION: 'question1 ~~',
       USEREMAIL: 'sample1@gmail.com',
       QUESTIONDATE: Timestamp.now(),
@@ -103,7 +114,7 @@ class TestDB extends StatelessWidget {
     };
 
     Map<String, dynamic> sampleJson2 = {
-      QUESTIONID: const Uuid().v1(),
+      QUESTIONID: const Uuid().v4(),
       QUESTION: 'question2 ~~',
       USEREMAIL: 'sample2@gmail.com',
       QUESTIONDATE: Timestamp.now(),
@@ -111,7 +122,7 @@ class TestDB extends StatelessWidget {
     };
 
     Map<String, dynamic> sampleJson3 = {
-      QUESTIONID: const Uuid().v1(),
+      QUESTIONID: const Uuid().v4(),
       QUESTION: 'question3 ~~',
       USEREMAIL: 'sample2@gmail.com',
       QUESTIONDATE: Timestamp.now(),
@@ -121,7 +132,7 @@ class TestDB extends StatelessWidget {
       STATUS: 1,
     };
     Map<String, dynamic> sampleJson4 = {
-      QUESTIONID: const Uuid().v1(),
+      QUESTIONID: const Uuid().v4(),
       QUESTION: 'question4 ~~',
       USEREMAIL: 'sample3@gmail.com',
       QUESTIONDATE: Timestamp.now(),
