@@ -33,7 +33,7 @@ class QuestionStateManager extends GetxController {
 
   @override
   void onInit() async {
-    futureQuestions = Database().getDocumentsFromDb(status: 0, reference: 'Questions', orderBy: 'questionDate');
+    futureQuestions = Database().getDocumentsFromDb(status: 0, reference: 'Questions', orderBy: 'dateQuestion');
   }
 
   void changeQuestionIndex({required isNext}) {
@@ -61,9 +61,9 @@ class QuestionStateManager extends GetxController {
       searchRadio.value = value!;
       if(value != '전체') {
         int key = statusMap.keys.firstWhere((key) => statusMap[key] == value);
-        futureQuestions = Database().getDocumentsFromDb(status: key, reference: 'Questions', orderBy: 'questionDate');
+        futureQuestions = Database().getDocumentsFromDb(status: key, reference: 'Questions', orderBy: 'dateQuestion');
       } else {
-        futureQuestions = Database().getDocumentsFromDb(reference: 'Questions', orderBy: 'questionDate');
+        futureQuestions = Database().getDocumentsFromDb(reference: 'Questions', orderBy: 'dateQuestion');
       }
     };
   }

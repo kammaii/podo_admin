@@ -6,8 +6,8 @@ class Writing {
   late String userEmail;
   late String userWriting;
   String? correction;
-  late DateTime writingDate;
-  DateTime? replyDate;
+  late DateTime dateWriting;
+  DateTime? dateReply;
   late int status;
 
   static const String WRITINGID = 'writingId';
@@ -15,8 +15,8 @@ class Writing {
   static const String USEREMAIL = 'userEmail';
   static const String USERWRITING = 'userWriting';
   static const String CORRECTION = 'correction';
-  static const String WRITINGDATE = 'writingDate';
-  static const String REPLYDATE = 'replyDate';
+  static const String DATEWRITING = 'dateWriting';
+  static const String DATEREPLY = 'dateReply';
   static const String STATUS = 'status';
 
   Writing.fromJson(Map<String, dynamic> json) {
@@ -25,11 +25,11 @@ class Writing {
     userEmail = json[USEREMAIL];
     userWriting = json[USERWRITING];
     correction = json[CORRECTION];
-    Timestamp writingStamp = json[WRITINGDATE];
-    writingDate = writingStamp.toDate();
-    if (json[REPLYDATE] != null) {
-      Timestamp replyStamp = json[REPLYDATE];
-      replyDate = replyStamp.toDate();
+    Timestamp writingStamp = json[DATEWRITING];
+    dateWriting = writingStamp.toDate();
+    if (json[DATEREPLY] != null) {
+      Timestamp replyStamp = json[DATEREPLY];
+      dateReply = replyStamp.toDate();
     }
     status = json[STATUS];
   }
@@ -40,14 +40,14 @@ class Writing {
       WRITINGTITLE: writingTitle,
       USEREMAIL: userEmail,
       USERWRITING: userWriting,
-      WRITINGDATE: Timestamp.fromDate(writingDate),
+      DATEWRITING: Timestamp.fromDate(dateWriting),
       STATUS: status,
     };
     if(correction!= null) {
       map[CORRECTION] = correction;
     }
-    if(replyDate != null) {
-      map[REPLYDATE] = Timestamp.fromDate(replyDate!);
+    if(dateReply != null) {
+      map[DATEREPLY] = Timestamp.fromDate(dateReply!);
     }
     return map;
   }

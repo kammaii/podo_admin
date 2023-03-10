@@ -14,7 +14,7 @@ class WritingStateManager extends GetxController {
 
   @override
   void onInit() {
-    futureWritings = Database().getDocumentsFromDb(status: key, reference: 'Writings', orderBy: 'writingDate');
+    futureWritings = Database().getDocumentsFromDb(status: key, reference: 'Writings', orderBy: 'dateWriting');
   }
 
   void getWriting({bool? isNext}) {
@@ -39,9 +39,9 @@ class WritingStateManager extends GetxController {
       if (value != '전체') {
         key = statusMap.keys.firstWhere((key) => statusMap[key] == value);
         futureWritings =
-            Database().getDocumentsFromDb(status: key, reference: 'Writings', orderBy: 'writingDate');
+            Database().getDocumentsFromDb(status: key, reference: 'Writings', orderBy: 'dateWriting');
       } else {
-        futureWritings = Database().getDocumentsFromDb(reference: 'Writings', orderBy: 'writingDate');
+        futureWritings = Database().getDocumentsFromDb(reference: 'Writings', orderBy: 'dateWriting');
       }
       print('hoi!');
     };

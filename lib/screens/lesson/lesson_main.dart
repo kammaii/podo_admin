@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
-import 'package:podo_admin/items/lesson_title.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
-import 'package:podo_admin/screens/value/my_strings.dart';
+import 'package:podo_admin/screens/lesson/lesson_title.dart';
 
 class LessonMain extends StatelessWidget {
   LessonMain({Key? key}) : super(key: key);
@@ -118,7 +117,7 @@ class LessonMain extends StatelessWidget {
         label: const Text('레슨만들기'),
       ),
       appBar: AppBar(
-        title: const Text('레슨'),
+        title: const Text('레슨 주제'),
       ),
       body: Column(
         mainAxisSize: MainAxisSize.min,

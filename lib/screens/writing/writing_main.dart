@@ -72,6 +72,7 @@ class WritingMain extends StatelessWidget {
                     if (snapshot.hasData == true) {
                       List<Writing> writings = [];
                       for (dynamic snapshot in snapshot.data) {
+                        print(snapshot);
                         writings.add(Writing.fromJson(snapshot));
                       }
                       controller.writings = writings;
@@ -91,7 +92,7 @@ class WritingMain extends StatelessWidget {
                             String? status = controller.statusMap[writing.status];
 
                             return DataRow(cells: [
-                              DataCell(Text(MyDateFormat().getDateFormat(writing.writingDate))),
+                              DataCell(Text(MyDateFormat().getDateFormat(writing.dateWriting))),
                               DataCell(Text(writing.writingTitle)),
                               DataCell(Text(writing.userWriting), onTap: () {
                                 controller.writingIndex = index;

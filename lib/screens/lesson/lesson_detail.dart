@@ -1,15 +1,13 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:html_editor_enhanced/html_editor.dart';
 import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/my_html_color.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
-import 'package:podo_admin/items/lesson_card.dart';
-import 'package:podo_admin/items/lesson_summary.dart';
+import 'package:podo_admin/screens/lesson/lesson_card.dart';
 import 'package:podo_admin/screens/lesson/inner_card_textfield.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
+import 'package:podo_admin/screens/lesson/lesson_summary.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
 class LessonDetail extends StatelessWidget {

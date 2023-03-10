@@ -5,8 +5,8 @@ class Question {
   late String userEmail;
   late String question;
   String? answer;
-  late DateTime questionDate;
-  DateTime? answerDate;
+  late DateTime dateQuestion;
+  DateTime? dateAnswer;
   String? tag;
   late int status;
 
@@ -14,8 +14,8 @@ class Question {
   static const String USEREMAIL = 'userEmail';
   static const String QUESTION = 'question';
   static const String ANSWER = 'answer';
-  static const String QUESTIONDATE = 'questionDate';
-  static const String ANSWERDATE = 'answerDate';
+  static const String DATEQUESTION = 'dateQuestion';
+  static const String DATEANSWER = 'dateAnswer';
   static const String TAG = 'tag';
   static const String STATUS = 'status';
 
@@ -24,11 +24,11 @@ class Question {
     userEmail = json[USEREMAIL];
     question = json[QUESTION];
     answer = json[ANSWER];
-    Timestamp questionStamp = json[QUESTIONDATE];
-    questionDate = questionStamp.toDate();
-    if (json[ANSWERDATE] != null) {
-      Timestamp answerStamp = json[ANSWERDATE];
-      answerDate = answerStamp.toDate();
+    Timestamp questionStamp = json[DATEQUESTION];
+    dateQuestion = questionStamp.toDate();
+    if (json[DATEANSWER] != null) {
+      Timestamp answerStamp = json[DATEANSWER];
+      dateAnswer = answerStamp.toDate();
       tag = json[TAG];
     }
     status = json[STATUS];
@@ -39,7 +39,7 @@ class Question {
       QUESTIONID: questionId,
       USEREMAIL: userEmail,
       QUESTION: question,
-      QUESTIONDATE: Timestamp.fromDate(questionDate),
+      DATEQUESTION: Timestamp.fromDate(dateQuestion),
       STATUS: status,
     };
     if(answer != null) {
@@ -48,10 +48,9 @@ class Question {
     if(tag != null) {
       map[TAG] = tag;
     }
-    if(answerDate != null) {
-      map[ANSWERDATE] = Timestamp.fromDate(answerDate!);
+    if(dateAnswer != null) {
+      map[DATEANSWER] = Timestamp.fromDate(dateAnswer!);
     }
     return map;
   }
-
 }

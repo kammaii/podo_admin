@@ -91,7 +91,7 @@ class QuestionMain extends StatelessWidget {
                             String? status = controller.statusMap[question.status];
 
                             return DataRow(cells: [
-                              DataCell(Text(MyDateFormat().getDateFormat(question.questionDate))),
+                              DataCell(Text(MyDateFormat().getDateFormat(question.dateQuestion))),
                               DataCell(Text(question.question), onTap: () {
                                 controller.questionIndex = index;
                                 Get.to(QuestionDetail());

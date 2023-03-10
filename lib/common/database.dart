@@ -1,9 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:get/get.dart';
-import 'package:podo_admin/items/lesson_card.dart';
-import 'package:podo_admin/items/lesson_summary.dart';
+import 'package:podo_admin/screens/lesson/lesson_card.dart';
+import 'package:podo_admin/screens/lesson/lesson_summary.dart';
 import 'package:podo_admin/screens/question/question.dart';
-import 'package:podo_admin/screens/question/question_state_manager.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
 class Database {

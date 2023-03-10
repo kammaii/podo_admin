@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
-import 'package:podo_admin/items/lesson_card.dart';
-import 'package:podo_admin/items/lesson_summary.dart';
+import 'package:podo_admin/screens/lesson/lesson_card.dart';
+import 'package:podo_admin/screens/lesson/lesson_summary.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
 class LessonStateManager extends GetxController {

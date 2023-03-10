@@ -61,8 +61,8 @@ class TestDB extends StatelessWidget {
   static const String USEREMAIL = 'userEmail';
   static const String USERWRITING = 'userWriting';
   static const String CORRECTION = 'correction';
-  static const String WRITINGDATE = 'writingDate';
-  static const String REPLYDATE = 'replyDate';
+  static const String DATEWRITING = 'dateWriting';
+  static const String DATEREPLY = 'dateReply';
   static const String STATUS = 'status';
 
   List<Writing> getSampleWritings() {
@@ -71,7 +71,7 @@ class TestDB extends StatelessWidget {
       WRITINGTITLE: 'writingTitle1',
       USEREMAIL: 'sample1@gmail.com',
       USERWRITING: '안냥하세여',
-      WRITINGDATE: Timestamp.now(),
+      DATEWRITING: Timestamp.now(),
       STATUS: 0,
     };
 
@@ -80,7 +80,7 @@ class TestDB extends StatelessWidget {
       WRITINGTITLE: 'writingTitle2',
       USEREMAIL: 'sample2@gmail.com',
       USERWRITING: '저는 미국사라미에여',
-      WRITINGDATE: Timestamp.now(),
+      DATEWRITING: Timestamp.now(),
       STATUS: 0,
     };
 
@@ -89,7 +89,7 @@ class TestDB extends StatelessWidget {
       WRITINGTITLE: 'writingTitle3',
       USEREMAIL: 'sample3@gmail.com',
       USERWRITING: '한구거',
-      WRITINGDATE: Timestamp.now(),
+      DATEWRITING: Timestamp.now(),
       STATUS: 2,
     };
 
@@ -100,8 +100,8 @@ class TestDB extends StatelessWidget {
   static const String QUESTIONID = 'questionId';
   static const String QUESTION = 'question';
   static const String ANSWER = 'answer';
-  static const String QUESTIONDATE = 'questionDate';
-  static const String ANSWERDATE = 'answerDate';
+  static const String DATEQUESTION = 'dateQuestion';
+  static const String DATEANSWER = 'dateAnswer';
   static const String TAG = 'tag';
 
   List<Question> getSampleQuestions() {
@@ -109,7 +109,7 @@ class TestDB extends StatelessWidget {
       QUESTIONID: const Uuid().v4(),
       QUESTION: 'question1 ~~',
       USEREMAIL: 'sample1@gmail.com',
-      QUESTIONDATE: Timestamp.now(),
+      DATEQUESTION: Timestamp.now(),
       STATUS: 0,
     };
 
@@ -117,7 +117,7 @@ class TestDB extends StatelessWidget {
       QUESTIONID: const Uuid().v4(),
       QUESTION: 'question2 ~~',
       USEREMAIL: 'sample2@gmail.com',
-      QUESTIONDATE: Timestamp.now(),
+      DATEQUESTION: Timestamp.now(),
       STATUS: 0,
     };
 
@@ -125,9 +125,9 @@ class TestDB extends StatelessWidget {
       QUESTIONID: const Uuid().v4(),
       QUESTION: 'question3 ~~',
       USEREMAIL: 'sample2@gmail.com',
-      QUESTIONDATE: Timestamp.now(),
+      DATEQUESTION: Timestamp.now(),
       ANSWER: 'answer~~',
-      ANSWERDATE: Timestamp.now(),
+      DATEANSWER: Timestamp.now(),
       TAG: 'grammar',
       STATUS: 1,
     };
@@ -135,9 +135,9 @@ class TestDB extends StatelessWidget {
       QUESTIONID: const Uuid().v4(),
       QUESTION: 'question4 ~~',
       USEREMAIL: 'sample3@gmail.com',
-      QUESTIONDATE: Timestamp.now(),
+      DATEQUESTION: Timestamp.now(),
       ANSWER: 'answer~~',
-      ANSWERDATE: Timestamp.now(),
+      DATEANSWER: Timestamp.now(),
       TAG: 'pronunciation',
       STATUS: 3,
     };
