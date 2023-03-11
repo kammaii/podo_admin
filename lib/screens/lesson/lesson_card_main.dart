@@ -10,9 +10,9 @@ import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:podo_admin/screens/lesson/lesson_summary.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
-class LessonDetail extends StatelessWidget {
+class LessonCardMain extends StatelessWidget {
   //const LessonDetail({required this.lessonTitle, Key? key}) : super(key: key);
-  LessonDetail({Key? key}) : super(key: key);
+  LessonCardMain({Key? key}) : super(key: key);
 
   //final LessonTitle lessonTitle;
   //final LessonStateManager _controller = Get.find<LessonStateManager>();

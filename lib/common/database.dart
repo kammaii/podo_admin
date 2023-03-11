@@ -18,16 +18,16 @@ class Database {
   }
 
   Future<List<dynamic>> getDocumentsFromDb(
-      {int? status, required String reference, required String orderBy}) async {
+      {required String reference, dynamic query, dynamic equalTo, required String orderBy, bool descending = true}) async {
     List<dynamic> documents = [];
     final ref = firestore.collection(reference);
-    final query;
-    if (status != null) {
-      query = ref.where('status', isEqualTo: status).orderBy(orderBy, descending: true);
+    final queryRef;
+    if (query != null) {
+      queryRef = ref.where(query, isEqualTo: equalTo).orderBy(orderBy, descending: descending);
     } else {
-      query = ref.orderBy(orderBy, descending: true);
+      queryRef = ref.orderBy(orderBy, descending: true);
     }
-    await query.get().then((QuerySnapshot snapshot) {
+    await queryRef.get().then((QuerySnapshot snapshot) {
       print('quiring');
       for (QueryDocumentSnapshot documentSnapshot in snapshot.docs) {
         documents.add(documentSnapshot.data() as Map<String, dynamic>);

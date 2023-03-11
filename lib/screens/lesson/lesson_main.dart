@@ -1,156 +1,123 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
+import 'package:podo_admin/screens/lesson/lesson_subject.dart';
+import 'package:podo_admin/screens/lesson/lesson_subject_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_title.dart';
+import 'package:podo_admin/screens/lesson/lesson_title_main.dart';
 
-class LessonMain extends StatelessWidget {
+class LessonMain extends StatefulWidget {
   LessonMain({Key? key}) : super(key: key);
 
-  final LessonStateManager _controller = Get.put(LessonStateManager());
-  final TextEditingController _textEditingControllerTitle = TextEditingController();
-  final TextEditingController _textEditingControllerCategory = TextEditingController();
-  final TextEditingController _textEditingControllerVideoLink = TextEditingController();
+  @override
+  State<LessonMain> createState() => _LessonMainState();
+}
+
+class _LessonMainState extends State<LessonMain> {
+  List<bool> selectedToggle = [true, false];
+  String selectedLevel = '초급';
+  List<LessonSubject> lessonSubjects = [];
+  List<LessonTitle> lessonTitles = [];
+  late Future<List<dynamic>> future;
+
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('레슨 만들기'),
-                content: GetBuilder<LessonStateManager>(
-                  builder: (controller) {
-                    return Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          children: [
-                            SizedBox(
-                              width: 300,
-                              child: TextField(
-                                controller: _textEditingControllerTitle,
-                                decoration: const InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  labelText: '레슨 타이틀',
-                                ),
-                                autofocus: true,
-                              ),
-                            ),
-                            const SizedBox(width: 20),
-                            SizedBox(
-                              width: 300,
-                              child: TextField(
-                                controller: _textEditingControllerCategory,
-                                decoration: const InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  labelText: '카테고리',
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 20),
-                            Column(
-                              children: [
-                                const Text('비디오레슨'),
-                                Checkbox(
-                                  value: controller.isVideoChecked,
-                                  onChanged: (bool? value) {
-                                    controller.setVideoChecked(value!);
-                                  },
-                                  activeColor: Theme.of(context).colorScheme.primary,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        AnimatedOpacity(
-                          opacity: controller.isVideoChecked ? 1.0 : 0.0,
-                          duration: const Duration(milliseconds: 500),
-                          child: TextField(
-                            controller: _textEditingControllerVideoLink,
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: '비디오 링크',
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      String title = _textEditingControllerTitle.text;
-                      String category = _textEditingControllerCategory.text;
-                      String link = _textEditingControllerVideoLink.text;
 
-                      LessonTitle lessonTitle = LessonTitle(
-                        lessonGroup: _controller.lessonGroup,
-                        orderId: SampleLessonTitles().getTitles().length,
-                        //todo: 실재 DB 데이터로 수정
-                        category: category,
-                        title: title,
-                        isVideo: _controller.isVideoChecked,
-                        videoLink: _controller.isVideoChecked ? link : '',
-                        isPublished: false,
-                      );
+    if(selectedToggle[0] && lessonSubjects.isEmpty) {
+      selectedLevel == '초급'
+          ? future = Database().getDocumentsFromDb(
+          reference: 'LessonSubjects', query: 'isBeginnerMode', equalTo: true, orderBy: 'orderId', descending: false)
+          : future = Database().getDocumentsFromDb(
+          reference: 'LessonSubjects', query: 'isBeginnerMode', equalTo: false, orderBy: 'orderId', descending: false);
+    }
 
-                      //Get.to(LessonDetail(lessonTitle: lessonTitle));
+    if(selectedToggle[1] && lessonTitles.isEmpty) {
+       future = Database().getDocumentsFromDb(
+          reference: 'LessonTitles', orderBy: 'isFree');
+    }
 
-                      _textEditingControllerTitle.dispose();
-                      _textEditingControllerCategory.dispose();
-                      _textEditingControllerVideoLink.dispose();
-                    },
-                    child: const Text('만들기'),
-                  ),
-                ],
-              );
-            },
-          );
+    Widget getRadioBtn(String title) {
+      return MyRadioBtn().getRadioButton(
+        context: context,
+        title: title,
+        radio: selectedLevel,
+        f: (String? value) {
+          setState(() {
+            selectedLevel = value!;
+          });
         },
-        icon: const Icon(Icons.add_circle_outline_rounded),
-        label: const Text('레슨만들기'),
-      ),
+      );
+    }
+
+    return Scaffold(
       appBar: AppBar(
-        title: const Text('레슨 주제'),
+        title: const Text('레슨'),
       ),
-      body: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          GetBuilder<LessonStateManager>(
-            builder: (controller) {
-              return Row(
-                children: [
-                  MyRadioBtn().getRadioButton(
-                      context: context,
-                      title: '한글',
-                      radio: _controller.lessonGroup,
-                      f: _controller.changeLessonGroupRadio()),
-                  MyRadioBtn().getRadioButton(
-                      context: context,
-                      title: '기초',
-                      radio: _controller.lessonGroup,
-                      f: _controller.changeLessonGroupRadio()),
-                  MyRadioBtn().getRadioButton(
-                      context: context,
-                      title: '여행',
-                      radio: _controller.lessonGroup,
-                      f: _controller.changeLessonGroupRadio()),
-                  MyRadioBtn().getRadioButton(
-                      context: context,
-                      title: '음식',
-                      radio: _controller.lessonGroup,
-                      f: _controller.changeLessonGroupRadio()),
-                ],
-              );
-            },
-          ),
-        ],
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    ToggleButtons(
+                      onPressed: (int index) {
+                        setState(() {
+                          for (int i = 0; i < selectedToggle.length; i++) {
+                            selectedToggle[i] = i == index;
+                          }
+                        });
+                      },
+                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                      selectedBorderColor: Theme
+                          .of(context)
+                          .colorScheme
+                          .primary,
+                      selectedColor: Colors.white,
+                      fillColor: Theme
+                          .of(context)
+                          .colorScheme
+                          .primary,
+                      color: Theme
+                          .of(context)
+                          .colorScheme
+                          .primary,
+                      isSelected: selectedToggle,
+                      children: const [
+                        Padding(padding: EdgeInsets.symmetric(horizontal: 20), child: Text('주제')),
+                        Padding(padding: EdgeInsets.symmetric(horizontal: 20), child: Text('타이틀')),
+                      ],
+                    ),
+                    const SizedBox(width: 20),
+                    selectedToggle[0] ? getRadioBtn('초급') : const SizedBox.shrink(),
+                    selectedToggle[0] ? getRadioBtn('중급') : const SizedBox.shrink(),
+                  ],
+                ),
+                ElevatedButton(
+                  onPressed: () {
+
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: Text(
+                      '추가하기',
+                      style: TextStyle(fontSize: 20),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: selectedToggle[0] ? LessonSubjectMain(future, selectedLevel == '초급' ? true : false).subjectTable : LessonTitleMain(future).titleTable,
+            ),
+          ],
+        ),
       ),
     );
   }
