@@ -135,13 +135,13 @@ class LessonCardMain extends StatelessWidget {
                           children: [
                             MyRadioBtn().getRadioButton(
                                 context: _context,
-                                title: MyStrings.korean,
-                                radio: _controller.quizQuestionLang,
+                                value: MyStrings.korean,
+                                groupValue: _controller.quizQuestionLang,
                                 f: _controller.changeQuizQuestionLangRadio()),
                             MyRadioBtn().getRadioButton(
                                 context: _context,
-                                title: MyStrings.english,
-                                radio: _controller.quizQuestionLang,
+                                value: MyStrings.english,
+                                groupValue: _controller.quizQuestionLang,
                                 f: _controller.changeQuizQuestionLangRadio()),
                           ],
                         ),
@@ -394,28 +394,28 @@ class LessonCardMain extends StatelessWidget {
                 children: [
                   MyRadioBtn().getRadioButton(
                       context: context,
-                      title: MyStrings.subject,
-                      radio: _controller.cardType,
+                      value: MyStrings.subject,
+                      groupValue: _controller.cardType,
                       f: _controller.changeCardTypeRadio()),
                   MyRadioBtn().getRadioButton(
                       context: context,
-                      title: MyStrings.explain,
-                      radio: _controller.cardType,
+                      value: MyStrings.explain,
+                      groupValue: _controller.cardType,
                       f: _controller.changeCardTypeRadio()),
                   MyRadioBtn().getRadioButton(
                       context: context,
-                      title: MyStrings.repeat,
-                      radio: _controller.cardType,
+                      value: MyStrings.repeat,
+                      groupValue: _controller.cardType,
                       f: _controller.changeCardTypeRadio()),
                   MyRadioBtn().getRadioButton(
                       context: context,
-                      title: MyStrings.speaking,
-                      radio: _controller.cardType,
+                      value: MyStrings.speaking,
+                      groupValue: _controller.cardType,
                       f: _controller.changeCardTypeRadio()),
                   MyRadioBtn().getRadioButton(
                       context: context,
-                      title: MyStrings.quiz,
-                      radio: _controller.cardType,
+                      value: MyStrings.quiz,
+                      groupValue: _controller.cardType,
                       f: _controller.changeCardTypeRadio()),
                   const SizedBox(width: 20),
                   ElevatedButton(

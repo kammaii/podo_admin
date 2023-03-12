@@ -30,6 +30,7 @@ class LessonTitleMain {
                 DataColumn2(label: Text('무료'), size: ColumnSize.S),
                 DataColumn2(label: Text('상태'), size: ColumnSize.S),
                 DataColumn2(label: Text('태그'), size: ColumnSize.S),
+                DataColumn2(label: Text('삭제'), size: ColumnSize.S),
               ],
               rows: List<DataRow>.generate(titles.length, (index) {
                 LessonTitle title = titles[index];
@@ -65,6 +66,14 @@ class LessonTitleMain {
                       //todo: setState or GetX
                     },
                   ),
+                  DataCell(
+                    IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        //todo:delete title
+                      },
+                    ),
+                  )
                 ]);
               }),
             );

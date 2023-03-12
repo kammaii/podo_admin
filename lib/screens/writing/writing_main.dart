@@ -18,8 +18,8 @@ class WritingMain extends StatelessWidget {
     Widget getRadioBtn(String title) {
       return MyRadioBtn().getRadioButton(
           context: context,
-          title: title,
-          radio: controller.statusRadio.value,
+          value: title,
+          groupValue: controller.statusRadio.value,
           f: controller.changeStatusRadio(),
       );
     }

@@ -136,18 +136,18 @@ class NoticeMain extends StatelessWidget {
                       children: [
                         MyRadioBtn().getRadioButton(
                             context: context,
-                            title: MyStrings.tagInfo,
-                            radio: _controller.noticeTag,
+                            value: MyStrings.tagInfo,
+                            groupValue: _controller.noticeTag,
                             f: _controller.changeTagRadio()),
                         MyRadioBtn().getRadioButton(
                             context: context,
-                            title: MyStrings.tagQuiz,
-                            radio: _controller.noticeTag,
+                            value: MyStrings.tagQuiz,
+                            groupValue: _controller.noticeTag,
                             f: _controller.changeTagRadio()),
                         MyRadioBtn().getRadioButton(
                             context: context,
-                            title: MyStrings.tagLiveLesson,
-                            radio: _controller.noticeTag,
+                            value: MyStrings.tagLiveLesson,
+                            groupValue: _controller.noticeTag,
                             width: 200,
                             f: _controller.changeTagRadio()),
                       ],

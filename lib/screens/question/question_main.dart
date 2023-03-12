@@ -27,8 +27,8 @@ class QuestionMain extends StatelessWidget {
           Widget getRadioBtn(String title) {
             return MyRadioBtn().getRadioButton(
               context: context,
-              title: title,
-              radio: radioString,
+              value: title,
+              groupValue: radioString,
               f: radioFn,
             );
           }

@@ -101,8 +101,8 @@ class QuestionDetail extends StatelessWidget {
               Widget getRadioBtn(String title) {
                 return MyRadioBtn().getRadioButton(
                   context: context,
-                  title: title,
-                  radio: controller.statusRadio,
+                  value: title,
+                  groupValue: controller.statusRadio,
                   f: controller.changeStatusRadio(),
                 );
               }

@@ -12,6 +12,18 @@ class LessonStateManager extends GetxController {
   late String quizQuestionLang;
   late Map<String, bool> isEditMode;
   late List<LessonSummary> lessonSummaries;
+  RxString selectedLanguage = '영어'.obs;
+  Map<String, String> languageMap = {
+    'en': '영어',
+    'es': '스페인어',
+    'fr': '프랑스어',
+    'de': '독일어',
+    'pt': '포르투갈어',
+    'id': '인도네시아어',
+    'ru': '러시아어',
+  };
+  RxBool isChecked = true.obs;
+  RxList<String> levelDropdownList = ['Level1', 'Level2', 'Level3'].obs;
 
   //LessonStateManager({required this.lessonId});
   //todo: 코멘트 해제하기

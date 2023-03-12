@@ -11,6 +11,8 @@ class LessonTitle {
   late bool isReleased;
   String? tag;
 
+  LessonTitle();
+
   static const String TITLEID = 'titleId';
   static const String TITLEKO = 'title_ko';
   static const String TITLEEN = 'title_en';
