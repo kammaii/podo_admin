@@ -7,6 +7,7 @@ import 'package:podo_admin/screens/lesson/lesson_subject.dart';
 import 'package:podo_admin/screens/lesson/lesson_subject_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_title.dart';
 import 'package:podo_admin/screens/lesson/lesson_title_main.dart';
+import 'package:podo_admin/screens/writing/writing_title.dart';
 
 class LessonMain extends StatefulWidget {
   LessonMain({Key? key}) : super(key: key);
@@ -16,37 +17,44 @@ class LessonMain extends StatefulWidget {
 }
 
 class _LessonMainState extends State<LessonMain> {
-  LessonStateManager controller = Get.put(LessonStateManager());
+  late LessonStateManager controller;
   List<bool> selectedToggle = [true, false];
   String selectedLevel = '초급';
-  List<LessonSubject> lessonSubjects = [];
-  List<LessonTitle> lessonTitles = [];
-  late Future<List<dynamic>> future;
-  late LessonSubject newSubject;
-  late LessonTitle newTitle;
+  late LessonSubject lessonSubject;
+  late LessonTitle lessonTitle;
+  late Map<String, TextEditingController> controllersSubject;
+  late Map<String, TextEditingController> controllersTitle;
+  late List<Map<String, dynamic>> controllersWritingTitle;
 
   @override
-  Widget build(BuildContext context) {
-    if (selectedToggle[0] && lessonSubjects.isEmpty) {
+  void initState() {
+    super.initState();
+    controller = Get.put(LessonStateManager());
+    getDataFromDb();
+  }
+
+  getDataFromDb() {
+    if (selectedToggle[0]) {
       selectedLevel == '초급'
-          ? future = Database().getDocumentsFromDb(
+          ? controller.futureList = Database().getDocumentsFromDb(
               reference: 'LessonSubjects',
               query: 'isBeginnerMode',
               equalTo: true,
               orderBy: 'orderId',
               descending: false)
-          : future = Database().getDocumentsFromDb(
+          : controller.futureList = Database().getDocumentsFromDb(
               reference: 'LessonSubjects',
               query: 'isBeginnerMode',
               equalTo: false,
               orderBy: 'orderId',
               descending: false);
+    } else {
+      controller.futureList = Database().getDocumentsFromDb(reference: 'LessonTitles', orderBy: 'isFree');
     }
+  }
 
-    if (selectedToggle[1] && lessonTitles.isEmpty) {
-      future = Database().getDocumentsFromDb(reference: 'LessonTitles', orderBy: 'isFree');
-    }
-
+  @override
+  Widget build(BuildContext context) {
     Widget getLevelRadioBtn(String value) {
       return MyRadioBtn().getRadioButton(
         context: context,
@@ -55,6 +63,7 @@ class _LessonMainState extends State<LessonMain> {
         f: (String? value) {
           setState(() {
             selectedLevel = value!;
+            getDataFromDb();
           });
         },
       );
@@ -78,6 +87,7 @@ class _LessonMainState extends State<LessonMain> {
                         setState(() {
                           for (int i = 0; i < selectedToggle.length; i++) {
                             selectedToggle[i] = i == index;
+                            getDataFromDb();
                           }
                         });
                       },
@@ -113,9 +123,7 @@ class _LessonMainState extends State<LessonMain> {
             ),
             const SizedBox(height: 20),
             Expanded(
-              child: selectedToggle[0]
-                  ? LessonSubjectMain(future, selectedLevel == '초급' ? true : false).subjectTable
-                  : LessonTitleMain(future).titleTable,
+              child: selectedToggle[0] ? LessonSubjectMain().subjectTable : LessonTitleMain().titleTable,
             ),
           ],
         ),
@@ -123,27 +131,60 @@ class _LessonMainState extends State<LessonMain> {
     );
   }
 
+  initDialog() {
+    controller.selectedLanguage = 'en';
+    controller.isFreeLessonChecked = true;
+    controllersSubject = {};
+    controllersSubject = {
+      'ko': TextEditingController(),
+      'fo': TextEditingController(),
+      'desc': TextEditingController()
+    };
+    controllersTitle = {};
+    controllersTitle = {
+      'ko': TextEditingController(),
+      'fo': TextEditingController(),
+      'gram': TextEditingController(),
+    };
+    controllersWritingTitle = [];
+    controllersWritingTitle.add({'ko': TextEditingController(), 'fo': TextEditingController()});
+    lessonSubject = LessonSubject();
+    lessonTitle = LessonTitle();
+  }
+
   openDialog({required bool isNew}) {
-    newSubject = LessonSubject();
-    newTitle = LessonTitle();
+    initDialog();
     String title;
     Widget widget;
-    // 레슨 주제
-    if (selectedToggle[0]) {
-      selectedLevel == '초급' ? title = '레슨주제_만들기(초급)' : title = '레슨주제_만들기(중급)';
-      isNew ? null : title = '레슨주제';
-      widget = getSubjectDialog(isNew: isNew);
 
-      // 레슨 타이틀
+    //todo: isNew 가 false 일 때 controller setting 하기
+
+    if (selectedToggle[0]) {
+      selectedLevel == '초급' ? title = '레슨주제(초급)' : title = '레슨주제(중급)';
     } else {
-      isNew ? title = '레슨타이틀_만들기' : title = '레슨타이틀';
-      widget = getTitleDialog(isNew: isNew);
+      title = '레슨타이틀';
     }
 
     Get.dialog(AlertDialog(
       title: Text(title),
-      content: GetX<LessonStateManager>(
-        builder: (controller) {
+      content: GetBuilder<LessonStateManager>(
+        builder: (_) {
+          String selectedLanguage = controller.selectedLanguage;
+
+          if (selectedToggle[0]) {
+            controllersSubject['fo']!.text = lessonSubject.subject[selectedLanguage] ?? '';
+            controllersSubject['desc']!.text = lessonSubject.description[selectedLanguage] ?? '';
+            widget = getSubjectDialog(isNew: isNew);
+
+          } else {
+            controllersTitle['fo']!.text = lessonTitle.title[selectedLanguage] ?? '';
+            for (int i = 0; i < controllersWritingTitle.length; i++) {
+              controllersWritingTitle[i]['ko']!.text = lessonTitle.writingTitles[i].title['ko'] ?? '';
+              controllersWritingTitle[i]['fo']!.text =
+                  lessonTitle.writingTitles[i].title[selectedLanguage] ?? '';
+            }
+            widget = getTitleDialog(isNew: isNew);
+          }
           return Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -153,13 +194,13 @@ class _LessonMainState extends State<LessonMain> {
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    getLanguageRadio(controller.languageMap['en']!),
-                    getLanguageRadio(controller.languageMap['es']!),
-                    getLanguageRadio(controller.languageMap['fr']!),
-                    getLanguageRadio(controller.languageMap['de']!),
-                    getLanguageRadio(controller.languageMap['pt']!, width: 160),
-                    getLanguageRadio(controller.languageMap['id']!, width: 175),
-                    getLanguageRadio(controller.languageMap['ru']!),
+                    getLanguageRadio('en'),
+                    getLanguageRadio('es'),
+                    getLanguageRadio('fr'),
+                    getLanguageRadio('de'),
+                    getLanguageRadio('pt'),
+                    getLanguageRadio('id'),
+                    getLanguageRadio('ru'),
                   ],
                 ),
                 const Divider(height: 80),
@@ -209,16 +250,18 @@ class _LessonMainState extends State<LessonMain> {
               child: Column(
                 children: [
                   getTextField(
+                    controller: controllersSubject['ko'],
                     label: '주제입력(한국어)',
                     fn: (String? value) {
-                      newSubject.subject_ko = value!;
+                      lessonSubject.subject['ko'] = value!;
                     },
                   ),
                   const SizedBox(height: 20),
                   getTextField(
+                    controller: controllersSubject['fo'],
                     label: '주제입력(외국어)',
                     fn: (String? value) {
-                      newSubject.subject_foreign[getLanguageMapKey()] = value!;
+                      lessonSubject.subject[controller.selectedLanguage] = value!;
                     },
                   ),
                 ],
@@ -228,17 +271,26 @@ class _LessonMainState extends State<LessonMain> {
         ),
         const SizedBox(height: 50),
         getTextField(
+          controller: controllersSubject['desc'],
           label: '설명',
           fn: (String? value) {
-            newSubject.content_foreign[getLanguageMapKey()] = value!;
+            lessonSubject.description[controller.selectedLanguage] = value!;
           },
           minLine: 5,
-          enable: selectedLevel == '초급' ? true : false,
         ),
         const SizedBox(height: 50),
         ElevatedButton(
           onPressed: () {
-            //todo: save
+            setState(() {
+              int index = controller.lessonSubjects.length;
+              lessonSubject.orderId = index;
+              selectedLevel == '초급'
+                  ? lessonSubject.isBeginnerMode = true
+                  : lessonSubject.isBeginnerMode = false;
+              Database().saveLessonToDb(reference: 'LessonSubjects', lesson: lessonSubject);
+              getDataFromDb();
+              Get.back();
+            });
           },
           child: const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -249,116 +301,177 @@ class _LessonMainState extends State<LessonMain> {
     );
   }
 
-  String getLanguageMapKey() {
-    return controller.languageMap.keys
-        .firstWhere((key) => controller.languageMap[key] == controller.selectedLanguage.value);
-  }
-
   Widget getTitleDialog({required isNew}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('레슨타이틀', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 20),
-        Row(
-          children: [
-            Expanded(child: getTextField(label: '한국어', fn: (String? value) {})),
-            const SizedBox(width: 20),
-            Expanded(child: getTextField(label: '외국어', fn: (String? value) {})),
-            const SizedBox(width: 20),
-            Expanded(child: getTextField(label: '문법', fn: (String? value) {})),
-            const SizedBox(width: 20),
-            Column(
-              children: [
-                const Text('무료'),
-                Checkbox(
-                    value: controller.isChecked.value,
-                    onChanged: (value) {
-                      controller.isChecked.value = value!;
-                    }),
-              ],
-            )
-          ],
-        ),
-        const SizedBox(height: 30),
-        const Text('쓰기타이틀', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 20),
-        Row(
-          children: [
-            Expanded(child: getTextField(label: '한국어', fn: (String? value) {})),
-            const SizedBox(width: 20),
-            Expanded(child: getTextField(label: '외국어', fn: (String? value) {})),
-            const SizedBox(width: 20),
-            DropdownButton(
-                value: controller.levelDropdownList.first,
-                icon: const Icon(Icons.arrow_drop_down_outlined),
-                items: controller.levelDropdownList.map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem(value: value, child: Text(value));
-                }).toList(),
-                onChanged: (String? value) {}),
-            const SizedBox(width: 20),
-            Column(
-              children: [
-                const Text('무료'),
-                Checkbox(
-                    value: controller.isChecked.value,
-                    onChanged: (value) {
-                      controller.isChecked.value = value!;
-                    }),
-              ],
-            ),
-            const SizedBox(width: 30),
-            IconButton(
-                onPressed: () {
-                  //todo: remove writing title
-                },
-                icon: const Icon(
-                  Icons.remove_circle_outline_rounded,
-                  size: 30,
-                  color: Colors.red,
-                )),
-          ],
-        ),
-        const SizedBox(height: 20),
-        IconButton(
-            onPressed: () {
-              //todo: add writing title
-            },
-            icon: Icon(Icons.add_circle_outline_rounded,
-                size: 30, color: Theme.of(context).colorScheme.primary)),
-        const SizedBox(height: 50),
-        Center(
-          child: ElevatedButton(
-            onPressed: () {
-              //todo: save
-            },
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Text('저장', style: TextStyle(fontSize: 20)),
+    return SizedBox(
+      width: 1000,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('레슨타이틀', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                  child: getTextField(
+                      controller: controllersTitle['ko'],
+                      label: '한국어',
+                      fn: (String? value) {
+                        lessonTitle.title['ko'] = value!;
+                      })),
+              const SizedBox(width: 20),
+              Expanded(
+                  child: getTextField(
+                      controller: controllersTitle['fo'],
+                      label: '외국어',
+                      fn: (String? value) {
+                        lessonTitle.title[controller.selectedLanguage] = value!;
+                      })),
+              const SizedBox(width: 20),
+              Expanded(
+                  child: getTextField(
+                      controller: controllersTitle['gram'],
+                      label: '문법',
+                      fn: (String? value) {
+                        lessonTitle.titleGrammar = value!;
+                      })),
+              const SizedBox(width: 20),
+              Column(
+                children: [
+                  const Text('무료'),
+                  Checkbox(
+                      value: controller.isFreeLessonChecked,
+                      onChanged: (value) {
+                        controller.isFreeLessonChecked = value!;
+                        lessonTitle.isFree = value!;
+                      }),
+                ],
+              )
+            ],
+          ),
+          const SizedBox(height: 30),
+          Row(
+            children: [
+              const Text('쓰기타이틀', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(width: 20),
+              IconButton(
+                  onPressed: () {
+                    lessonTitle.writingTitles.add(WritingTitle());
+                    controllersWritingTitle.add({'ko': TextEditingController(), 'fo': TextEditingController()});
+                    controller.update();
+                  },
+                  icon: Icon(Icons.add_circle_outline_rounded,
+                      size: 30, color: Theme.of(context).colorScheme.primary)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: controllersWritingTitle.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Row(
+                    children: [
+                      Expanded(
+                          child: getTextField(
+                              controller: controllersWritingTitle[index]['ko'],
+                              label: '한국어',
+                              fn: (String? value) {
+                                lessonTitle.writingTitles[index].title['ko'] = value!;
+                              })),
+                      const SizedBox(width: 20),
+                      Expanded(
+                          child: getTextField(
+                              controller: controllersWritingTitle[index]['fo'],
+                              label: '외국어',
+                              fn: (String? value) {
+                                lessonTitle.writingTitles[index].title[controller.selectedLanguage] =
+                                    value!;
+                              })),
+                      const SizedBox(width: 20),
+                      DropdownButton(
+                          value: lessonTitle.writingTitles[index].level,
+                          icon: const Icon(Icons.arrow_drop_down_outlined),
+                          items: controller.levelDropdownList.map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem(value: value, child: Text(value));
+                          }).toList(),
+                          onChanged: (String? value) {
+                            lessonTitle.writingTitles[index].level = value!;
+                            controller.update();
+                          }),
+                      const SizedBox(width: 20),
+                      Column(
+                        children: [
+                          const Text('무료'),
+                          Checkbox(
+                              value: lessonTitle.writingTitles[index].isFree,
+                              onChanged: (value) {
+                                lessonTitle.writingTitles[index].isFree = value!;
+                                controller.update();
+                              }),
+                        ],
+                      ),
+                      const SizedBox(width: 30),
+                      IconButton(
+                          onPressed: () {
+                            lessonTitle.writingTitles.removeAt(index);
+                            controllersWritingTitle.removeAt(index);
+                            controller.update();
+                          },
+                          icon: const Icon(
+                            Icons.remove_circle_outline_rounded,
+                            size: 30,
+                            color: Colors.red,
+                          )),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
-        ),
-      ],
+          const SizedBox(height: 50),
+          Center(
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  Database().saveLessonToDb(reference: 'LessonTitles', lesson: lessonTitle);
+                  getDataFromDb();
+                  Get.back();
+                });
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Text('저장', style: TextStyle(fontSize: 20)),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget getLanguageRadio(String lang, {double width = 150}) {
+  Widget getLanguageRadio(String lang) {
     return MyRadioBtn().getRadioButton(
         context: context,
         value: lang,
-        width: width,
-        groupValue: controller.selectedLanguage.value,
+        groupValue: controller.selectedLanguage,
         f: (String? value) {
-          controller.selectedLanguage.value = value!;
+          controller.selectedLanguage = value!;
+          controller.update();
         });
   }
 
   Widget getTextField(
-      {required String label, required Function(String?) fn, int minLine = 1, bool enable = true}) {
+      {required controller,
+      required String label,
+      required Function(String?) fn,
+      int minLine = 1,
+      bool enable = true}) {
     return TextField(
       enabled: enable,
       minLines: minLine,
-      controller: TextEditingController(),
+      controller: controller,
       keyboardType: TextInputType.multiline,
       maxLines: null,
       decoration: InputDecoration(

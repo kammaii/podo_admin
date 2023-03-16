@@ -1,29 +1,32 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:podo_admin/common/my_textfield.dart';
+import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:podo_admin/screens/lesson/lesson_title.dart';
 
 class LessonTitleMain {
-  late final Future<List<dynamic>> _future;
   bool _isTagClicked = false;
-
-  LessonTitleMain(this._future);
+  LessonStateManager controller = Get.find<LessonStateManager>();
+  LessonTitleMain();
 
   Widget get titleTable {
     return FutureBuilder(
-      future: _future,
+      future: controller.futureList,
       builder: (BuildContext context, AsyncSnapshot snapshot) {
-        if (snapshot.hasData == true) {
-          List<LessonTitle> titles = [];
+        print('TITLE:: ${snapshot.connectionState}');
+        if (snapshot.hasData && snapshot.connectionState != ConnectionState.waiting) {
+          controller.lessonTitles = [];
           for (dynamic snapshot in snapshot.data) {
-            titles.add(LessonTitle.fromJson(snapshot));
+            controller.lessonTitles.add(LessonTitle.fromJson(snapshot));
           }
+          List<LessonTitle> titles = controller.lessonTitles;
           if (titles.isEmpty) {
             return const Center(child: Text('검색된 타이틀이 없습니다.'));
           } else {
             return DataTable2(
               columns: const [
-                DataColumn2(label: Text('아이디'), size: ColumnSize.S),
+                DataColumn2(label: Text('아이디'), size: ColumnSize.L),
                 DataColumn2(label: Text('제목'), size: ColumnSize.L),
                 DataColumn2(label: Text('문법'), size: ColumnSize.L),
                 DataColumn2(label: Text('쓰기'), size: ColumnSize.S),
@@ -35,8 +38,8 @@ class LessonTitleMain {
               rows: List<DataRow>.generate(titles.length, (index) {
                 LessonTitle title = titles[index];
                 return DataRow(cells: [
-                  DataCell(Text(title.titleId)),
-                  DataCell(Text(title.title_ko), onTap: () {
+                  DataCell(Text(title.id)),
+                  DataCell(Text(title.title['ko']!), onTap: () {
                     //todo: dialog 열기;
                   }),
                   DataCell(Text(title.titleGrammar)),

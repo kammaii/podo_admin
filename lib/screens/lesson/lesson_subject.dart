@@ -1,35 +1,40 @@
+import 'package:uuid/uuid.dart';
+
 class LessonSubject {
-  late String subjectId;
+  late String id;
   late int orderId;
   String? image;
-  late String subject_ko;
-  late Map<String,String> subject_foreign = {};
-  late Map<String,String> content_foreign = {};
+  late Map<String,dynamic> subject;
+  late Map<String,dynamic> description;
   late bool isBeginnerMode;
   String? tag;
-  late List<String> lessons;
+  late List<dynamic> lessons;
   late bool isReleased;
 
-  LessonSubject();
+  LessonSubject() {
+    id = const Uuid().v4();
+    subject = {};
+    description = {};
+    lessons = [];
+    isReleased = false;
+  }
 
-  static const String SUBJECTID = 'subjectId';
+  static const String ID = 'id';
   static const String ORDERID = 'orderId';
   static const String IMAGE = 'image';
-  static const String SUBJECTKO = 'subject_ko';
-  static const String SUBJECTFOREIGN = 'subject_foreign';
-  static const String CONTENTFOREIGN = 'content_foreign';
+  static const String SUBJECT = 'subject';
+  static const String DESCRIPTION = 'description';
   static const String ISBEGINNERMODE = 'isBeginnerMode';
   static const String TAG = 'tag';
   static const String LESSONS = 'lessons';
   static const String ISRELEASED = 'isReleased';
 
   LessonSubject.fromJson(Map<String, dynamic> json) {
-    subjectId = json[SUBJECTID];
+    id = json[ID];
     orderId = json[ORDERID];
     image = json[IMAGE] ?? null;
-    subject_ko = json[SUBJECTKO];
-    subject_foreign = json[SUBJECTFOREIGN];
-    content_foreign = json[CONTENTFOREIGN];
+    subject = json[SUBJECT];
+    description = json[DESCRIPTION];
     isBeginnerMode = json[ISBEGINNERMODE];
     tag = json[TAG] ?? null;
     lessons = json[LESSONS];
@@ -38,11 +43,10 @@ class LessonSubject {
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> map = {
-      SUBJECTID: subjectId,
+      ID: id,
       ORDERID: orderId,
-      SUBJECTKO: subject_ko,
-      SUBJECTFOREIGN: subject_foreign,
-      CONTENTFOREIGN: content_foreign,
+      SUBJECT: subject,
+      DESCRIPTION: description,
       ISBEGINNERMODE: isBeginnerMode,
       LESSONS: lessons,
       ISRELEASED: isReleased

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
 import 'package:podo_admin/screens/lesson/lesson_card.dart';
 import 'package:podo_admin/screens/lesson/lesson_summary.dart';
 import 'package:podo_admin/screens/question/question.dart';
@@ -18,7 +19,11 @@ class Database {
   }
 
   Future<List<dynamic>> getDocumentsFromDb(
-      {required String reference, dynamic query, dynamic equalTo, required String orderBy, bool descending = true}) async {
+      {required String reference,
+      dynamic query,
+      dynamic equalTo,
+      required String orderBy,
+      bool descending = true}) async {
     List<dynamic> documents = [];
     final ref = firestore.collection(reference);
     final queryRef;
@@ -74,6 +79,14 @@ class Database {
             .catchError((e) => print('ERROR : $e'));
       }
     }
+  }
+
+  Future<void> saveLessonToDb({required String reference, required dynamic lesson}) {
+    DocumentReference ref = firestore.collection(reference).doc(lesson.id);
+    return ref.set(lesson.toJson()).then((value) {
+      print('Lesson is Saved');
+      Get.snackbar('Lesson is saved', 'id: ${lesson.id}', snackPosition: SnackPosition.BOTTOM);
+    }).catchError((e) => print(e));
   }
 
   Future<void> saveLessonCard(LessonCard card) {

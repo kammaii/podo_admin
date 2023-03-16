@@ -1,21 +1,26 @@
 import 'package:podo_admin/screens/writing/writing_title.dart';
+import 'package:uuid/uuid.dart';
 
 class LessonTitle {
 
-  late String titleId;
-  late String title_ko;
-  late String title_en;
+  late String id;
+  late Map<String,dynamic> title;
   late String titleGrammar;
   late List<WritingTitle> writingTitles;
   late bool isFree;
   late bool isReleased;
   String? tag;
 
-  LessonTitle();
+  LessonTitle() {
+    id = const Uuid().v4();
+    title = {};
+    writingTitles = [WritingTitle()];
+    isFree = true;
+    isReleased = false;
+  }
 
-  static const String TITLEID = 'titleId';
-  static const String TITLEKO = 'title_ko';
-  static const String TITLEEN = 'title_en';
+  static const String ID = 'id';
+  static const String TITLE = 'title';
   static const String TITLEGRAMMAR = 'titleGrammar';
   static const String WRITINGTITLES = 'writingTitles';
   static const String ISFREE = 'isFree';
@@ -23,11 +28,13 @@ class LessonTitle {
   static const String TAG = 'tag';
 
   LessonTitle.fromJson(Map<String, dynamic> json) {
-    titleId = json[TITLEID];
-    title_ko = json[TITLEKO];
-    title_en = json[TITLEEN];
+    id = json[ID];
+    title = json[TITLE];
     titleGrammar = json[TITLEGRAMMAR];
-    writingTitles = json[WRITINGTITLES];
+    writingTitles = [];
+    for(dynamic wt in json[WRITINGTITLES]) {
+      writingTitles.add(WritingTitle.fromJson(wt));
+    }
     isFree = json[ISFREE];
     isReleased = json[ISRELEASED];
     tag = json[TAG] ?? null;
@@ -35,14 +42,17 @@ class LessonTitle {
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> map = {
-      TITLEID: titleId,
-      TITLEKO: title_ko,
-      TITLEEN: title_en,
+      ID: id,
+      TITLE: title,
       TITLEGRAMMAR: titleGrammar,
-      WRITINGTITLES: writingTitles,
       ISFREE: isFree,
       ISRELEASED: isReleased
     };
+    List<Map<String,dynamic>> writingTitleJson = [];
+    for(WritingTitle title in writingTitles) {
+      writingTitleJson.add(title.toJson());
+    }
+    map[WRITINGTITLES] = writingTitleJson;
     map[TAG] = tag ?? null;
     return map;
   }

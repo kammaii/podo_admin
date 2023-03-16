@@ -1,26 +1,30 @@
+import 'dart:convert';
+
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/screens/lesson/lesson_card_main.dart';
+import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:podo_admin/screens/lesson/lesson_subject.dart';
 
 class LessonSubjectMain {
-  late final Future<List<dynamic>> _future;
-  late final bool _isBeginnerMode;
   bool _isTagClicked = false;
-
-  LessonSubjectMain(this._future, this._isBeginnerMode);
+  LessonStateManager controller = Get.find<LessonStateManager>();
+  LessonSubjectMain();
 
   Widget get subjectTable {
     return FutureBuilder(
-      future: _future,
+      future: controller.futureList,
       builder: (BuildContext context, AsyncSnapshot snapshot) {
-        if (snapshot.hasData == true) {
-          List<LessonSubject> subjects = [];
+        print('SUBJECT:: ${snapshot.connectionState}');
+
+        if (snapshot.hasData && snapshot.connectionState != ConnectionState.waiting) {
+          controller.lessonSubjects = [];
           for (dynamic snapshot in snapshot.data) {
-            subjects.add(LessonSubject.fromJson(snapshot));
+            controller.lessonSubjects.add(LessonSubject.fromJson(snapshot));
           }
+          List<LessonSubject> subjects = controller.lessonSubjects;
           if (subjects.isEmpty) {
             return const Center(child: Text('검색된 주제가 없습니다.'));
           } else {
@@ -38,7 +42,7 @@ class LessonSubjectMain {
                 LessonSubject subject = subjects[index];
                 return DataRow(cells: [
                   DataCell(Text(subject.orderId.toString())),
-                  DataCell(Text(_isBeginnerMode ? subject.subject_ko! : subject.subject_foreign['en']!),
+                  DataCell(Text(subject.subject['ko']!),
                       onTap: () {
                     Get.to(LessonCardMain());
                   }),

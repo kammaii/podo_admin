@@ -14,7 +14,7 @@ class QuestionMain extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    QuestionStateManager controller = Get.put(QuestionStateManager());
+    Get.put(QuestionStateManager());
 
     return Scaffold(
       appBar: AppBar(

@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 import 'package:podo_admin/screens/lesson/lesson_card.dart';
+import 'package:podo_admin/screens/lesson/lesson_subject.dart';
 import 'package:podo_admin/screens/lesson/lesson_summary.dart';
+import 'package:podo_admin/screens/lesson/lesson_title.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
 class LessonStateManager extends GetxController {
@@ -12,18 +14,14 @@ class LessonStateManager extends GetxController {
   late String quizQuestionLang;
   late Map<String, bool> isEditMode;
   late List<LessonSummary> lessonSummaries;
-  RxString selectedLanguage = '영어'.obs;
-  Map<String, String> languageMap = {
-    'en': '영어',
-    'es': '스페인어',
-    'fr': '프랑스어',
-    'de': '독일어',
-    'pt': '포르투갈어',
-    'id': '인도네시아어',
-    'ru': '러시아어',
-  };
-  RxBool isChecked = true.obs;
-  RxList<String> levelDropdownList = ['Level1', 'Level2', 'Level3'].obs;
+  String selectedLanguage = 'en';
+  bool isFreeLessonChecked = true;
+  List<String> levelDropdownList = ['Level1', 'Level2', 'Level3'];
+  late Future<List<dynamic>> futureList;
+  late List<LessonSubject> lessonSubjects;
+  late List<LessonTitle> lessonTitles;
+  RxInt getXTrigger = 0.obs;
+
 
   //LessonStateManager({required this.lessonId});
   //todo: 코멘트 해제하기
@@ -40,6 +38,8 @@ class LessonStateManager extends GetxController {
     isEditMode = {};
     lessonId = 'b_01'; //todo: 이 줄 삭제하고 lessonMain 에서  setLessonId로 설정하기
     lessonSummaries = [];
+    lessonSubjects = [];
+    lessonTitles = [];
   }
 
   void setLessonId(String id) {

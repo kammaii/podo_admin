@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:podo_admin/screens/lesson/lesson_main.dart';
 import 'package:podo_admin/screens/notice/notice_main.dart';
 import 'package:podo_admin/screens/question/question_main.dart';
+import 'package:podo_admin/screens/reading/reading_main.dart';
 import 'package:podo_admin/screens/test/testdb.dart';
 import 'package:podo_admin/screens/user/user_main.dart';
 import 'package:podo_admin/screens/writing/writing_main.dart';
@@ -20,7 +21,7 @@ class _MainFrameState extends State<MainFrame> {
     QuestionMain(),
     UserMain(),
     NoticeMain(),
-
+    const ReadingMain(),
     const TestDB(),
   ];
 
@@ -63,6 +64,11 @@ class _MainFrameState extends State<MainFrame> {
                 icon: Icon(Icons.play_lesson_outlined),
                 selectedIcon: Icon(Icons.play_lesson),
                 label: Text('레슨'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.menu_book_outlined),
+                selectedIcon: Icon(Icons.menu_book),
+                label: Text('읽기'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.balance_outlined),
