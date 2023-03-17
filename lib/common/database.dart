@@ -81,13 +81,32 @@ class Database {
     }
   }
 
-  Future<void> saveLessonToDb({required String reference, required dynamic lesson}) {
+  Future<void> saveLessonToDb({required String reference, required dynamic lesson}) async {
     DocumentReference ref = firestore.collection(reference).doc(lesson.id);
-    return ref.set(lesson.toJson()).then((value) {
+    return await ref.set(lesson.toJson()).then((value) {
       print('Lesson is Saved');
       Get.snackbar('Lesson is saved', 'id: ${lesson.id}', snackPosition: SnackPosition.BOTTOM);
     }).catchError((e) => print(e));
   }
+
+  Future<void> updateLessonToDb(
+      {required String reference, required dynamic lesson, required Map<String, dynamic> map}) async {
+    DocumentReference ref = firestore.collection(reference).doc(lesson.id);
+    return await ref.update(map).then((value) {
+      print('Lesson is Updated');
+      Get.snackbar('Lesson is Updated', 'id: ${lesson.id}', snackPosition: SnackPosition.BOTTOM);
+    }).catchError((e) => print(e));
+  }
+
+  Future<void> deleteLessonFromDb(
+      {required String reference, required dynamic lesson}) async {
+    DocumentReference ref = firestore.collection(reference).doc(lesson.id);
+    return await ref.delete().then((value) {
+      print('Lesson is Deleted');
+      Get.snackbar('Lesson is Deleted', 'id: ${lesson.id}', snackPosition: SnackPosition.BOTTOM);
+    }).catchError((e) => print(e));
+  }
+
 
   Future<void> saveLessonCard(LessonCard card) {
     DocumentReference ref = firestore.doc('lessonCard/${card.uniqueId}');

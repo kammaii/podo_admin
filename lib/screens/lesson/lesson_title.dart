@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:podo_admin/screens/writing/writing_title.dart';
 import 'package:uuid/uuid.dart';
 
@@ -10,10 +11,12 @@ class LessonTitle {
   late bool isFree;
   late bool isReleased;
   String? tag;
+  DateTime? date;
 
   LessonTitle() {
     id = const Uuid().v4();
     title = {};
+    titleGrammar = '';
     writingTitles = [WritingTitle()];
     isFree = true;
     isReleased = false;
@@ -26,6 +29,7 @@ class LessonTitle {
   static const String ISFREE = 'isFree';
   static const String ISRELEASED = 'isReleased';
   static const String TAG = 'tag';
+  static const String DATE = 'date';
 
   LessonTitle.fromJson(Map<String, dynamic> json) {
     id = json[ID];
@@ -38,6 +42,8 @@ class LessonTitle {
     isFree = json[ISFREE];
     isReleased = json[ISRELEASED];
     tag = json[TAG] ?? null;
+    Timestamp stamp = json[DATE];
+    date = stamp.toDate();
   }
 
   Map<String, dynamic> toJson() {
@@ -46,7 +52,8 @@ class LessonTitle {
       TITLE: title,
       TITLEGRAMMAR: titleGrammar,
       ISFREE: isFree,
-      ISRELEASED: isReleased
+      ISRELEASED: isReleased,
+      DATE: date
     };
     List<Map<String,dynamic>> writingTitleJson = [];
     for(WritingTitle title in writingTitles) {
@@ -54,6 +61,7 @@ class LessonTitle {
     }
     map[WRITINGTITLES] = writingTitleJson;
     map[TAG] = tag ?? null;
+    date == null ? map[DATE] = Timestamp.now() : null;
     return map;
   }
 
