@@ -1,16 +1,22 @@
+import 'dart:io';
+import 'package:data_table_2/data_table_2.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
+import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:podo_admin/screens/lesson/lesson_subject.dart';
 import 'package:podo_admin/screens/lesson/lesson_title.dart';
 import 'package:podo_admin/screens/writing/writing_title.dart';
 
 class LessonMainDialog {
-
   late final VoidCallback updateState;
   late final BuildContext context;
+
   LessonMainDialog(this.context, this.updateState);
 
   LessonStateManager controller = Get.find<LessonStateManager>();
@@ -19,7 +25,6 @@ class LessonMainDialog {
   late List<Map<String, dynamic>> controllersWritingTitle;
   late bool isSubject;
   bool? isBeginner;
-
 
   initDialog() {
     controller.selectedLanguage = 'en';
@@ -38,7 +43,8 @@ class LessonMainDialog {
     };
   }
 
-  openDialog({required bool isSubject, bool? isBeginner, LessonSubject? lessonSubject, LessonTitle? lessonTitle}) {
+  openDialog(
+      {required bool isSubject, bool? isBeginner, LessonSubject? lessonSubject, LessonTitle? lessonTitle}) {
     this.isSubject = isSubject;
     this.isBeginner = isBeginner;
     lessonSubject = lessonSubject ?? LessonSubject();
@@ -65,20 +71,20 @@ class LessonMainDialog {
             controllersSubject['fo']!.text = lessonSubject.subject[selectedLanguage] ?? '';
             controllersSubject['desc']!.text = lessonSubject.description[selectedLanguage] ?? '';
             widget = getSubjectDialog(lessonSubject);
-
           } else {
             controllersTitle['ko']!.text = lessonTitle!.title['ko'] ?? '';
             controllersTitle['fo']!.text = lessonTitle.title[selectedLanguage] ?? '';
             controllersTitle['gram']!.text = lessonTitle.titleGrammar;
 
             controllersWritingTitle = [];
-            if(lessonTitle.writingTitles.isEmpty) {
+            if (lessonTitle.writingTitles.isEmpty) {
               controllersWritingTitle.add({'ko': TextEditingController(), 'fo': TextEditingController()});
             } else {
               for (int i = 0; i < lessonTitle.writingTitles.length; i++) {
                 controllersWritingTitle.add({'ko': TextEditingController(), 'fo': TextEditingController()});
                 controllersWritingTitle[i]['ko']!.text = lessonTitle.writingTitles[i].title['ko'] ?? '';
-                controllersWritingTitle[i]['fo']!.text = lessonTitle.writingTitles[i].title[selectedLanguage] ?? '';
+                controllersWritingTitle[i]['fo']!.text =
+                    lessonTitle.writingTitles[i].title[selectedLanguage] ?? '';
               }
             }
             widget = getTitleDialog(lessonTitle);
@@ -112,6 +118,26 @@ class LessonMainDialog {
   }
 
   Widget getSubjectDialog(LessonSubject lessonSubject) {
+    File image;
+    final picker = ImagePicker();
+    FirebaseStorage storage = FirebaseStorage.instance;
+
+    Future getImage() async {
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        image = File(pickedFile.path);
+        String fileName = '${lessonSubject.id.toString()}.jpeg';
+        try {
+          final ref = storage.ref().child('LessonSubject/$fileName');
+          ref.putFile((await image.readAsBytes()) as File);
+        } catch (e) {
+          print('Storage error: $e');
+        }
+      } else {
+        print('No image selected.');
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -134,7 +160,7 @@ class LessonMainDialog {
                 const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () {
-                    //todo: image upload
+                    getImage();
                   },
                   child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -179,13 +205,7 @@ class LessonMainDialog {
         const SizedBox(height: 50),
         ElevatedButton(
           onPressed: () {
-            if(lessonSubject.orderId == null) {
-              int index = controller.lessonSubjects.length;
-              lessonSubject.orderId = index;
-              isBeginner!
-                  ? lessonSubject.isBeginnerMode = true
-                  : lessonSubject.isBeginnerMode = false;
-            }
+            isBeginner! ? lessonSubject.isBeginnerMode = true : lessonSubject.isBeginnerMode = false;
             Database().saveLessonToDb(reference: 'LessonSubjects', lesson: lessonSubject);
             Get.back();
             updateState();
@@ -255,7 +275,8 @@ class LessonMainDialog {
               IconButton(
                   onPressed: () {
                     lessonTitle.writingTitles.add(WritingTitle());
-                    controllersWritingTitle.add({'ko': TextEditingController(), 'fo': TextEditingController()});
+                    controllersWritingTitle
+                        .add({'ko': TextEditingController(), 'fo': TextEditingController()});
                     controller.update();
                   },
                   icon: Icon(Icons.add_circle_outline_rounded,
@@ -285,8 +306,7 @@ class LessonMainDialog {
                               controller: controllersWritingTitle[index]['fo'],
                               label: '외국어',
                               fn: (String? value) {
-                                lessonTitle.writingTitles[index].title[controller.selectedLanguage] =
-                                value!;
+                                lessonTitle.writingTitles[index].title[controller.selectedLanguage] = value!;
                               })),
                       const SizedBox(width: 20),
                       DropdownButton(
@@ -361,10 +381,10 @@ class LessonMainDialog {
 
   Widget getTextField(
       {required controller,
-        required String label,
-        required Function(String?) fn,
-        int minLine = 1,
-        bool enable = true}) {
+      required String label,
+      required Function(String?) fn,
+      int minLine = 1,
+      bool enable = true}) {
     return TextField(
       enabled: enable,
       minLines: minLine,
@@ -382,5 +402,117 @@ class LessonMainDialog {
       ),
       onChanged: fn,
     );
+  }
+
+  openTitleListDialog({required LessonSubject subject}) {
+    String titleId = '';
+    Get.dialog(AlertDialog(
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(subject.subject['ko']),
+          ElevatedButton(
+              onPressed: () {
+                Get.dialog(
+                  AlertDialog(
+                    title: const Text('타이틀 아이디를 입력하세요'),
+                    content: MyTextField().getTextField(onChangedFunction: (String? value) {
+                      titleId = value!;
+                    }),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            Database().addLessonTitles(lessonSubject: subject, titleId: titleId);
+                            Get.back();
+                          },
+                          child: const Text('저장'))
+                    ],
+                  ),
+                );
+              },
+              child: const Text('추가'))
+        ],
+      ),
+      content: GetBuilder<LessonStateManager>(
+        builder: (controller) {
+          controller.futureList = Database()
+              .getListQueryFromDb(reference: 'LessonTitles', field: 'subjects', arrayContains: subject.id);
+
+          return SizedBox(
+            width: 1500,
+            child: FutureBuilder(
+                future: controller.futureList,
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  if (snapshot.hasData && snapshot.connectionState != ConnectionState.waiting) {
+                    List<LessonTitle> titles = [];
+                    for (dynamic snapshot in snapshot.data) {
+                      titles.add(LessonTitle.fromJson(snapshot));
+                    }
+                    if (titles.isEmpty) {
+                      return const Center(child: Text('연결된 타이틀이 없습니다.'));
+                    } else {
+                      return DataTable2(
+                          columns: const [
+                            DataColumn2(label: Text('순서'), size: ColumnSize.S),
+                            DataColumn2(label: Text('레슨아이디'), size: ColumnSize.L),
+                            DataColumn2(label: Text('타이틀'), size: ColumnSize.L),
+                            DataColumn2(label: Text('상태'), size: ColumnSize.S),
+                            DataColumn2(label: Text('순서변경'), size: ColumnSize.S),
+                            DataColumn2(label: Text('삭제'), size: ColumnSize.S),
+                          ],
+                          rows: List<DataRow>.generate(titles.length, (index) {
+                            LessonTitle title = titles[index];
+                            return DataRow(cells: [
+                              DataCell(Text(index.toString())),
+                              DataCell(Text(title.id)),
+                              DataCell(Text(title.title['ko'])),
+                              DataCell(Text(title.isReleased ? '게시중' : '입력중')),
+                              DataCell(Row(
+                                children: [
+                                  IconButton(
+                                      onPressed: () {}, icon: const Icon(Icons.arrow_drop_up_outlined)),
+                                  IconButton(
+                                      onPressed: () {}, icon: const Icon(Icons.arrow_drop_down_outlined)),
+                                ],
+                              )),
+                              DataCell(
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () {
+                                    Get.dialog(AlertDialog(
+                                      title: const Text('정말 삭제하겠습니까?'),
+                                      actions: [
+                                        TextButton(
+                                            onPressed: () {},
+                                            child: const Text(
+                                              '네',
+                                              style: TextStyle(color: Colors.red),
+                                            )),
+                                        TextButton(
+                                            onPressed: () {
+                                              Get.back();
+                                            },
+                                            child: const Text('아니오')),
+                                      ],
+                                    ));
+                                  },
+                                ),
+                              )
+                            ]);
+                          }));
+                    }
+                  } else if (snapshot.hasError) {
+                    return Text('에러: ${snapshot.error}');
+                  } else {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                }),
+          );
+        },
+      ),
+    ));
   }
 }

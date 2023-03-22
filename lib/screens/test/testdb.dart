@@ -34,7 +34,13 @@ class TestDB extends StatelessWidget {
           },
           child: const Text('make user db'),
         ),
-
+        const SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: (){
+            Database().getTest();
+          },
+          child: const Text('test'),
+        ),
       ],
     );
   }

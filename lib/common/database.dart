@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/screens/lesson/lesson_card.dart';
+import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
+import 'package:podo_admin/screens/lesson/lesson_subject.dart';
 import 'package:podo_admin/screens/lesson/lesson_summary.dart';
+import 'package:podo_admin/screens/lesson/lesson_title.dart';
 import 'package:podo_admin/screens/question/question.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
@@ -20,15 +23,15 @@ class Database {
 
   Future<List<dynamic>> getDocumentsFromDb(
       {required String reference,
-      dynamic query,
+      dynamic field,
       dynamic equalTo,
       required String orderBy,
       bool descending = true}) async {
     List<dynamic> documents = [];
     final ref = firestore.collection(reference);
     final queryRef;
-    if (query != null) {
-      queryRef = ref.where(query, isEqualTo: equalTo).orderBy(orderBy, descending: descending);
+    if (field != null) {
+      queryRef = ref.where(field, isEqualTo: equalTo).orderBy(orderBy, descending: descending);
     } else {
       queryRef = ref.orderBy(orderBy, descending: true);
     }
@@ -39,6 +42,33 @@ class Database {
       }
     }, onError: (e) => print('ERROR : $e'));
     return documents;
+  }
+
+  Future<List<dynamic>> getListQueryFromDb(
+      {required String reference, required String field, required String arrayContains}) async {
+    List<dynamic> documents = [];
+    final ref = firestore.collection(reference);
+    final queryRef;
+    queryRef = ref.where(field, arrayContains: arrayContains);
+    await queryRef.get().then((QuerySnapshot snapshot) {
+      print('quiring');
+      for (QueryDocumentSnapshot documentSnapshot in snapshot.docs) {
+        documents.add(documentSnapshot.data() as Map<String, dynamic>);
+      }
+    }, onError: (e) => print('ERROR : $e'));
+    return documents;
+  }
+
+  getTest() async {
+    List<String> q = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'];
+    String id = 'pt';
+    final ref = firestore.collection('LessonTitles').where('title.$id', isGreaterThanOrEqualTo: '0');
+    await ref.get().then((QuerySnapshot snapshot) {
+      print('testing');
+      for (QueryDocumentSnapshot documentSnapshot in snapshot.docs) {
+        print(documentSnapshot.data() as Map<String, dynamic>);
+      }
+    });
   }
 
   updateCorrection({required String writingId, String? correction, bool isUncorrectable = false}) {
@@ -98,15 +128,35 @@ class Database {
     }).catchError((e) => print(e));
   }
 
-  Future<void> deleteLessonFromDb(
-      {required String reference, required dynamic lesson}) async {
+  Future<void> addLessonTitles({required LessonSubject lessonSubject, required String titleId}) async {
+    firestore.runTransaction((transaction) async {
+      // update LessonTitle
+      DocumentReference titleRef = firestore.collection('LessonTitles').doc(titleId);
+      DocumentSnapshot titleSnapshot = await transaction.get(titleRef);
+      final newSubjects = titleSnapshot.get('subjects');
+      newSubjects.add(lessonSubject.id);
+      // update LessonSubject
+      DocumentReference subjectRef = firestore.collection('LessonSubjects').doc(lessonSubject.id);
+      DocumentSnapshot subjectSnapshot = await transaction.get(subjectRef);
+      final newTitles = subjectSnapshot.get('titles');
+      newTitles.add(titleId);
+      transaction.update(titleRef, {'subjects': newSubjects});
+      transaction.update(subjectRef, {'titles': newTitles});
+    }).then((_) {
+      Get.snackbar('타이틀이 추가되었습니다.', titleId, snackPosition: SnackPosition.BOTTOM);
+      Get.find<LessonStateManager>().update();
+    }).onError((e, stackTrace) {
+      Get.snackbar('에러', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    });
+  }
+
+  Future<void> deleteLessonFromDb({required String reference, required dynamic lesson}) async {
     DocumentReference ref = firestore.collection(reference).doc(lesson.id);
     return await ref.delete().then((value) {
       print('Lesson is Deleted');
       Get.snackbar('Lesson is Deleted', 'id: ${lesson.id}', snackPosition: SnackPosition.BOTTOM);
     }).catchError((e) => print(e));
   }
-
 
   Future<void> saveLessonCard(LessonCard card) {
     DocumentReference ref = firestore.doc('lessonCard/${card.uniqueId}');

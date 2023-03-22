@@ -8,6 +8,7 @@ import 'package:podo_admin/screens/lesson/lesson_main_dialog.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:podo_admin/screens/lesson/lesson_subject.dart';
 import 'package:podo_admin/screens/lesson/lesson_title.dart';
+import 'package:flutter/services.dart';
 
 class LessonMain extends StatefulWidget {
   LessonMain({Key? key}) : super(key: key);
@@ -36,13 +37,13 @@ class _LessonMainState extends State<LessonMain> {
       selectedLevel == '초급'
           ? controller.futureList = Database().getDocumentsFromDb(
               reference: 'LessonSubjects',
-              query: 'isBeginnerMode',
+              field: 'isBeginnerMode',
               equalTo: true,
               orderBy: 'orderId',
               descending: false)
           : controller.futureList = Database().getDocumentsFromDb(
               reference: 'LessonSubjects',
-              query: 'isBeginnerMode',
+              field: 'isBeginnerMode',
               equalTo: false,
               orderBy: 'orderId',
               descending: false);
@@ -187,7 +188,9 @@ class _LessonMainState extends State<LessonMain> {
                       ],
                     ));
                   }),
-                  DataCell(Text(subject.lessons.length.toString())),
+                  DataCell(Text(subject.titles.length.toString()), onTap: () {
+                    lessonMainDialog.openTitleListDialog(subject: subject);
+                  }),
                   DataCell(Text(subject.tag != null ? subject.tag.toString() : ''), onTap: () {
                     Get.dialog(
                       AlertDialog(
@@ -332,7 +335,10 @@ class _LessonMainState extends State<LessonMain> {
               rows: List<DataRow>.generate(titles.length, (index) {
                 LessonTitle title = titles[index];
                 return DataRow(cells: [
-                  DataCell(Text(title.id!.substring(0, 8))),
+                  DataCell(Text(title.id!.substring(0, 8)), onTap: () {
+                    Clipboard.setData(ClipboardData(text: title.id));
+                    Get.snackbar('아이디가 클립보드에 저장되었습니다.', title.id, snackPosition: SnackPosition.BOTTOM);
+                  }),
                   DataCell(Text(title.title['ko']!), onTap: () {
                     lessonMainDialog.openDialog(isSubject: false, lessonTitle: title);
                   }),
@@ -386,8 +392,7 @@ class _LessonMainState extends State<LessonMain> {
                             TextButton(
                                 onPressed: () {
                                   setState(() {
-                                    Database()
-                                        .deleteLessonFromDb(reference: 'LessonTitles', lesson: title);
+                                    Database().deleteLessonFromDb(reference: 'LessonTitles', lesson: title);
                                     getDataFromDb();
                                     Get.back();
                                   });

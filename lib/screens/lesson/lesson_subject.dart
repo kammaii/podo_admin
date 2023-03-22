@@ -1,3 +1,6 @@
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:uuid/uuid.dart';
 
 class LessonSubject {
@@ -8,14 +11,16 @@ class LessonSubject {
   late Map<String,dynamic> description;
   late bool isBeginnerMode;
   String? tag;
-  late List<dynamic> lessons;
+  late List<dynamic> titles;
   late bool isReleased;
 
   LessonSubject() {
     id = const Uuid().v4();
+    int index = Get.find<LessonStateManager>().lessonSubjects.length;
+    orderId = index;
     subject = {};
     description = {};
-    lessons = [];
+    titles = [];
     isReleased = false;
   }
 
@@ -26,7 +31,7 @@ class LessonSubject {
   static const String DESCRIPTION = 'description';
   static const String ISBEGINNERMODE = 'isBeginnerMode';
   static const String TAG = 'tag';
-  static const String LESSONS = 'lessons';
+  static const String TITLES = 'titles';
   static const String ISRELEASED = 'isReleased';
 
   LessonSubject.fromJson(Map<String, dynamic> json) {
@@ -37,7 +42,7 @@ class LessonSubject {
     description = json[DESCRIPTION];
     isBeginnerMode = json[ISBEGINNERMODE];
     tag = json[TAG] ?? null;
-    lessons = json[LESSONS];
+    titles = json[TITLES];
     isReleased = json[ISRELEASED];
   }
 
@@ -48,7 +53,7 @@ class LessonSubject {
       SUBJECT: subject,
       DESCRIPTION: description,
       ISBEGINNERMODE: isBeginnerMode,
-      LESSONS: lessons,
+      TITLES: titles,
       ISRELEASED: isReleased
     };
     map[IMAGE] = image ?? null;
