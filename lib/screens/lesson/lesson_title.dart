@@ -12,7 +12,6 @@ class LessonTitle {
   late bool isReleased;
   String? tag;
   DateTime? date;
-  late List<dynamic> subjects;
 
   LessonTitle() {
     id = const Uuid().v4();
@@ -21,7 +20,6 @@ class LessonTitle {
     writingTitles = [WritingTitle()];
     isFree = true;
     isReleased = false;
-    subjects = [];
   }
 
   static const String ID = 'id';
@@ -32,7 +30,6 @@ class LessonTitle {
   static const String ISRELEASED = 'isReleased';
   static const String TAG = 'tag';
   static const String DATE = 'date';
-  static const String SUBJECTS = 'subjects';
 
   LessonTitle.fromJson(Map<String, dynamic> json) {
     id = json[ID];
@@ -47,7 +44,6 @@ class LessonTitle {
     tag = json[TAG] ?? null;
     Timestamp stamp = json[DATE];
     date = stamp.toDate();
-    subjects = json[SUBJECTS];
   }
 
   Map<String, dynamic> toJson() {
@@ -58,7 +54,6 @@ class LessonTitle {
       ISFREE: isFree,
       ISRELEASED: isReleased,
       DATE: date,
-      SUBJECTS: subjects
     };
     List<Map<String,dynamic>> writingTitleJson = [];
     for(WritingTitle title in writingTitles) {

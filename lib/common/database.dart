@@ -44,7 +44,7 @@ class Database {
     return documents;
   }
 
-  Future<List<dynamic>> getListQueryFromDb(
+  Future<List<dynamic>> getListFieldFromDb(
       {required String reference, required String field, required String arrayContains}) async {
     List<dynamic> documents = [];
     final ref = firestore.collection(reference);
@@ -59,16 +59,16 @@ class Database {
     return documents;
   }
 
-  getTest() async {
-    List<String> q = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'];
-    String id = 'pt';
-    final ref = firestore.collection('LessonTitles').where('title.$id', isGreaterThanOrEqualTo: '0');
+  Future<List<dynamic>> getDocsFromList({required String collection, required String field, required List<dynamic> list}) async {
+    List<dynamic> titles = [];
+    final ref = firestore.collection(collection).where(field, whereIn: list);
     await ref.get().then((QuerySnapshot snapshot) {
-      print('testing');
+      print('Get docs from list');
       for (QueryDocumentSnapshot documentSnapshot in snapshot.docs) {
-        print(documentSnapshot.data() as Map<String, dynamic>);
+        titles.add(documentSnapshot.data() as Map<String, dynamic>);
       }
     });
+    return titles;
   }
 
   updateCorrection({required String writingId, String? correction, bool isUncorrectable = false}) {
@@ -128,22 +128,18 @@ class Database {
     }).catchError((e) => print(e));
   }
 
-  Future<void> addLessonTitles({required LessonSubject lessonSubject, required String titleId}) async {
+  Future<void> addListTransaction(
+      {required String collection, required String docId, required String field, required dynamic addValue}) async {
     firestore.runTransaction((transaction) async {
-      // update LessonTitle
-      DocumentReference titleRef = firestore.collection('LessonTitles').doc(titleId);
-      DocumentSnapshot titleSnapshot = await transaction.get(titleRef);
-      final newSubjects = titleSnapshot.get('subjects');
-      newSubjects.add(lessonSubject.id);
-      // update LessonSubject
-      DocumentReference subjectRef = firestore.collection('LessonSubjects').doc(lessonSubject.id);
-      DocumentSnapshot subjectSnapshot = await transaction.get(subjectRef);
-      final newTitles = subjectSnapshot.get('titles');
-      newTitles.add(titleId);
-      transaction.update(titleRef, {'subjects': newSubjects});
-      transaction.update(subjectRef, {'titles': newTitles});
+      final ref = firestore.collection(collection).doc(docId);
+      final doc = await transaction.get(ref);
+      final newValue = doc.get(field);
+      newValue.add(addValue);
+      print('Transaction updating');
+      transaction.update(ref, {field: newValue});
     }).then((_) {
-      Get.snackbar('타이틀이 추가되었습니다.', titleId, snackPosition: SnackPosition.BOTTOM);
+      print('Transaction completed');
+      Get.snackbar('타이틀이 추가되었습니다.', addValue, snackPosition: SnackPosition.BOTTOM);
       Get.find<LessonStateManager>().update();
     }).onError((e, stackTrace) {
       Get.snackbar('에러', e.toString(), snackPosition: SnackPosition.BOTTOM);

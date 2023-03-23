@@ -11,6 +11,7 @@ import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:podo_admin/screens/lesson/lesson_subject.dart';
 import 'package:podo_admin/screens/lesson/lesson_title.dart';
+import 'package:podo_admin/screens/loading_controller.dart';
 import 'package:podo_admin/screens/writing/writing_title.dart';
 
 class LessonMainDialog {
@@ -422,21 +423,47 @@ class LessonMainDialog {
                     actions: [
                       TextButton(
                           onPressed: () {
-                            Database().addLessonTitles(lessonSubject: subject, titleId: titleId);
                             Get.back();
+                            if(subject.titles.contains(titleId)) {
+                              Get.dialog(const AlertDialog(title: Text('이미 포함된 타이틀 입니다.'),));
+                            } else {
+                              Database().addListTransaction(collection: 'LessonSubjects', docId: subject.id, field: 'titles', addValue: titleId);
+                              subject.titles.add(titleId);
+                            }
                           },
                           child: const Text('저장'))
                     ],
                   ),
                 );
               },
-              child: const Text('추가'))
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Text(
+                  '추가하기',
+                  style: TextStyle(fontSize: 20),
+                ),
+              ),
+          ),
         ],
       ),
       content: GetBuilder<LessonStateManager>(
         builder: (controller) {
-          controller.futureList = Database()
-              .getListQueryFromDb(reference: 'LessonTitles', field: 'subjects', arrayContains: subject.id);
+          final list = List.from(subject.titles);
+          final quotient = (list.length.toDouble()/10).floor();
+          final remainder = list.length%10;
+
+          List<Future> futures = [];
+
+          for(int i=0; i<quotient; i++) {
+            futures.add(Database().getDocsFromList(collection: 'LessonTitles', field: 'id', list: list.sublist(0, 10)));
+            list.removeRange(0, 10);
+          }
+
+          if(remainder != 0) {
+            futures.add(Database().getDocsFromList(collection: 'LessonTitles', field: 'id', list: list));
+          }
+
+          controller.futureList = Future.wait(futures);
 
           return SizedBox(
             width: 1500,
@@ -446,11 +473,26 @@ class LessonMainDialog {
                   if (snapshot.hasData && snapshot.connectionState != ConnectionState.waiting) {
                     List<LessonTitle> titles = [];
                     for (dynamic snapshot in snapshot.data) {
-                      titles.add(LessonTitle.fromJson(snapshot));
+                      for(dynamic s in snapshot) {
+                        titles.add(LessonTitle.fromJson(s));
+                      }
                     }
                     if (titles.isEmpty) {
                       return const Center(child: Text('연결된 타이틀이 없습니다.'));
                     } else {
+                      // 타이틀 순서 정렬
+                      LessonTitle temp;
+                      int length = titles.length;
+                      for(int i=0; i<length; i++) {
+                        for(int j=0; j<length; j++) {
+                          if(titles[j].id == subject.titles[i] && i != j) {
+                            temp = titles[i];
+                            titles[i] = titles[j];
+                            titles[j] = temp;
+                          }
+                        }
+                      }
+
                       return DataTable2(
                           columns: const [
                             DataColumn2(label: Text('순서'), size: ColumnSize.S),
