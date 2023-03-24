@@ -120,11 +120,11 @@ class Database {
   }
 
   Future<void> updateLessonToDb(
-      {required String reference, required dynamic lesson, required Map<String, dynamic> map}) async {
-    DocumentReference ref = firestore.collection(reference).doc(lesson.id);
+      {required String collection, required String docId, required Map<String, dynamic> map}) async {
+    DocumentReference ref = firestore.collection(collection).doc(docId);
     return await ref.update(map).then((value) {
       print('Lesson is Updated');
-      Get.snackbar('Lesson is Updated', 'id: ${lesson.id}', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Lesson is Updated', 'id: ${docId}', snackPosition: SnackPosition.BOTTOM);
     }).catchError((e) => print(e));
   }
 

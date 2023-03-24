@@ -413,53 +413,60 @@ class LessonMainDialog {
         children: [
           Text(subject.subject['ko']),
           ElevatedButton(
-              onPressed: () {
-                Get.dialog(
-                  AlertDialog(
-                    title: const Text('타이틀 아이디를 입력하세요'),
-                    content: MyTextField().getTextField(onChangedFunction: (String? value) {
-                      titleId = value!;
-                    }),
-                    actions: [
-                      TextButton(
-                          onPressed: () {
-                            Get.back();
-                            if(subject.titles.contains(titleId)) {
-                              Get.dialog(const AlertDialog(title: Text('이미 포함된 타이틀 입니다.'),));
-                            } else {
-                              Database().addListTransaction(collection: 'LessonSubjects', docId: subject.id, field: 'titles', addValue: titleId);
-                              subject.titles.add(titleId);
-                            }
-                          },
-                          child: const Text('저장'))
-                    ],
-                  ),
-                );
-              },
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Text(
-                  '추가하기',
-                  style: TextStyle(fontSize: 20),
+            onPressed: () {
+              Get.dialog(
+                AlertDialog(
+                  title: const Text('타이틀 아이디를 입력하세요'),
+                  content: MyTextField().getTextField(onChangedFunction: (String? value) {
+                    titleId = value!;
+                  }),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Get.back();
+                          if (subject.titles.contains(titleId)) {
+                            Get.dialog(const AlertDialog(
+                              title: Text('이미 포함된 타이틀 입니다.'),
+                            ));
+                          } else {
+                            Database().addListTransaction(
+                                collection: 'LessonSubjects',
+                                docId: subject.id,
+                                field: 'titles',
+                                addValue: titleId);
+                            subject.titles.add(titleId);
+                          }
+                        },
+                        child: const Text('저장'))
+                  ],
                 ),
+              );
+            },
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Text(
+                '추가하기',
+                style: TextStyle(fontSize: 20),
               ),
+            ),
           ),
         ],
       ),
       content: GetBuilder<LessonStateManager>(
         builder: (controller) {
           final list = List.from(subject.titles);
-          final quotient = (list.length.toDouble()/10).floor();
-          final remainder = list.length%10;
+          final quotient = (list.length.toDouble() / 10).floor();
+          final remainder = list.length % 10;
 
           List<Future> futures = [];
 
-          for(int i=0; i<quotient; i++) {
-            futures.add(Database().getDocsFromList(collection: 'LessonTitles', field: 'id', list: list.sublist(0, 10)));
+          for (int i = 0; i < quotient; i++) {
+            futures.add(Database()
+                .getDocsFromList(collection: 'LessonTitles', field: 'id', list: list.sublist(0, 10)));
             list.removeRange(0, 10);
           }
 
-          if(remainder != 0) {
+          if (remainder != 0) {
             futures.add(Database().getDocsFromList(collection: 'LessonTitles', field: 'id', list: list));
           }
 
@@ -473,7 +480,7 @@ class LessonMainDialog {
                   if (snapshot.hasData && snapshot.connectionState != ConnectionState.waiting) {
                     List<LessonTitle> titles = [];
                     for (dynamic snapshot in snapshot.data) {
-                      for(dynamic s in snapshot) {
+                      for (dynamic s in snapshot) {
                         titles.add(LessonTitle.fromJson(s));
                       }
                     }
@@ -483,9 +490,9 @@ class LessonMainDialog {
                       // 타이틀 순서 정렬
                       LessonTitle temp;
                       int length = titles.length;
-                      for(int i=0; i<length; i++) {
-                        for(int j=0; j<length; j++) {
-                          if(titles[j].id == subject.titles[i] && i != j) {
+                      for (int i = 0; i < length; i++) {
+                        for (int j = 0; j < length; j++) {
+                          if (titles[j].id == subject.titles[i] && i != j) {
                             temp = titles[i];
                             titles[i] = titles[j];
                             titles[j] = temp;
@@ -512,9 +519,45 @@ class LessonMainDialog {
                               DataCell(Row(
                                 children: [
                                   IconButton(
-                                      onPressed: () {}, icon: const Icon(Icons.arrow_drop_up_outlined)),
+                                      onPressed: () {
+                                        if (index != 0) {
+                                          List<dynamic> titles = subject.titles;
+                                          int newIndex = index - 1;
+                                          final temp = titles[newIndex];
+                                          titles[newIndex] = titles[index];
+                                          titles[index] = temp;
+                                          Database().updateLessonToDb(
+                                              collection: 'LessonSubjects',
+                                              docId: subject.id,
+                                              map: {'titles': titles});
+                                          controller.update();
+                                        } else {
+                                          Get.dialog(const AlertDialog(
+                                            title: Text('첫번째 레슨입니다.'),
+                                          ));
+                                        }
+                                      },
+                                      icon: const Icon(Icons.arrow_drop_up_outlined)),
                                   IconButton(
-                                      onPressed: () {}, icon: const Icon(Icons.arrow_drop_down_outlined)),
+                                      onPressed: () {
+                                        if (index != subject.titles.length - 1) {
+                                          List<dynamic> titles = subject.titles;
+                                          int newIndex = index + 1;
+                                          final temp = titles[newIndex];
+                                          titles[newIndex] = titles[index];
+                                          titles[index] = temp;
+                                          Database().updateLessonToDb(
+                                              collection: 'LessonSubjects',
+                                              docId: subject.id,
+                                              map: {'titles': titles});
+                                          controller.update();
+                                        } else {
+                                          Get.dialog(const AlertDialog(
+                                            title: Text('마지막 레슨입니다.'),
+                                          ));
+                                        }
+                                      },
+                                      icon: const Icon(Icons.arrow_drop_down_outlined)),
                                 ],
                               )),
                               DataCell(
@@ -528,7 +571,15 @@ class LessonMainDialog {
                                       title: const Text('정말 삭제하겠습니까?'),
                                       actions: [
                                         TextButton(
-                                            onPressed: () {},
+                                            onPressed: () {
+                                              subject.titles.removeAt(index);
+                                              Database().updateLessonToDb(
+                                                  collection: 'LessonSubjects',
+                                                  docId: subject.id,
+                                                  map: {'titles': subject.titles});
+                                              Get.back();
+                                              controller.update();
+                                            },
                                             child: const Text(
                                               '네',
                                               style: TextStyle(color: Colors.red),

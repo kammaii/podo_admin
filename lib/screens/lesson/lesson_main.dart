@@ -21,7 +21,6 @@ class _LessonMainState extends State<LessonMain> {
   late LessonStateManager controller;
   List<bool> selectedToggle = [true, false];
   String selectedLevel = '초급';
-  bool _isTagClicked = false;
   late LessonMainDialog lessonMainDialog;
   late bool isBeginner;
 
@@ -52,8 +51,8 @@ class _LessonMainState extends State<LessonMain> {
     }
   }
 
-  updateDB({required String ref, required dynamic lesson, required Map<String, dynamic> value}) {
-    Database().updateLessonToDb(reference: ref, lesson: lesson, map: value);
+  updateDB({required String collection, required String docId, required Map<String, dynamic> value}) {
+    Database().updateLessonToDb(collection: collection, docId: docId, map: value);
     updateState();
     Get.back();
   }
@@ -177,12 +176,12 @@ class _LessonMainState extends State<LessonMain> {
                       actions: [
                         TextButton(
                             onPressed: () {
-                              updateDB(ref: 'LessonSubjects', lesson: subject, value: {'isReleased': true});
+                              updateDB(collection: 'LessonSubjects', docId: subject.id, value: {'isReleased': true});
                             },
                             child: const Text('게시중')),
                         TextButton(
                             onPressed: () {
-                              updateDB(ref: 'LessonSubjects', lesson: subject, value: {'isReleased': false});
+                              updateDB(collection: 'LessonSubjects', docId: subject.id, value: {'isReleased': false});
                             },
                             child: const Text('입력중')),
                       ],
@@ -201,7 +200,7 @@ class _LessonMainState extends State<LessonMain> {
                         actions: [
                           TextButton(
                               onPressed: () {
-                                updateDB(ref: 'LessonSubjects', lesson: subject, value: {'tag': subject.tag});
+                                updateDB(collection: 'LessonSubjects', docId: subject.id, value: {'tag': subject.tag});
                               },
                               child: const Text('저장'))
                         ],
@@ -218,12 +217,12 @@ class _LessonMainState extends State<LessonMain> {
                                   int newIndex = index - 1;
                                   LessonSubject thatSubject = subjects[newIndex];
                                   Database().updateLessonToDb(
-                                      reference: 'LessonSubjects',
-                                      lesson: thatSubject,
+                                      collection: 'LessonSubjects',
+                                      docId: thatSubject.id,
                                       map: {'orderId': index});
                                   Database().updateLessonToDb(
-                                      reference: 'LessonSubjects',
-                                      lesson: subject,
+                                      collection: 'LessonSubjects',
+                                      docId: subject.id,
                                       map: {'orderId': newIndex});
                                   getDataFromDb();
                                   Get.back();
@@ -242,12 +241,12 @@ class _LessonMainState extends State<LessonMain> {
                                   int newIndex = index + 1;
                                   LessonSubject thatSubject = subjects[newIndex];
                                   Database().updateLessonToDb(
-                                      reference: 'LessonSubjects',
-                                      lesson: thatSubject,
+                                      collection: 'LessonSubjects',
+                                      docId: thatSubject.id,
                                       map: {'orderId': index});
                                   Database().updateLessonToDb(
-                                      reference: 'LessonSubjects',
-                                      lesson: subject,
+                                      collection: 'LessonSubjects',
+                                      docId: subject.id,
                                       map: {'orderId': newIndex});
                                   getDataFromDb();
                                   Get.back();
@@ -351,12 +350,12 @@ class _LessonMainState extends State<LessonMain> {
                       actions: [
                         TextButton(
                             onPressed: () {
-                              updateDB(ref: 'LessonTitles', lesson: title, value: {'isReleased': true});
+                              updateDB(collection: 'LessonTitles', docId: title.id, value: {'isReleased': true});
                             },
                             child: const Text('게시중')),
                         TextButton(
                             onPressed: () {
-                              updateDB(ref: 'LessonTitles', lesson: title, value: {'isReleased': false});
+                              updateDB(collection: 'LessonTitles', docId: title.id, value: {'isReleased': false});
                             },
                             child: const Text('입력중')),
                       ],
@@ -372,7 +371,7 @@ class _LessonMainState extends State<LessonMain> {
                         actions: [
                           TextButton(
                               onPressed: () {
-                                updateDB(ref: 'LessonTitles', lesson: title, value: {'tag': title.tag});
+                                updateDB(collection: 'LessonTitles', docId: title.id, value: {'tag': title.tag});
                               },
                               child: const Text('저장'))
                         ],
