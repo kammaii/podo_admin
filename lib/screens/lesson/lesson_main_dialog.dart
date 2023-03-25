@@ -8,10 +8,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/common/my_textfield.dart';
+import 'package:podo_admin/screens/lesson/lesson_card_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:podo_admin/screens/lesson/lesson_subject.dart';
 import 'package:podo_admin/screens/lesson/lesson_title.dart';
-import 'package:podo_admin/screens/loading_controller.dart';
 import 'package:podo_admin/screens/writing/writing_title.dart';
 
 class LessonMainDialog {
@@ -207,7 +207,7 @@ class LessonMainDialog {
         ElevatedButton(
           onPressed: () {
             isBeginner! ? lessonSubject.isBeginnerMode = true : lessonSubject.isBeginnerMode = false;
-            Database().saveLessonToDb(reference: 'LessonSubjects', lesson: lessonSubject);
+            Database().saveLessonToDb(collection: 'LessonSubjects', lesson: lessonSubject);
             Get.back();
             updateState();
           },
@@ -354,7 +354,7 @@ class LessonMainDialog {
           Center(
             child: ElevatedButton(
               onPressed: () {
-                Database().saveLessonToDb(reference: 'LessonTitles', lesson: lessonTitle);
+                Database().saveLessonToDb(collection: 'LessonTitles', lesson: lessonTitle);
                 Get.back();
                 updateState();
               },
@@ -513,7 +513,9 @@ class LessonMainDialog {
                             LessonTitle title = titles[index];
                             return DataRow(cells: [
                               DataCell(Text(index.toString())),
-                              DataCell(Text(title.id)),
+                              DataCell(Text(title.id), onTap: () {
+                                Get.to(const LessonCardMain(), arguments: title);
+                              }),
                               DataCell(Text(title.title['ko'])),
                               DataCell(Text(title.isReleased ? '게시중' : '입력중')),
                               DataCell(Row(

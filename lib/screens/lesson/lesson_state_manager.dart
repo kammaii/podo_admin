@@ -10,7 +10,7 @@ class LessonStateManager extends GetxController {
   late bool isVideoChecked;
   late String lessonId;
   late String cardType;
-  late List<LessonCard> cardItems;
+  late List<dynamic> cards;
   late String quizQuestionLang;
   late Map<String, bool> isEditMode;
   late List<LessonSummary> lessonSummaries;
@@ -21,6 +21,8 @@ class LessonStateManager extends GetxController {
   late List<LessonSubject> lessonSubjects;
   late List<LessonTitle> lessonTitles;
   RxInt getXTrigger = 0.obs;
+  final languages = ['en','es','fr','de','pt','id','ru'];
+
 
 
   //LessonStateManager({required this.lessonId});
@@ -33,7 +35,7 @@ class LessonStateManager extends GetxController {
     isVideoChecked = false;
     lessonId = '';
     cardType = MyStrings.subject;
-    cardItems = [];
+    cards = [];
     quizQuestionLang = MyStrings.korean;
     isEditMode = {};
     lessonId = 'b_01'; //todo: 이 줄 삭제하고 lessonMain 에서  setLessonId로 설정하기
@@ -53,7 +55,7 @@ class LessonStateManager extends GetxController {
 
   void setNewIndex() {
     int newIndex = 0;
-    for (LessonCard card in cardItems) {
+    for (LessonCard card in cards) {
       card.changeOrderId(newIndex);
       newIndex++;
     }
@@ -61,13 +63,15 @@ class LessonStateManager extends GetxController {
   }
 
   void addCardItem() {
-    LessonCard card = LessonCard(lessonId: lessonId, orderId: cardItems.length, type: cardType);
-    cardItems.add(card);
-    setEditMode(id: card.uniqueId);
+    LessonCard card = LessonCard();
+    card.orderId = cards.length;
+    card.type = cardType;
+    cards.add(card);
+    setEditMode(id: card.id);
   }
 
   void removeCardItem(int index) {
-    cardItems.removeAt(index);
+    cards.removeAt(index);
     setNewIndex();
   }
 
@@ -75,8 +79,8 @@ class LessonStateManager extends GetxController {
     if (oldIndex < newIndex) {
       newIndex -= 1;
     }
-    final LessonCard card = cardItems.removeAt(oldIndex);
-    cardItems.insert(newIndex, card);
+    final LessonCard card = cards.removeAt(oldIndex);
+    cards.insert(newIndex, card);
     setNewIndex();
   }
 

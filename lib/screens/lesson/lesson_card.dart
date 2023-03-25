@@ -1,82 +1,35 @@
+import 'package:uuid/uuid.dart';
+
 class LessonCard {
-
-  late String lessonId;
+  late String id;
   late int orderId;
-  late String uniqueId;
   late String type;
-  String? kr;
-  String? en;
-  String? pronun;
-  String? explain;
-  String? audio;
-  String? question;
-  List<String>? examples;
-  bool? isFavorite;
+  late Map<String, dynamic> content;
 
-  LessonCard({
-    required this.lessonId,
-    required this.orderId,
-    required this.type,
-    this.kr,
-    this.en,
-    this.pronun,
-    this.explain,
-    this.audio,
-    this.question,
-    this.examples,
-    this.isFavorite,
-  }) {
-    setUniqueId();
+  LessonCard() {
+    id = const Uuid().v4();
+    content = {};
   }
 
   void changeOrderId(int order) {
     orderId = order;
-    setUniqueId();
   }
 
-  void setUniqueId() {
-    uniqueId = '${lessonId}_${orderId.toString()}';
-  }
-
-  static const String LESSONID = 'lessonId';
+  static const String ID = 'id';
   static const String ORDERID = 'orderId';
-  static const String UNIQUEID = 'uniqueId';
   static const String TYPE = 'type';
-  static const String KR = 'kr';
-  static const String EN = 'en';
-  static const String PRONUN = 'pronun';
-  static const String EXPLAIN = 'explain';
-  static const String AUDIO = 'audio';
-  static const String QUESTION = 'question';
-  static const String EXAMPLES = 'examples';
-  static const String ISFAVORITE = 'isFavorite';
+  static const String CONTENT = 'content';
 
-  LessonCard.fromJson(Map<String, dynamic> json) :
-    lessonId = json[LESSONID],
-    orderId = json[ORDERID],
-    uniqueId = json[UNIQUEID],
-    type = json[TYPE],
-    kr = json[KR],
-    en = json[EN],
-    pronun = json[PRONUN],
-    explain = json[EXPLAIN],
-    audio = json[AUDIO],
-    question = json[QUESTION],
-    examples = json[EXAMPLES],
-    isFavorite = json[ISFAVORITE];
+  LessonCard.fromJson(Map<String, dynamic> json)
+      : id = json[ID],
+        orderId = json[ORDERID],
+        type = json[TYPE],
+        content = json[CONTENT];
 
   Map<String, dynamic> toJson() => {
-    LESSONID : lessonId,
-    ORDERID : orderId,
-    UNIQUEID : uniqueId,
-    TYPE : type,
-    KR : kr,
-    EN : en,
-    PRONUN : pronun,
-    EXPLAIN : explain,
-    AUDIO : audio,
-    QUESTION : question,
-    EXAMPLES : examples,
-    ISFAVORITE : isFavorite
-  };
+        ID: id,
+        ORDERID: orderId,
+        TYPE: type,
+        CONTENT: content,
+      };
 }

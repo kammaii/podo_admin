@@ -1,39 +1,34 @@
+import 'package:uuid/uuid.dart';
+
 class LessonSummary {
-  String lessonId;
-  int orderId;
-  String? subjectKr;
-  String? subjectEn;
-  String? explain;
+  late String id;
+  late int orderId;
+  late Map<String, String> content;
   List<String>? examples;
 
-  LessonSummary({
-    required this.lessonId,
-    required this.orderId,
-    required this.subjectKr,
-    required this.subjectEn,
-  });
+  LessonSummary() {
+    id = const Uuid().v4();
+    content = {};
+  }
 
-  static const String LESSONID = 'lessonId';
+  static const String ID = 'id';
   static const String ORDERID = 'orderId';
-  static const String SUBJECTKR = 'subjectKr';
-  static const String SUBJECTEN = 'subjectEn';
-  static const String EXPLAIN = 'explain';
+  static const String CONTENT = 'content';
   static const String EXAMPLES = 'examples';
 
-  LessonSummary.fromJson(Map<String, dynamic> json) :
-        lessonId = json[LESSONID],
+  LessonSummary.fromJson(Map<String, dynamic> json)
+      : id = json[ID],
         orderId = json[ORDERID],
-        subjectKr = json[SUBJECTKR],
-        subjectEn = json[SUBJECTEN],
-        explain = json[EXPLAIN],
-        examples = json[EXAMPLES];
+        content = json[CONTENT],
+        examples = json[EXAMPLES] ?? null;
 
-  Map<String, dynamic> toJson() => {
-    LESSONID : lessonId,
-    ORDERID : orderId,
-    SUBJECTKR : subjectKr,
-    SUBJECTEN : subjectEn,
-    EXPLAIN : explain,
-    EXAMPLES : examples,
-  };
+  Map<String, dynamic> toJson() {
+    Map<String, dynamic> map = {
+      ID: id,
+      ORDERID: orderId,
+      CONTENT: content,
+    };
+    map[EXAMPLES] = examples ?? null;
+    return map;
+  }
 }

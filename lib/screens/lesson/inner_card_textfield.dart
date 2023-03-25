@@ -11,67 +11,85 @@ class InnerCardTextField {
   Function(String)? f;
   String? label;
 
-  Widget getKr(int index, {String lab = ''}) {
-    cardValue = _controller.cardItems[index].kr;
-    label = lab == '' ? MyStrings.korean : lab;
+  Widget getKo(int index, String lab) {
+    cardValue = _controller.cards[index].content[lab];
+    label = lab;
     f = (text) {
-      _controller.cardItems[index].kr = text;
+      _controller.cards[index].content[lab] = text;
       _controller.update();
     };
     return getTextField();
   }
 
-  Widget getEn(int index, {String lab = ''}) {
-    cardValue = _controller.cardItems[index].en;
-    label = lab == '' ? MyStrings.english : lab;
-    f = (text) {
-      _controller.cardItems[index].en = text;
-      _controller.update();
-    };
-    return getTextField();
+  Widget getFos(int index, {String lab = ''}) {
+    List<Widget> widgets = [];
+    for(String language in _controller.languages) {
+      cardValue = _controller.cards[index].content[language];
+      label = lab == '' ? language : lab;
+      f = (text) {
+        _controller.cards[index].content[language] = text;
+        _controller.update();
+      };
+      widgets.add(Padding(
+        padding: const EdgeInsets.only(bottom: 5),
+        child: getTextField(),
+      ));
+    }
+    return Column(
+      children: widgets,
+    );
   }
 
   Widget getExplain(int index) {
-    cardValue = _controller.cardItems[index].explain;
+    cardValue = _controller.cards[index].explain;
     label = MyStrings.exp;
     f = (text) {
-      _controller.cardItems[index].explain = text;
+      _controller.cards[index].explain = text;
       _controller.update();
     };
     return getTextField();
   }
 
-  Widget getPronun(int index) {
-    cardValue = _controller.cardItems[index].pronun;
-    label = MyStrings.pronun;
+  Widget getSummaryKo(int index) {
+    cardValue = _controller.lessonSummaries[index].content['ko'];
+    label = '타이틀(한국어)';
     f = (text) {
-      _controller.cardItems[index].pronun = text;
-      _controller.update();
+      _controller.lessonSummaries[index].content['ko'] = text;
     };
     return getTextField();
   }
 
-  Widget getAudio(int index) {
-    cardValue = _controller.cardItems[index].audio;
-    label = MyStrings.audio;
+  Widget getSummaryFos(int index) {
+    List<Widget> widgets = [];
+    for(String language in _controller.languages) {
+      cardValue = _controller.lessonSummaries[index].content[language];
+      label = '설명($language)';
+      f = (text) {
+        _controller.lessonSummaries[index].content[language] = text;
+      };
+      widgets.add(Padding(
+        padding: const EdgeInsets.only(bottom: 5),
+        child: getTextField(),
+      ));
+    }
+    return Column(
+      children: widgets,
+    );
+  }
+
+  Widget getSummaryEx({required int summaryIndex, required int exampleIndex}) {
+    cardValue = _controller.lessonSummaries[summaryIndex].examples![exampleIndex];
+    label = '예문 $exampleIndex';
     f = (text) {
-      _controller.cardItems[index].audio = text;
-      _controller.update();
+      _controller.lessonSummaries[summaryIndex].examples![exampleIndex] = text;
     };
     return getTextField();
   }
 
-  Widget getSummary({required String textValue, required String lab, required Function(String) function}) {
-    cardValue = textValue;
-    label = lab;
-    f = function;
-    return getTextField();
-  }
+
 
   Widget getTextField() {
-
     TextEditingController controller = TextEditingController(text: cardValue);
-
     return MyTextField().getTextField(
       controller: controller,
       label: label,

@@ -35,19 +35,19 @@ class _LessonMainState extends State<LessonMain> {
     if (selectedToggle[0]) {
       selectedLevel == '초급'
           ? controller.futureList = Database().getDocumentsFromDb(
-              reference: 'LessonSubjects',
+              collection: 'LessonSubjects',
               field: 'isBeginnerMode',
               equalTo: true,
               orderBy: 'orderId',
               descending: false)
           : controller.futureList = Database().getDocumentsFromDb(
-              reference: 'LessonSubjects',
+              collection: 'LessonSubjects',
               field: 'isBeginnerMode',
               equalTo: false,
               orderBy: 'orderId',
               descending: false);
     } else {
-      controller.futureList = Database().getDocumentsFromDb(reference: 'LessonTitles', orderBy: 'date');
+      controller.futureList = Database().getDocumentsFromDb(collection: 'LessonTitles', orderBy: 'date');
     }
   }
 
@@ -176,12 +176,18 @@ class _LessonMainState extends State<LessonMain> {
                       actions: [
                         TextButton(
                             onPressed: () {
-                              updateDB(collection: 'LessonSubjects', docId: subject.id, value: {'isReleased': true});
+                              updateDB(
+                                  collection: 'LessonSubjects',
+                                  docId: subject.id,
+                                  value: {'isReleased': true});
                             },
                             child: const Text('게시중')),
                         TextButton(
                             onPressed: () {
-                              updateDB(collection: 'LessonSubjects', docId: subject.id, value: {'isReleased': false});
+                              updateDB(
+                                  collection: 'LessonSubjects',
+                                  docId: subject.id,
+                                  value: {'isReleased': false});
                             },
                             child: const Text('입력중')),
                       ],
@@ -200,7 +206,10 @@ class _LessonMainState extends State<LessonMain> {
                         actions: [
                           TextButton(
                               onPressed: () {
-                                updateDB(collection: 'LessonSubjects', docId: subject.id, value: {'tag': subject.tag});
+                                updateDB(
+                                    collection: 'LessonSubjects',
+                                    docId: subject.id,
+                                    value: {'tag': subject.tag});
                               },
                               child: const Text('저장'))
                         ],
@@ -275,7 +284,7 @@ class _LessonMainState extends State<LessonMain> {
                                 onPressed: () {
                                   setState(() {
                                     Database()
-                                        .deleteLessonFromDb(reference: 'LessonSubjects', lesson: subject);
+                                        .deleteLessonFromDb(collection: 'LessonSubjects', lesson: subject);
                                     getDataFromDb();
                                     Get.back();
                                   });
@@ -350,12 +359,14 @@ class _LessonMainState extends State<LessonMain> {
                       actions: [
                         TextButton(
                             onPressed: () {
-                              updateDB(collection: 'LessonTitles', docId: title.id, value: {'isReleased': true});
+                              updateDB(
+                                  collection: 'LessonTitles', docId: title.id, value: {'isReleased': true});
                             },
                             child: const Text('게시중')),
                         TextButton(
                             onPressed: () {
-                              updateDB(collection: 'LessonTitles', docId: title.id, value: {'isReleased': false});
+                              updateDB(
+                                  collection: 'LessonTitles', docId: title.id, value: {'isReleased': false});
                             },
                             child: const Text('입력중')),
                       ],
@@ -371,7 +382,8 @@ class _LessonMainState extends State<LessonMain> {
                         actions: [
                           TextButton(
                               onPressed: () {
-                                updateDB(collection: 'LessonTitles', docId: title.id, value: {'tag': title.tag});
+                                updateDB(
+                                    collection: 'LessonTitles', docId: title.id, value: {'tag': title.tag});
                               },
                               child: const Text('저장'))
                         ],
@@ -391,7 +403,7 @@ class _LessonMainState extends State<LessonMain> {
                             TextButton(
                                 onPressed: () {
                                   setState(() {
-                                    Database().deleteLessonFromDb(reference: 'LessonTitles', lesson: title);
+                                    Database().deleteLessonFromDb(collection: 'LessonTitles', lesson: title);
                                     getDataFromDb();
                                     Get.back();
                                   });
