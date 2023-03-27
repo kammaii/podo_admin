@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
         //useMaterial3: true,
         colorScheme: lightColorScheme,
       ),
-      home: const LessonCardMain(),
+      home: const MainFrame(),
     );
   }
 

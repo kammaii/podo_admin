@@ -29,7 +29,6 @@ class _LessonCardMainState extends State<LessonCardMain> {
   int explainFoIndex = 0;
   HtmlEditorController htmlEditorController = HtmlEditorController();
 
-
   @override
   void initState() {
     super.initState();
@@ -41,9 +40,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
   getCards() async {
     _controller.cards = await Database()
         .getDocumentsFromDb(collection: 'LessonTitles/$sampleTitleId/LessonCards', orderBy: 'orderId');
-    if (_controller.cards.isEmpty) {
-      setState(() {});
-    }
+    setState(() {});
   }
 
   void setCards() {
@@ -72,10 +69,12 @@ class _LessonCardMainState extends State<LessonCardMain> {
             }
             String language = _controller.languages[explainFoIndex];
             print('$language: ${card.content[language]}');
-            if(card.content[language] == null) {
+            if (card.content[language] == null) {
               card.content[language] = '';
             }
             String explain = card.content[language];
+            print('code1: ${explain.hashCode}');
+            print('code2: ${card.content[language].hashCode}');
             print('$language: ${card.content[language]}');
             htmlEditorController.setText(language);
             print('$language: ${card.content[language]}');
@@ -117,7 +116,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                         ],
                       ),
                       callbacks: Callbacks(onChangeContent: (String? content) {
-                        _controller.cards[index].content[language] = content!;
+                        card.content[language] = content!;
                       }),
                     ),
                   ),
@@ -148,10 +147,10 @@ class _LessonCardMainState extends State<LessonCardMain> {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
-                    _controller.cardType = MyStrings.speaking;
-                    _controller.addCardItem();
-                    setCards();
-                    _controller.update();
+                    setState(() {
+                      _controller.cardType = MyStrings.speaking;
+                      _controller.addCardItem();
+                    });
                   },
                   child: const Text('말하기카드만들기'),
                 )
@@ -207,18 +206,18 @@ class _LessonCardMainState extends State<LessonCardMain> {
                     : Text(card.type),
                 IconButton(
                   onPressed: () {
-                    _controller.removeCardItem(index);
-                    setCards();
-                    _controller.update();
+                    setState(() {
+                      _controller.removeCardItem(index);
+                    });
                   },
                   icon: const Icon(Icons.delete, color: Colors.red),
                 ),
                 card.type == MyStrings.explain
                     ? TextButton(
                         onPressed: () {
-                          _controller.setEditMode(id: card.id);
-                          setCards();
-                          _controller.update();
+                          setState(() {
+                            _controller.setEditMode(id: card.id);
+                          });
                         },
                         child: const Text('수정'),
                       )
@@ -268,8 +267,9 @@ class _LessonCardMainState extends State<LessonCardMain> {
                 const SizedBox(width: 10),
                 IconButton(
                   onPressed: () {
-                    exampleList.removeAt(index);
-                    _controller.update();
+                    setState(() {
+                      exampleList.removeAt(index);
+                    });
                   },
                   icon: const Icon(Icons.delete, color: Colors.red),
                 ),
@@ -338,8 +338,9 @@ class _LessonCardMainState extends State<LessonCardMain> {
                                 alignment: Alignment.center,
                                 child: IconButton(
                                   onPressed: () {
-                                    _controller.lessonSummaries[index].examples!.add('');
-                                    _controller.update();
+                                    setState(() {
+                                      _controller.lessonSummaries[index].examples!.add('');
+                                    });
                                   },
                                   icon: const Icon(Icons.add_circle_rounded),
                                 )),
@@ -401,9 +402,9 @@ class _LessonCardMainState extends State<LessonCardMain> {
                   const SizedBox(width: 20),
                   ElevatedButton(
                     onPressed: () {
-                      _controller.addCardItem();
-                      setCards();
-                      _controller.update();
+                      setState(() {
+                        _controller.addCardItem();
+                      });
                     },
                     child: Row(
                       children: const [
@@ -427,9 +428,9 @@ class _LessonCardMainState extends State<LessonCardMain> {
                           padding: const EdgeInsets.all(20),
                           scrollDirection: Axis.horizontal,
                           onReorder: (int oldIndex, int newIndex) {
-                            _controller.reorderCardItem(oldIndex, newIndex);
-                            setCards();
-                            _controller.update();
+                            setState(() {
+                              _controller.reorderCardItem(oldIndex, newIndex);
+                            });
                           },
                           children: cardWidgets,
                         ),

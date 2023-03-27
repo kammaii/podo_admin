@@ -528,7 +528,7 @@ class LessonMainDialog {
                                           final temp = titles[newIndex];
                                           titles[newIndex] = titles[index];
                                           titles[index] = temp;
-                                          Database().updateLessonToDb(
+                                          Database().updateField(
                                               collection: 'LessonSubjects',
                                               docId: subject.id,
                                               map: {'titles': titles});
@@ -548,7 +548,7 @@ class LessonMainDialog {
                                           final temp = titles[newIndex];
                                           titles[newIndex] = titles[index];
                                           titles[index] = temp;
-                                          Database().updateLessonToDb(
+                                          Database().updateField(
                                               collection: 'LessonSubjects',
                                               docId: subject.id,
                                               map: {'titles': titles});
@@ -575,7 +575,7 @@ class LessonMainDialog {
                                         TextButton(
                                             onPressed: () {
                                               subject.titles.removeAt(index);
-                                              Database().updateLessonToDb(
+                                              Database().updateField(
                                                   collection: 'LessonSubjects',
                                                   docId: subject.id,
                                                   map: {'titles': subject.titles});

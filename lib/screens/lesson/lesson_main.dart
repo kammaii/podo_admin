@@ -52,7 +52,7 @@ class _LessonMainState extends State<LessonMain> {
   }
 
   updateDB({required String collection, required String docId, required Map<String, dynamic> value}) {
-    Database().updateLessonToDb(collection: collection, docId: docId, map: value);
+    Database().updateField(collection: collection, docId: docId, map: value);
     updateState();
     Get.back();
   }
@@ -65,6 +65,7 @@ class _LessonMainState extends State<LessonMain> {
 
   @override
   Widget build(BuildContext context) {
+    print('building start');
     isBeginner = selectedLevel == '초급' ? true : false;
     lessonMainDialog = LessonMainDialog(context, updateState);
     Widget getLevelRadioBtn(String value) {
@@ -143,6 +144,7 @@ class _LessonMainState extends State<LessonMain> {
     return FutureBuilder(
       future: controller.futureList,
       builder: (BuildContext context, AsyncSnapshot snapshot) {
+        print('future building start');
         if (snapshot.hasData && snapshot.connectionState != ConnectionState.waiting) {
           controller.lessonSubjects = [];
           for (dynamic snapshot in snapshot.data) {
@@ -220,22 +222,17 @@ class _LessonMainState extends State<LessonMain> {
                     Row(
                       children: [
                         IconButton(
-                            onPressed: () {
+                            onPressed: () async {
                               if (index != 0) {
-                                setState(() {
+                                  print('순서변경 시작');
                                   int newIndex = index - 1;
                                   LessonSubject thatSubject = subjects[newIndex];
-                                  Database().updateLessonToDb(
-                                      collection: 'LessonSubjects',
-                                      docId: thatSubject.id,
-                                      map: {'orderId': index});
-                                  Database().updateLessonToDb(
-                                      collection: 'LessonSubjects',
-                                      docId: subject.id,
-                                      map: {'orderId': newIndex});
+                                  print('transaction start');
+                                  await Database().switchOrderTransaction(collection: 'LessonSubjects', docId1: subject.id, docId2: thatSubject.id);
+                                  print('getData start');
                                   getDataFromDb();
+                                  print('getData end');
                                   Get.back();
-                                });
                               } else {
                                 Get.dialog(const AlertDialog(
                                   title: Text('첫번째 레슨입니다.'),
@@ -249,14 +246,7 @@ class _LessonMainState extends State<LessonMain> {
                                 setState(() {
                                   int newIndex = index + 1;
                                   LessonSubject thatSubject = subjects[newIndex];
-                                  Database().updateLessonToDb(
-                                      collection: 'LessonSubjects',
-                                      docId: thatSubject.id,
-                                      map: {'orderId': index});
-                                  Database().updateLessonToDb(
-                                      collection: 'LessonSubjects',
-                                      docId: subject.id,
-                                      map: {'orderId': newIndex});
+                                  Database().switchOrderTransaction(collection: 'LessonSubjects', docId1: subject.id, docId2: thatSubject.id);
                                   getDataFromDb();
                                   Get.back();
                                 });
