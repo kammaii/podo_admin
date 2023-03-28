@@ -202,7 +202,7 @@ class _LessonMainState extends State<LessonMain> {
                     Get.dialog(
                       AlertDialog(
                         title: const Text('태그를 입력하세요'),
-                        content: MyTextField().getTextField(onChangedFunction: (String? value) {
+                        content: MyTextField().getTextField(fn: (String? value) {
                           subject.tag = value!;
                         }),
                         actions: [
@@ -366,7 +366,7 @@ class _LessonMainState extends State<LessonMain> {
                     Get.dialog(
                       AlertDialog(
                         title: const Text('태그를 입력하세요'),
-                        content: MyTextField().getTextField(onChangedFunction: (String? value) {
+                        content: MyTextField().getTextField(fn: (String? value) {
                           title.tag = value!;
                         }),
                         actions: [

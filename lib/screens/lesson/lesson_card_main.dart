@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:html_editor_enhanced/html_editor.dart';
 import 'package:podo_admin/common/database.dart';
+import 'package:podo_admin/common/languages.dart';
 import 'package:podo_admin/common/my_html_color.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/screens/lesson/inner_card_textfield.dart';
@@ -62,12 +63,12 @@ class _LessonCardMainState extends State<LessonCardMain> {
             break;
 
           case MyStrings.explain:
-            if (explainFoIndex >= _controller.languages.length) {
+            if (explainFoIndex >= Languages().languages.length) {
               explainFoIndex = 0;
             } else if (explainFoIndex < 0) {
-              explainFoIndex = _controller.languages.length - 1;
+              explainFoIndex = Languages().languages.length - 1;
             }
-            String language = _controller.languages[explainFoIndex];
+            String language = Languages().languages[explainFoIndex];
             print('$language: ${card.content[language]}');
             if (card.content[language] == null) {
               card.content[language] = '';
@@ -202,7 +203,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 card.type == MyStrings.explain
-                    ? Text('${card.type} (${_controller.languages[explainFoIndex]})')
+                    ? Text('${card.type} (${Languages().languages[explainFoIndex]})')
                     : Text(card.type),
                 IconButton(
                   onPressed: () {
@@ -293,7 +294,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
         }
         summaries[summaryCount].orderId = summaryCount;
         summaries[summaryCount].content['ko'] = card.content['ko'] ?? '';
-        for (String lang in _controller.languages) {
+        for (String lang in Languages().languages) {
           summaries[summaryCount].content[lang] = card.content[lang] ?? '';
         }
         summaryCount++;

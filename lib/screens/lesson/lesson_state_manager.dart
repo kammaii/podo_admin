@@ -21,7 +21,6 @@ class LessonStateManager extends GetxController {
   late List<LessonSubject> lessonSubjects;
   late List<LessonTitle> lessonTitles;
   RxInt getXTrigger = 0.obs;
-  final languages = ['en','es','fr','de','pt','id','ru'];
 
 
 

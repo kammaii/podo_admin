@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:podo_admin/common/languages.dart';
 import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/screens/lesson/lesson_card.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
@@ -23,7 +24,7 @@ class InnerCardTextField {
 
   Widget getFos(int index, {String lab = ''}) {
     List<Widget> widgets = [];
-    for(String language in _controller.languages) {
+    for(String language in Languages().languages) {
       cardValue = _controller.cards[index].content[language];
       label = lab == '' ? language : lab;
       f = (text) {
@@ -61,7 +62,7 @@ class InnerCardTextField {
 
   Widget getSummaryFos(int index) {
     List<Widget> widgets = [];
-    for(String language in _controller.languages) {
+    for(String language in Languages().languages) {
       cardValue = _controller.lessonSummaries[index].content[language];
       label = '설명($language)';
       f = (text) {
@@ -91,10 +92,10 @@ class InnerCardTextField {
   Widget getTextField() {
     TextEditingController controller = TextEditingController(text: cardValue);
     return MyTextField().getTextField(
-      controller: controller,
+      controller: TextEditingController(text: cardValue),
       label: label,
       autoFocus: true,
-      onChangedFunction: f,
+      fn: f,
     );
   }
 

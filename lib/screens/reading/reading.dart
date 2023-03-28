@@ -1,4 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
+import 'package:podo_admin/screens/reading/reading_state_manager.dart';
+import 'package:uuid/uuid.dart';
 
 class Reading {
   late String id;
@@ -7,12 +10,25 @@ class Reading {
   late int level;
   late String category;
   String? tag;
-  late String image;
   late Map<String, String> content;
   late Map<String, List<String>> words;
   late List<Map<String, String>> quizzes;
   late int likeCount;
   late bool isReleased;
+
+  Reading() {
+    final controller = Get.find<ReadingStateManager>();
+    id = const Uuid().v4();
+    orderId = controller.readings.length;
+    title = {};
+    level = 0;
+    category = controller.categories[0];
+    content = {};
+    words = {};
+    quizzes = [];
+    likeCount = 0;
+    isReleased = false;
+  }
 
   static const String ID = 'id';
   static const String ORDERID = 'orderId';
@@ -20,7 +36,6 @@ class Reading {
   static const String LEVEL = 'level';
   static const String CATEGORY = 'category';
   static const String TAG = 'tag';
-  static const String IMAGE = 'image';
   static const String CONTENT = 'content';
   static const String WORDS = 'words';
   static const String QUIZZES = 'quizzes';
@@ -34,7 +49,6 @@ class Reading {
     level = json[LEVEL];
     category = json[CATEGORY];
     tag = json[TAG] ?? null;
-    image = json[IMAGE];
     content = json[CONTENT];
     words = json[WORDS];
     quizzes = json[QUIZZES];
@@ -49,7 +63,6 @@ class Reading {
       TITLE: title,
       LEVEL: level,
       CATEGORY: category,
-      IMAGE: image,
       CONTENT: content,
       WORDS: words,
       QUIZZES: quizzes,

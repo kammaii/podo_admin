@@ -174,7 +174,7 @@ class LessonMainDialog {
             Expanded(
               child: Column(
                 children: [
-                  getTextField(
+                  MyTextField().getTextField(
                     controller: controllersSubject['ko'],
                     label: '주제입력(한국어)',
                     fn: (String? value) {
@@ -182,7 +182,7 @@ class LessonMainDialog {
                     },
                   ),
                   const SizedBox(height: 20),
-                  getTextField(
+                  MyTextField().getTextField(
                     controller: controllersSubject['fo'],
                     label: '주제입력(외국어)',
                     fn: (String? value) {
@@ -195,7 +195,7 @@ class LessonMainDialog {
           ],
         ),
         const SizedBox(height: 50),
-        getTextField(
+        MyTextField().getTextField(
           controller: controllersSubject['desc'],
           label: '설명',
           fn: (String? value) {
@@ -231,7 +231,7 @@ class LessonMainDialog {
           Row(
             children: [
               Expanded(
-                  child: getTextField(
+                  child: MyTextField().getTextField(
                       controller: controllersTitle['ko'],
                       label: '한국어',
                       fn: (String? value) {
@@ -239,7 +239,7 @@ class LessonMainDialog {
                       })),
               const SizedBox(width: 20),
               Expanded(
-                  child: getTextField(
+                  child: MyTextField().getTextField(
                       controller: controllersTitle['fo'],
                       label: '외국어',
                       fn: (String? value) {
@@ -247,7 +247,7 @@ class LessonMainDialog {
                       })),
               const SizedBox(width: 20),
               Expanded(
-                  child: getTextField(
+                  child: MyTextField().getTextField(
                       controller: controllersTitle['gram'],
                       label: '문법',
                       fn: (String? value) {
@@ -295,7 +295,7 @@ class LessonMainDialog {
                   child: Row(
                     children: [
                       Expanded(
-                          child: getTextField(
+                          child: MyTextField().getTextField(
                               controller: controllersWritingTitle[index]['ko'],
                               label: '한국어',
                               fn: (String? value) {
@@ -303,7 +303,7 @@ class LessonMainDialog {
                               })),
                       const SizedBox(width: 20),
                       Expanded(
-                          child: getTextField(
+                          child: MyTextField().getTextField(
                               controller: controllersWritingTitle[index]['fo'],
                               label: '외국어',
                               fn: (String? value) {
@@ -380,31 +380,6 @@ class LessonMainDialog {
         });
   }
 
-  Widget getTextField(
-      {required controller,
-      required String label,
-      required Function(String?) fn,
-      int minLine = 1,
-      bool enable = true}) {
-    return TextField(
-      enabled: enable,
-      minLines: minLine,
-      controller: controller,
-      keyboardType: TextInputType.multiline,
-      maxLines: null,
-      decoration: InputDecoration(
-        labelText: label,
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(width: 1, color: Theme.of(context).colorScheme.primary),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(width: 1, color: Theme.of(context).colorScheme.primary),
-        ),
-      ),
-      onChanged: fn,
-    );
-  }
-
   openTitleListDialog({required LessonSubject subject}) {
     String titleId = '';
     Get.dialog(AlertDialog(
@@ -417,7 +392,7 @@ class LessonMainDialog {
               Get.dialog(
                 AlertDialog(
                   title: const Text('타이틀 아이디를 입력하세요'),
-                  content: MyTextField().getTextField(onChangedFunction: (String? value) {
+                  content: MyTextField().getTextField(fn: (String? value) {
                     titleId = value!;
                   }),
                   actions: [

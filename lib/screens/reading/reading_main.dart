@@ -144,7 +144,7 @@ class _ReadingMainState extends State<ReadingMain> {
                     Get.dialog(
                       AlertDialog(
                         title: const Text('태그를 입력하세요'),
-                        content: MyTextField().getTextField(onChangedFunction: (String? value) {
+                        content: MyTextField().getTextField(fn: (String? value) {
                           reading.tag = value!;
                         }),
                         actions: [
