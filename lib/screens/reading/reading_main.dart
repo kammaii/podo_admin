@@ -135,8 +135,10 @@ class _ReadingMainState extends State<ReadingMain> {
                 Reading reading = readings[index];
                 return DataRow(cells: [
                   DataCell(Text(reading.orderId.toString())),
-                  DataCell(Text(reading.id.toString())),
-                  DataCell(Text(reading.title['ko']!), onTap: () {
+                  DataCell(Text(reading.id.toString()), onTap: () {
+                    Get.to(const ReadingDetail(), arguments: reading);
+                  }),
+                  DataCell(Text(reading.title['ko'] ?? ''), onTap: () {
                     Get.to(const ReadingDetail(), arguments: reading);
                   }),
                   DataCell(Text(reading.level.toString())),

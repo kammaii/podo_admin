@@ -1,4 +1,4 @@
 class Languages {
-  List<String> langs = ['en','es','fr','de','pt','id','ru'];
-  get languages => langs;
+  final List<String> fos = ['en','es','fr','de','pt','id','ru'];
+  get getFos => fos;
 }

@@ -63,12 +63,12 @@ class _LessonCardMainState extends State<LessonCardMain> {
             break;
 
           case MyStrings.explain:
-            if (explainFoIndex >= Languages().languages.length) {
+            if (explainFoIndex >= Languages().getFos.length) {
               explainFoIndex = 0;
             } else if (explainFoIndex < 0) {
-              explainFoIndex = Languages().languages.length - 1;
+              explainFoIndex = Languages().getFos.length - 1;
             }
-            String language = Languages().languages[explainFoIndex];
+            String language = Languages().getFos[explainFoIndex];
             print('$language: ${card.content[language]}');
             if (card.content[language] == null) {
               card.content[language] = '';
@@ -203,7 +203,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 card.type == MyStrings.explain
-                    ? Text('${card.type} (${Languages().languages[explainFoIndex]})')
+                    ? Text('${card.type} (${Languages().getFos[explainFoIndex]})')
                     : Text(card.type),
                 IconButton(
                   onPressed: () {
@@ -294,7 +294,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
         }
         summaries[summaryCount].orderId = summaryCount;
         summaries[summaryCount].content['ko'] = card.content['ko'] ?? '';
-        for (String lang in Languages().languages) {
+        for (String lang in Languages().getFos) {
           summaries[summaryCount].content[lang] = card.content[lang] ?? '';
         }
         summaryCount++;

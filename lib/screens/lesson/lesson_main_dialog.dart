@@ -207,7 +207,7 @@ class LessonMainDialog {
         ElevatedButton(
           onPressed: () {
             isBeginner! ? lessonSubject.isBeginnerMode = true : lessonSubject.isBeginnerMode = false;
-            Database().saveLessonToDb(collection: 'LessonSubjects', lesson: lessonSubject);
+            Database().saveDocToDb(collection: 'LessonSubjects', doc: lessonSubject);
             Get.back();
             updateState();
           },
@@ -354,7 +354,7 @@ class LessonMainDialog {
           Center(
             child: ElevatedButton(
               onPressed: () {
-                Database().saveLessonToDb(collection: 'LessonTitles', lesson: lessonTitle);
+                Database().saveDocToDb(collection: 'LessonTitles', doc: lessonTitle);
                 Get.back();
                 updateState();
               },

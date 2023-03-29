@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:podo_admin/screens/reading/reading_state_manager.dart';
 import 'package:uuid/uuid.dart';
@@ -6,13 +6,13 @@ import 'package:uuid/uuid.dart';
 class Reading {
   late String id;
   late int orderId;
-  late Map<String, String> title;
+  late Map<String, dynamic> title;
   late int level;
   late String category;
   String? tag;
-  late Map<String, String> content;
-  late Map<String, List<String>> words;
-  late List<Map<String, String>> quizzes;
+  late Map<String, dynamic> content;
+  late Map<String, dynamic> words;
+  late Map<int, dynamic> quizzes;
   late int likeCount;
   late bool isReleased;
 
@@ -25,7 +25,7 @@ class Reading {
     category = controller.categories[0];
     content = {};
     words = {};
-    quizzes = [];
+    quizzes = {0: List.generate(5, (index) => '')};
     likeCount = 0;
     isReleased = false;
   }
@@ -51,7 +51,11 @@ class Reading {
     tag = json[TAG] ?? null;
     content = json[CONTENT];
     words = json[WORDS];
-    quizzes = json[QUIZZES];
+    quizzes = {};
+    Map<String, dynamic> quizzesMap = json[QUIZZES];
+    quizzesMap.forEach((key, value) {
+      quizzes[int.parse(key)] = value;
+    });
     likeCount = json[LIKECOUNT];
     isReleased = json[ISRELEASED];
   }
@@ -65,10 +69,14 @@ class Reading {
       CATEGORY: category,
       CONTENT: content,
       WORDS: words,
-      QUIZZES: quizzes,
       LIKECOUNT: likeCount,
       ISRELEASED: isReleased,
     };
+    Map<String, dynamic> quizzesJson = {};
+    quizzes.forEach((key, value) {
+      quizzesJson[key.toString()] = value;
+    });
+    map[QUIZZES] = quizzesJson;
     map[TAG] = tag ?? null;
     return map;
   }

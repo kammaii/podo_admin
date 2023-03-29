@@ -24,7 +24,7 @@ class InnerCardTextField {
 
   Widget getFos(int index, {String lab = ''}) {
     List<Widget> widgets = [];
-    for(String language in Languages().languages) {
+    for(String language in Languages().getFos) {
       cardValue = _controller.cards[index].content[language];
       label = lab == '' ? language : lab;
       f = (text) {
@@ -62,7 +62,7 @@ class InnerCardTextField {
 
   Widget getSummaryFos(int index) {
     List<Widget> widgets = [];
-    for(String language in Languages().languages) {
+    for(String language in Languages().getFos) {
       cardValue = _controller.lessonSummaries[index].content[language];
       label = '설명($language)';
       f = (text) {

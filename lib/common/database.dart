@@ -113,11 +113,11 @@ class Database {
     }
   }
 
-  Future<void> saveLessonToDb({required String collection, required dynamic lesson}) async {
-    DocumentReference ref = firestore.collection(collection).doc(lesson.id);
-    return await ref.set(lesson.toJson()).then((value) {
-      print('Lesson is Saved');
-      Get.snackbar('Lesson is saved', 'id: ${lesson.id}', snackPosition: SnackPosition.BOTTOM);
+  Future<void> saveDocToDb({required String collection, required dynamic doc}) async {
+    DocumentReference ref = firestore.collection(collection).doc(doc.id);
+    return await ref.set(doc.toJson()).then((value) {
+      print('Document is Saved');
+      Get.snackbar('Document is saved', 'id: ${doc.id}', snackPosition: SnackPosition.BOTTOM);
     }).catchError((e) => print(e));
   }
 
