@@ -16,7 +16,6 @@ class ReadingDetail extends StatefulWidget {
 
 class _ReadingDetailState extends State<ReadingDetail> {
   final controller = Get.find<ReadingStateManager>();
-  //final controller = Get.put(ReadingStateManager());
   final sc1 = ScrollController();
   final sc2 = ScrollController();
   final sc3 = ScrollController();
@@ -339,7 +338,8 @@ class _ReadingDetailState extends State<ReadingDetail> {
           padding: const EdgeInsets.all(20),
           child: ElevatedButton(
             onPressed: () {
-              Database().saveDocToDb(collection: 'Readings', doc: reading);
+              Database().setDoc(collection: 'Readings', doc: reading);
+              Get.back();
             },
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),

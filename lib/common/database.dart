@@ -1,12 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import 'package:podo_admin/screens/lesson/lesson_card.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
-import 'package:podo_admin/screens/lesson/lesson_subject.dart';
-import 'package:podo_admin/screens/lesson/lesson_summary.dart';
-import 'package:podo_admin/screens/lesson/lesson_title.dart';
 import 'package:podo_admin/screens/question/question.dart';
-import 'package:podo_admin/screens/reading/reading_state_manager.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
 class Database {
@@ -34,7 +29,7 @@ class Database {
     if (field != null) {
       queryRef = ref.where(field, isEqualTo: equalTo).orderBy(orderBy, descending: descending);
     } else {
-      queryRef = ref.orderBy(orderBy, descending: true);
+      queryRef = ref.orderBy(orderBy, descending: descending);
     }
     await queryRef.get().then((QuerySnapshot snapshot) {
       print('quiring');
@@ -113,7 +108,7 @@ class Database {
     }
   }
 
-  Future<void> saveDocToDb({required String collection, required dynamic doc}) async {
+  Future<void> setDoc({required String collection, required dynamic doc}) async {
     DocumentReference ref = firestore.collection(collection).doc(doc.id);
     return await ref.set(doc.toJson()).then((value) {
       print('Document is Saved');
@@ -150,7 +145,7 @@ class Database {
     });
   }
 
-  Future<void> addListTransaction(
+  Future<void> addValueTransaction(
       {required String collection,
       required String docId,
       required String field,
@@ -164,7 +159,7 @@ class Database {
       transaction.update(ref, {field: newValue});
     }).then((_) {
       print('Transaction completed');
-      Get.snackbar('타이틀이 추가되었습니다.', addValue, snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('레슨이 추가되었습니다.', addValue, snackPosition: SnackPosition.BOTTOM);
       Get.find<LessonStateManager>().update();
     }).onError((e, stackTrace) {
       Get.snackbar('에러', e.toString(), snackPosition: SnackPosition.BOTTOM);
@@ -178,21 +173,6 @@ class Database {
       Get.snackbar('Lesson is Deleted', 'id: ${lesson.id}', snackPosition: SnackPosition.BOTTOM);
     }).catchError((e) => print(e));
   }
-
-  // Future<void> saveLessonCard(LessonCard card) {
-  //   DocumentReference ref = firestore.doc('lessonCard/${card.uniqueId}');
-  //   return ref.set(card.toJson()).then((value) {
-  //     print('${card.uniqueId} is saved.');
-  //   }).catchError((e) => print(e));
-  // }
-  //
-  // Future<void> saveLessonSummary(LessonSummary summary) {
-  //   String uniqueId = '${summary.lessonId}_${summary.orderId}';
-  //   DocumentReference ref = firestore.doc('lessonSummary/$uniqueId');
-  //   return ref.set(summary.toJson()).then((value) {
-  //     print('$uniqueId is saved.');
-  //   }).catchError((e) => print(e));
-  // }
 
   Future<void> saveSampleDb({required String id, required dynamic sample, required String reference}) {
     DocumentReference ref = firestore.collection(reference).doc(id);

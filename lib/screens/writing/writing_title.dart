@@ -2,13 +2,13 @@ import 'package:uuid/uuid.dart';
 
 class WritingTitle {
   late String id;
-  late String level;
+  late int level;
   late Map<String, dynamic> title;
   late bool isFree;
 
   WritingTitle() {
     id = const Uuid().v4();
-    level = 'Level1';
+    level = 0;
     title = {};
     isFree = false;
   }

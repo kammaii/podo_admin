@@ -3,8 +3,8 @@ import 'package:uuid/uuid.dart';
 class LessonSummary {
   late String id;
   late int orderId;
-  late Map<String, String> content;
-  List<String>? examples;
+  late Map<String, dynamic> content;
+  List<dynamic>? examples;
 
   LessonSummary() {
     id = const Uuid().v4();

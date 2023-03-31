@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/languages.dart';
 import 'package:podo_admin/common/my_textfield.dart';
-import 'package:podo_admin/screens/lesson/lesson_card.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
-import 'package:podo_admin/screens/value/my_strings.dart';
 
 class InnerCardTextField {
   final LessonStateManager _controller = Get.find<LessonStateManager>();
@@ -39,16 +37,6 @@ class InnerCardTextField {
     return Column(
       children: widgets,
     );
-  }
-
-  Widget getExplain(int index) {
-    cardValue = _controller.cards[index].explain;
-    label = MyStrings.exp;
-    f = (text) {
-      _controller.cards[index].explain = text;
-      _controller.update();
-    };
-    return getTextField();
   }
 
   Widget getSummaryKo(int index) {
@@ -90,7 +78,6 @@ class InnerCardTextField {
 
 
   Widget getTextField() {
-    TextEditingController controller = TextEditingController(text: cardValue);
     return MyTextField().getTextField(
       controller: TextEditingController(text: cardValue),
       label: label,
@@ -100,18 +87,18 @@ class InnerCardTextField {
   }
 
   Widget getQuizExam(
-      {TextEditingController? controller,
-      String? label,
-      bool autoFocus = false,
-      Function(String)? onChangedFunction}) {
+      {required int index, required String label}) {
+    cardValue = _controller.cards[index].content[label];
     return TextField(
-      controller: controller,
+      controller: TextEditingController(text: cardValue),
       decoration: InputDecoration(
         border: const OutlineInputBorder(),
         labelText: label,
       ),
-      autofocus: autoFocus,
-      onChanged: onChangedFunction,
+      autofocus: false,
+      onChanged: (text) {
+        _controller.cards[index].content[label] = text;
+      },
       maxLines: null,
     );
   }

@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:podo_admin/screens/writing/writing_title.dart';
 import 'package:uuid/uuid.dart';
 
-class LessonTitle {
+class Lesson {
 
   late String id;
   late Map<String,dynamic> title;
@@ -13,7 +13,7 @@ class LessonTitle {
   String? tag;
   DateTime? date;
 
-  LessonTitle() {
+  Lesson() {
     id = const Uuid().v4();
     title = {};
     titleGrammar = '';
@@ -31,7 +31,7 @@ class LessonTitle {
   static const String TAG = 'tag';
   static const String DATE = 'date';
 
-  LessonTitle.fromJson(Map<String, dynamic> json) {
+  Lesson.fromJson(Map<String, dynamic> json) {
     id = json[ID];
     title = json[TITLE];
     titleGrammar = json[TITLEGRAMMAR];

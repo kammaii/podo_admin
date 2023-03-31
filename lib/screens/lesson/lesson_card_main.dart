@@ -6,6 +6,7 @@ import 'package:podo_admin/common/languages.dart';
 import 'package:podo_admin/common/my_html_color.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/screens/lesson/inner_card_textfield.dart';
+import 'package:podo_admin/screens/lesson/lesson.dart';
 import 'package:podo_admin/screens/lesson/lesson_card.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:podo_admin/screens/lesson/lesson_summary.dart';
@@ -19,29 +20,26 @@ class LessonCardMain extends StatefulWidget {
 }
 
 class _LessonCardMainState extends State<LessonCardMain> {
-  //final LessonTitle lessonTitle = Get.arguments;
-  final sampleTitleId = '6cd5ea6c-faa4-4c49-866b-acacbd81116f';
-  final sampleTitle = '학교에 가요';
-  final _controller = Get.put(LessonStateManager());
+  final _controller = Get.find<LessonStateManager>();
   List<Widget> cardWidgets = [];
   final ScrollController scrollController = ScrollController();
   final double cardWidth = 350;
   late Map<String, TextEditingController> controllers;
   int explainFoIndex = 0;
   HtmlEditorController htmlEditorController = HtmlEditorController();
+  Lesson lesson = Get.arguments;
 
   @override
   void initState() {
     super.initState();
     _controller.cards = [];
     _controller.lessonSummaries = [];
-    getCards();
-  }
-
-  getCards() async {
-    _controller.cards = await Database()
-        .getDocumentsFromDb(collection: 'LessonTitles/$sampleTitleId/LessonCards', orderBy: 'orderId');
-    setState(() {});
+    _controller.futureList = Future.wait([
+      Database().getDocumentsFromDb(
+          collection: 'Lessons/${lesson.id}/LessonCards', orderBy: 'orderId', descending: false),
+      Database().getDocumentsFromDb(
+          collection: 'Lessons/${lesson.id}/LessonSummaries', orderBy: 'orderId', descending: false)
+    ]);
   }
 
   void setCards() {
@@ -69,16 +67,8 @@ class _LessonCardMainState extends State<LessonCardMain> {
               explainFoIndex = Languages().getFos.length - 1;
             }
             String language = Languages().getFos[explainFoIndex];
-            print('$language: ${card.content[language]}');
-            if (card.content[language] == null) {
-              card.content[language] = '';
-            }
-            String explain = card.content[language];
-            print('code1: ${explain.hashCode}');
-            print('code2: ${card.content[language].hashCode}');
-            print('$language: ${card.content[language]}');
-            htmlEditorController.setText(language);
-            print('$language: ${card.content[language]}');
+            String explain = card.content[language] ?? '';
+            htmlEditorController.setText(explain);
 
             if ((_controller.isEditMode.containsKey(card.id) && _controller.isEditMode[card.id]!)) {
               innerWidget = Row(
@@ -117,7 +107,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                         ],
                       ),
                       callbacks: Callbacks(onChangeContent: (String? content) {
-                        card.content[language] = content!;
+                        explain = content!;
                       }),
                     ),
                   ),
@@ -178,17 +168,17 @@ class _LessonCardMainState extends State<LessonCardMain> {
                 const SizedBox(height: 50),
                 Row(
                   children: [
-                    Expanded(child: InnerCardTextField().getQuizExam(label: '보기1 (정답)')),
+                    Expanded(child: InnerCardTextField().getQuizExam(index: index, label: 'ex1')),
                     const SizedBox(width: 10),
-                    Expanded(child: InnerCardTextField().getQuizExam(label: '보기2')),
+                    Expanded(child: InnerCardTextField().getQuizExam(index: index, label: 'ex2')),
                   ],
                 ),
                 const SizedBox(height: 20),
                 Row(
                   children: [
-                    Expanded(child: InnerCardTextField().getQuizExam(label: '보기3')),
+                    Expanded(child: InnerCardTextField().getQuizExam(index: index, label: 'ex3')),
                     const SizedBox(width: 10),
-                    Expanded(child: InnerCardTextField().getQuizExam(label: '보기4')),
+                    Expanded(child: InnerCardTextField().getQuizExam(index: index, label: 'ex4')),
                   ],
                 ),
               ],
@@ -252,7 +242,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
       _controller.lessonSummaries[summaryIndex].examples = [];
       _controller.lessonSummaries[summaryIndex].examples!.add('');
     }
-    List<String> exampleList = _controller.lessonSummaries[summaryIndex].examples!;
+    List<dynamic> exampleList = _controller.lessonSummaries[summaryIndex].examples!;
 
     return ListView.builder(
       shrinkWrap: true,
@@ -294,9 +284,6 @@ class _LessonCardMainState extends State<LessonCardMain> {
         }
         summaries[summaryCount].orderId = summaryCount;
         summaries[summaryCount].content['ko'] = card.content['ko'] ?? '';
-        for (String lang in Languages().getFos) {
-          summaries[summaryCount].content[lang] = card.content[lang] ?? '';
-        }
         summaryCount++;
       }
     }
@@ -362,17 +349,15 @@ class _LessonCardMainState extends State<LessonCardMain> {
 
   @override
   Widget build(BuildContext context) {
-    setCards();
-
     return Scaffold(
       appBar: AppBar(
-        title: Text('레슨카드  :  $sampleTitle'),
+        title: Text('레슨카드  ( ${lesson.title['ko']} )'),
       ),
-      body: GetBuilder<LessonStateManager>(
-        builder: (controller) {
-          return Column(
-            children: [
-              Row(
+      body: Column(
+        children: [
+          GetBuilder<LessonStateManager>(
+            builder: (_) {
+              return Row(
                 children: [
                   MyRadioBtn().getRadioButton(
                       context: context,
@@ -416,70 +401,82 @@ class _LessonCardMainState extends State<LessonCardMain> {
                     ),
                   )
                 ],
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Scrollbar(
-                        controller: scrollController,
-                        child: ReorderableListView(
-                          scrollController: scrollController,
-                          padding: const EdgeInsets.all(20),
-                          scrollDirection: Axis.horizontal,
-                          onReorder: (int oldIndex, int newIndex) {
-                            setState(() {
-                              _controller.reorderCardItem(oldIndex, newIndex);
-                            });
-                          },
-                          children: cardWidgets,
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+          Expanded(
+            child: FutureBuilder(
+              future: _controller.futureList,
+              builder: (BuildContext context, AsyncSnapshot snapshot) {
+                print('hey');
+                if (snapshot.hasData && snapshot.connectionState != ConnectionState.waiting) {
+                  print('ddd');
+                  _controller.cards = [];
+                  for (dynamic snapshot in snapshot.data[0]) {
+                    _controller.cards.add(LessonCard.fromJson(snapshot));
+                  }
+                  for (dynamic snapshot in snapshot.data[1]) {
+                    _controller.lessonSummaries.add(LessonSummary.fromJson(snapshot));
+                  }
+                  setCards();
+                  if (_controller.cards.isEmpty) {
+                    return const Center(child: Text('카드가 없습니다.'));
+                  } else {
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: Scrollbar(
+                            controller: scrollController,
+                            child: ReorderableListView(
+                              scrollController: scrollController,
+                              padding: const EdgeInsets.all(20),
+                              scrollDirection: Axis.horizontal,
+                              onReorder: (int oldIndex, int newIndex) {
+                                setState(() {
+                                  _controller.reorderCardItem(oldIndex, newIndex);
+                                });
+                              },
+                              children: cardWidgets,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                      child: getSummaryCard(),
-                    ),
-                  ],
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                          child: getSummaryCard(),
+                        ),
+                      ],
+                    );
+                  }
+                } else {
+                  return const Center(child: CircularProgressIndicator());
+                }
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(30),
+            child: ElevatedButton(
+              onPressed: () {
+                if (_controller.cards.isNotEmpty) {
+                  for (LessonCard card in _controller.cards) {
+                    Database().setDoc(collection: 'Lessons/${lesson.id}/LessonCards', doc: card);
+                  }
+                  for (LessonSummary summary in _controller.lessonSummaries) {
+                    Database().setDoc(collection: 'Lessons/${lesson.id}/LessonSummaries', doc: summary);
+                  }
+                }
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Text(
+                  '저장',
+                  style: TextStyle(fontSize: 20),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(30),
-                child: ElevatedButton(
-                  onPressed: () async {
-                    // for (LessonSummaryItem item in _controller.lessonSummary.contents) {
-                    //   print('kr : ${item.subjectKr}');
-                    //   print('en : ${item.subjectEn}');
-                    //   print('explain : ${item.explain}');
-                    //   for (String example in item.examples) {
-                    //     print(example);
-                    //   }
-                    // }
-                    // final firestore = FirebaseFirestore.instance;
-                    // LessonCard card = _controller.cardItems[0];
-                    // firestore.collection('lessonCard').doc(card.lessonId).set(card.toJson());
-
-                    // for (LessonCard card in _controller.cardItems) {
-                    //   Database().saveLessonCard(card);
-                    // }
-                    //
-                    // for (LessonSummary summary in _controller.lessonSummaries) {
-                    //   Database().saveLessonSummary(summary);
-                    // }
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    child: Text(
-                      '저장',
-                      style: TextStyle(fontSize: 20),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
+            ),
+          ),
+        ],
       ),
     );
   }

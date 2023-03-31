@@ -11,7 +11,7 @@ class LessonSubject {
   late Map<String,dynamic> description;
   late bool isBeginnerMode;
   String? tag;
-  late List<dynamic> titles;
+  late List<dynamic> lessons;
   late bool isReleased;
 
   LessonSubject() {
@@ -20,7 +20,7 @@ class LessonSubject {
     orderId = index;
     subject = {};
     description = {};
-    titles = [];
+    lessons = [];
     isReleased = false;
   }
 
@@ -31,7 +31,7 @@ class LessonSubject {
   static const String DESCRIPTION = 'description';
   static const String ISBEGINNERMODE = 'isBeginnerMode';
   static const String TAG = 'tag';
-  static const String TITLES = 'titles';
+  static const String LESSONS = 'lessons';
   static const String ISRELEASED = 'isReleased';
 
   LessonSubject.fromJson(Map<String, dynamic> json) {
@@ -42,7 +42,7 @@ class LessonSubject {
     description = json[DESCRIPTION];
     isBeginnerMode = json[ISBEGINNERMODE];
     tag = json[TAG] ?? null;
-    titles = json[TITLES];
+    lessons = json[LESSONS];
     isReleased = json[ISRELEASED];
   }
 
@@ -53,7 +53,7 @@ class LessonSubject {
       SUBJECT: subject,
       DESCRIPTION: description,
       ISBEGINNERMODE: isBeginnerMode,
-      TITLES: titles,
+      LESSONS: lessons,
       ISRELEASED: isReleased
     };
     map[IMAGE] = image ?? null;

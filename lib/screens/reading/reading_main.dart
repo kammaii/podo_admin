@@ -38,14 +38,10 @@ class _ReadingMainState extends State<ReadingMain> {
 
   updateDB({required String collection, required String docId, required Map<String, dynamic> value}) {
     Database().updateField(collection: collection, docId: docId, map: value);
-    updateState();
-    Get.back();
-  }
-
-  updateState() {
     setState(() {
       getDataFromDb();
     });
+    Get.back();
   }
 
   @override
@@ -57,7 +53,9 @@ class _ReadingMainState extends State<ReadingMain> {
         groupValue: selectedCategory,
         f: (String? value) {
           selectedCategory = value!;
-          updateState();
+          setState(() {
+            getDataFromDb();
+          });
         },
       );
     }
@@ -123,11 +121,12 @@ class _ReadingMainState extends State<ReadingMain> {
             return DataTable2(
               columns: const [
                 DataColumn2(label: Text('순서'), size: ColumnSize.S),
-                DataColumn2(label: Text('아이디'), size: ColumnSize.L),
+                DataColumn2(label: Text('아이디'), size: ColumnSize.S),
                 DataColumn2(label: Text('타이틀'), size: ColumnSize.L),
                 DataColumn2(label: Text('레벨'), size: ColumnSize.S),
                 DataColumn2(label: Text('태그'), size: ColumnSize.S),
                 DataColumn2(label: Text('좋아요'), size: ColumnSize.S),
+                DataColumn2(label: Text('상태'), size: ColumnSize.S),
                 DataColumn2(label: Text('순서변경'), size: ColumnSize.S),
                 DataColumn2(label: Text('삭제'), size: ColumnSize.S),
               ],
@@ -135,20 +134,22 @@ class _ReadingMainState extends State<ReadingMain> {
                 Reading reading = readings[index];
                 return DataRow(cells: [
                   DataCell(Text(reading.orderId.toString())),
-                  DataCell(Text(reading.id.toString()), onTap: () {
+                  DataCell(Text(reading.id.substring(0, 8)), onTap: () {
                     Get.to(const ReadingDetail(), arguments: reading);
                   }),
                   DataCell(Text(reading.title['ko'] ?? ''), onTap: () {
                     Get.to(const ReadingDetail(), arguments: reading);
                   }),
-                  DataCell(Text(reading.level.toString())),
+                  DataCell(Text(controller.readingLevel[reading.level])),
                   DataCell(Text(reading.tag != null ? reading.tag.toString() : ''), onTap: () {
                     Get.dialog(
                       AlertDialog(
                         title: const Text('태그를 입력하세요'),
-                        content: MyTextField().getTextField(fn: (String? value) {
-                          reading.tag = value!;
-                        }),
+                        content: MyTextField().getTextField(
+                            controller: TextEditingController(text: reading.tag),
+                            fn: (String? value) {
+                              reading.tag = value!;
+                            }),
                         actions: [
                           TextButton(
                               onPressed: () {
@@ -163,6 +164,29 @@ class _ReadingMainState extends State<ReadingMain> {
                     );
                   }),
                   DataCell(Text(reading.likeCount.toString())),
+                  DataCell(Text(reading.isReleased ? '게시중' : '입력중'), onTap: () {
+                    Get.dialog(AlertDialog(
+                      content: const Text('상태를 변경하겠습니까?'),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              updateDB(
+                                  collection: 'Readings',
+                                  docId: reading.id,
+                                  value: {'isReleased': true});
+                            },
+                            child: const Text('게시중')),
+                        TextButton(
+                            onPressed: () {
+                              updateDB(
+                                  collection: 'Readings',
+                                  docId: reading.id,
+                                  value: {'isReleased': false});
+                            },
+                            child: const Text('입력중')),
+                      ],
+                    ));
+                  }),
                   DataCell(
                     Row(
                       children: [
@@ -172,7 +196,8 @@ class _ReadingMainState extends State<ReadingMain> {
                                 setState(() {
                                   int newIndex = index - 1;
                                   Reading thatReading = readings[newIndex];
-                                  Database().switchOrderTransaction(collection: 'Readings', docId1: reading.id, docId2: thatReading.id);
+                                  Database().switchOrderTransaction(
+                                      collection: 'Readings', docId1: reading.id, docId2: thatReading.id);
                                   getDataFromDb();
                                   Get.back();
                                 });
@@ -189,7 +214,8 @@ class _ReadingMainState extends State<ReadingMain> {
                                 setState(() {
                                   int newIndex = index + 1;
                                   Reading thatReading = readings[newIndex];
-                                  Database().switchOrderTransaction(collection: 'Readings', docId1: reading.id, docId2: thatReading.id);
+                                  Database().switchOrderTransaction(
+                                      collection: 'Readings', docId1: reading.id, docId2: thatReading.id);
                                   getDataFromDb();
                                   Get.back();
                                 });
@@ -216,8 +242,7 @@ class _ReadingMainState extends State<ReadingMain> {
                             TextButton(
                                 onPressed: () {
                                   setState(() {
-                                    Database()
-                                        .deleteLessonFromDb(collection: 'Readings', lesson: reading);
+                                    Database().deleteLessonFromDb(collection: 'Readings', lesson: reading);
                                     getDataFromDb();
                                     Get.back();
                                   });

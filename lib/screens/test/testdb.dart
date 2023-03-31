@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:podo_admin/common/database.dart';
-import 'package:podo_admin/screens/lesson/lesson_title.dart';
+import 'package:podo_admin/screens/lesson/lesson.dart';
 import 'package:podo_admin/screens/question/question.dart';
 import 'package:podo_admin/screens/writing/writing.dart';
 import 'package:uuid/uuid.dart';
@@ -41,7 +41,7 @@ class TestDB extends StatelessWidget {
             List<String> q = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'];
             int howManyTen = (q.length.toDouble()/10).floor();
             int theRest = q.length%10;
-            List<LessonTitle> titles = [];
+            List<Lesson> lessons = [];
 
             // for(int i=0; i<howManyTen; i++) {
             //   List<dynamic> l = await Database().getTest(q.sublist(0, 10));
@@ -57,8 +57,8 @@ class TestDB extends StatelessWidget {
             //   }
             // }
 
-            for(LessonTitle title in titles) {
-              print(title.title['ko']);
+            for(Lesson lesson in lessons) {
+              print(lesson.title['ko']);
             }
           },
           child: const Text('test'),

@@ -33,12 +33,4 @@ class MyApp extends StatelessWidget {
       home: const MainFrame(),
     );
   }
-
-  //todo: 삭제할 것
-  goToLessonCard() async {
-    String sampleTitleId = '6cd5ea6c-faa4-4c49-866b-acacbd81116f';
-    Get.find<LessonStateManager>().cards = await Database()
-        .getDocumentsFromDb(collection: 'LessonTitles/$sampleTitleId/LessonCards', orderBy: 'orderId');
-
-  }
 }

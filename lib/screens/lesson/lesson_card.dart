@@ -11,10 +11,6 @@ class LessonCard {
     content = {};
   }
 
-  void changeOrderId(int order) {
-    orderId = order;
-  }
-
   static const String ID = 'id';
   static const String ORDERID = 'orderId';
   static const String TYPE = 'type';
