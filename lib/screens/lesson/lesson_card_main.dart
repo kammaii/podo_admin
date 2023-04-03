@@ -409,15 +409,14 @@ class _LessonCardMainState extends State<LessonCardMain> {
             child: FutureBuilder(
               future: _controller.futureList,
               builder: (BuildContext context, AsyncSnapshot snapshot) {
-                print('hey');
                 if (snapshot.hasData && snapshot.connectionState != ConnectionState.waiting) {
-                  print('ddd');
-                  _controller.cards = [];
-                  for (dynamic snapshot in snapshot.data[0]) {
-                    _controller.cards.add(LessonCard.fromJson(snapshot));
-                  }
-                  for (dynamic snapshot in snapshot.data[1]) {
-                    _controller.lessonSummaries.add(LessonSummary.fromJson(snapshot));
+                  if(_controller.cards.isEmpty) {
+                    for (dynamic snapshot in snapshot.data[0]) {
+                      _controller.cards.add(LessonCard.fromJson(snapshot));
+                    }
+                    for (dynamic snapshot in snapshot.data[1]) {
+                      _controller.lessonSummaries.add(LessonSummary.fromJson(snapshot));
+                    }
                   }
                   setCards();
                   if (_controller.cards.isEmpty) {
@@ -459,12 +458,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
             child: ElevatedButton(
               onPressed: () {
                 if (_controller.cards.isNotEmpty) {
-                  for (LessonCard card in _controller.cards) {
-                    Database().setDoc(collection: 'Lessons/${lesson.id}/LessonCards', doc: card);
-                  }
-                  for (LessonSummary summary in _controller.lessonSummaries) {
-                    Database().setDoc(collection: 'Lessons/${lesson.id}/LessonSummaries', doc: summary);
-                  }
+                  Database().setLessonCardBatch(lessonId: lesson.id);
                 }
               },
               child: const Padding(

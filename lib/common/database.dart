@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import 'package:podo_admin/screens/lesson/lesson_card.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
+import 'package:podo_admin/screens/lesson/lesson_summary.dart';
 import 'package:podo_admin/screens/question/question.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
@@ -114,6 +116,23 @@ class Database {
       print('Document is Saved');
       Get.snackbar('Document is saved', 'id: ${doc.id}', snackPosition: SnackPosition.BOTTOM);
     }).catchError((e) => print(e));
+  }
+
+  Future<void> setLessonCardBatch({required String lessonId}) async {
+    final batch = firestore.batch();
+    final controller = Get.find<LessonStateManager>();
+    for (LessonCard card in controller.cards) {
+      final ref = firestore.collection('Lessons/$lessonId/LessonCards').doc(card.id);
+      batch.set(ref, card.toJson());
+    }
+    for (LessonSummary summary in controller.lessonSummaries) {
+      final ref = firestore.collection('Lessons/$lessonId/LessonSummaries').doc(summary.id);
+      batch.set(ref, summary.toJson());
+    }
+    await batch
+        .commit()
+        .then((value) => Get.snackbar('Lesson is saved', '', snackPosition: SnackPosition.BOTTOM))
+        .catchError((e) => print(e));
   }
 
   Future<void> updateField(
