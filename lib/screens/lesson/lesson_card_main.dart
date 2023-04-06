@@ -48,6 +48,8 @@ class _LessonCardMainState extends State<LessonCardMain> {
       _controller.cards.length,
       (index) {
         LessonCard card = _controller.cards[index];
+
+        print('CONTENT: ${card.content}');
         Widget? innerWidget;
         switch (card.type) {
           case MyStrings.subject:
@@ -55,6 +57,31 @@ class _LessonCardMainState extends State<LessonCardMain> {
               children: [
                 InnerCardTextField().getKo(index, 'ko'),
                 const Divider(height: 30),
+                InnerCardTextField().getFos(index),
+              ],
+            );
+            break;
+
+          case MyStrings.mention:
+            innerWidget = Column(
+              children: [
+                InnerCardTextField().getFos(index),
+                const Divider(height: 30),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    ElevatedButton(onPressed: () {}, child: const Text('오디오 업로드')),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text(card.content['audio'] ?? '없음')),
+                  ],
+                ),
+              ],
+            );
+            break;
+
+          case MyStrings.tip:
+            innerWidget = Column(
+              children: [
                 InnerCardTextField().getFos(index),
               ],
             );
@@ -107,7 +134,9 @@ class _LessonCardMainState extends State<LessonCardMain> {
                         ],
                       ),
                       callbacks: Callbacks(onChangeContent: (String? content) {
-                        explain = content!;
+                        if(language == Languages().getFos[explainFoIndex]) {
+                          card.content[language] = content!;
+                        }
                       }),
                     ),
                   ),
@@ -135,12 +164,20 @@ class _LessonCardMainState extends State<LessonCardMain> {
                 InnerCardTextField().getKo(index, 'pronun'),
                 const Divider(height: 30),
                 InnerCardTextField().getFos(index),
+                const Divider(height: 30),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    ElevatedButton(onPressed: () {}, child: const Text('오디오 업로드')),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text(card.content['audio'] ?? '없음')),
+                  ],
+                ),
                 const SizedBox(height: 20),
-                ElevatedButton(
+                TextButton(
                   onPressed: () {
                     setState(() {
-                      _controller.cardType = MyStrings.speaking;
-                      _controller.addCardItem();
+                      _controller.addSpeakingCardFromRepeat(card);
                     });
                   },
                   child: const Text('말하기카드만들기'),
@@ -153,8 +190,19 @@ class _LessonCardMainState extends State<LessonCardMain> {
             innerWidget = Column(
               children: [
                 InnerCardTextField().getKo(index, 'ko'),
+                const SizedBox(height: 5),
+                InnerCardTextField().getKo(index, 'pronun'),
                 const Divider(height: 30),
                 InnerCardTextField().getFos(index),
+                const Divider(height: 30),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    ElevatedButton(onPressed: () {}, child: const Text('오디오 선택')),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text(card.content['audio'] ?? '없음')),
+                  ],
+                ),
               ],
             );
             break;
@@ -175,10 +223,19 @@ class _LessonCardMainState extends State<LessonCardMain> {
                 ),
                 const SizedBox(height: 20),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Expanded(child: InnerCardTextField().getQuizExam(index: index, label: 'ex3')),
                     const SizedBox(width: 10),
                     Expanded(child: InnerCardTextField().getQuizExam(index: index, label: 'ex4')),
+                  ],
+                ),
+                const Divider(height: 30),
+                Row(
+                  children: [
+                    ElevatedButton(onPressed: () {}, child: const Text('오디오 선택')),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text(card.content['audio'] ?? '없음')),
                   ],
                 ),
               ],
@@ -229,6 +286,8 @@ class _LessonCardMainState extends State<LessonCardMain> {
                 ),
               ),
             ),
+            const SizedBox(height: 20),
+            Text(card.id, style: const TextStyle(color: Colors.grey)),
           ],
         );
         return widget;
@@ -275,29 +334,22 @@ class _LessonCardMainState extends State<LessonCardMain> {
 
   Widget getSummaryCard() {
     List<LessonSummary> summaries = _controller.lessonSummaries;
-    int summaryCount = 0;
-
-    for (LessonCard card in _controller.cards) {
-      if (card.type == MyStrings.subject) {
-        if (summaries.length == summaryCount) {
-          summaries.add(LessonSummary());
-        }
-        summaries[summaryCount].orderId = summaryCount;
-        summaries[summaryCount].content['ko'] = card.content['ko'] ?? '';
-        summaryCount++;
-      }
-    }
-    int summariesLength = summaries.length;
-    if (summariesLength > summaryCount) {
-      for (int i = summariesLength - summaryCount; i > 0; i--) {
-        summaries.removeLast();
-      }
-    }
 
     if (summaries.isNotEmpty) {
       return Column(
         children: [
-          const Text(MyStrings.summary),
+          Row(
+            children: [
+              const Text(MyStrings.summary),
+              TextButton(
+                  onPressed: () {
+                    setState(() {
+                      summaries.add(LessonSummary(summaries.length));
+                    });
+                  },
+                  child: const Text('추가')),
+            ],
+          ),
           Expanded(
             child: Card(
               child: Padding(
@@ -310,9 +362,36 @@ class _LessonCardMainState extends State<LessonCardMain> {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              '[${index.toString()}]',
-                              style: const TextStyle(fontSize: 18),
+                            Row(
+                              children: [
+                                Text(
+                                  '[${index.toString()}]',
+                                  style: const TextStyle(fontSize: 18),
+                                ),
+                                const SizedBox(width: 20),
+                                TextButton(
+                                    onPressed: () {
+                                      Get.dialog(AlertDialog(
+                                        title: const Text('삭제하겠습니까?'),
+                                        actions: [
+                                          TextButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  summaries.removeAt(index);
+                                                  Get.back();
+                                                });
+                                              },
+                                              child: const Text('네', style: TextStyle(color: Colors.red))),
+                                          TextButton(
+                                              onPressed: () {
+                                                Get.back();
+                                              },
+                                              child: const Text('아니오')),
+                                        ],
+                                      ));
+                                    },
+                                    child: const Text('삭제')),
+                              ],
                             ),
                             const SizedBox(height: 10),
                             InnerCardTextField().getSummaryKo(index),
@@ -366,11 +445,20 @@ class _LessonCardMainState extends State<LessonCardMain> {
                       f: _controller.changeCardTypeRadio()),
                   MyRadioBtn().getRadioButton(
                       context: context,
+                      value: MyStrings.mention,
+                      groupValue: _controller.cardType,
+                      f: _controller.changeCardTypeRadio()),
+                  MyRadioBtn().getRadioButton(
+                      context: context,
+                      value: MyStrings.tip,
+                      groupValue: _controller.cardType,
+                      f: _controller.changeCardTypeRadio()),
+                  MyRadioBtn().getRadioButton(
+                      context: context,
                       value: MyStrings.explain,
                       groupValue: _controller.cardType,
                       f: _controller.changeCardTypeRadio()),
                   MyRadioBtn().getRadioButton(
-                      width: 200,
                       context: context,
                       value: MyStrings.repeat,
                       groupValue: _controller.cardType,
@@ -383,6 +471,12 @@ class _LessonCardMainState extends State<LessonCardMain> {
                   MyRadioBtn().getRadioButton(
                       context: context,
                       value: MyStrings.quiz,
+                      groupValue: _controller.cardType,
+                      f: _controller.changeCardTypeRadio()),
+                  MyRadioBtn().getRadioButton(
+                      width: 180,
+                      context: context,
+                      value: MyStrings.summary,
                       groupValue: _controller.cardType,
                       f: _controller.changeCardTypeRadio()),
                   const SizedBox(width: 20),
@@ -410,7 +504,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
               future: _controller.futureList,
               builder: (BuildContext context, AsyncSnapshot snapshot) {
                 if (snapshot.hasData && snapshot.connectionState != ConnectionState.waiting) {
-                  if(_controller.cards.isEmpty) {
+                  if (_controller.cards.isEmpty) {
                     for (dynamic snapshot in snapshot.data[0]) {
                       _controller.cards.add(LessonCard.fromJson(snapshot));
                     }

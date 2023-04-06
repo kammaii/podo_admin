@@ -45,9 +45,22 @@ class LessonStateManager extends GetxController {
   }
 
   void addCardItem() {
+    if(cardType == MyStrings.summary) {
+      lessonSummaries.add(LessonSummary(lessonSummaries.length));
+    } else {
+      LessonCard card = LessonCard();
+      card.orderId = cards.length;
+      card.type = cardType;
+      cards.add(card);
+      setEditMode(id: card.id);
+    }
+  }
+
+  void addSpeakingCardFromRepeat(LessonCard repeat) {
     LessonCard card = LessonCard();
     card.orderId = cards.length;
-    card.type = cardType;
+    card.type = MyStrings.speaking;
+    card.content = Map.from(repeat.content);
     cards.add(card);
     setEditMode(id: card.id);
   }

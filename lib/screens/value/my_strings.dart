@@ -4,15 +4,15 @@ class MyStrings {
 
 
 
-  static const String subject = '주제';
-  static const String explain = '설명';
-  static const String repeat = '듣고따라하기';
-  static const String speaking = '말하기';
-  static const String quiz = '퀴즈';
-  static const String summary = '요약';
-  static const String mention = '멘트';
-  static const String tip = '팁';
-  static const String listening = '듣기';
+  static const String subject = 'subject';
+  static const String explain = 'explain';
+  static const String repeat = 'repeat';
+  static const String speaking = 'speaking';
+  static const String quiz = 'quiz';
+  static const String summary = 'summary';
+  static const String mention = 'mention';
+  static const String tip = 'tip';
+  static const String listening = 'listening';
 
   static const String korean = 'Korean';
   static const String english = 'English';

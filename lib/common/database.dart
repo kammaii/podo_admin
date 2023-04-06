@@ -146,7 +146,7 @@ class Database {
 
   Future<void> switchOrderTransaction(
       {required String collection, required String docId1, required String docId2}) async {
-    firestore.runTransaction((transaction) async {
+    await firestore.runTransaction((transaction) async {
       final ref1 = firestore.collection(collection).doc(docId1);
       final ref2 = firestore.collection(collection).doc(docId2);
       final doc1 = await transaction.get(ref1);
@@ -156,9 +156,10 @@ class Database {
       print('Transaction updating');
       transaction.update(ref1, {'orderId': doc2Index});
       transaction.update(ref2, {'orderId': doc1Index});
-    }).then((_) {
+    }).then((value) {
       print('Transaction completed');
-      Get.snackbar('Transaction completed', '', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Transaction completed', '',
+          snackPosition: SnackPosition.BOTTOM);
     }).onError((e, stackTrace) {
       Get.snackbar('에러', e.toString(), snackPosition: SnackPosition.BOTTOM);
     });

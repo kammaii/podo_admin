@@ -227,16 +227,13 @@ class _LessonMainState extends State<LessonMain> {
                         IconButton(
                             onPressed: () async {
                               if (index != 0) {
-                                print('순서변경 시작');
                                 int newIndex = index - 1;
                                 LessonSubject thatSubject = subjects[newIndex];
-                                print('transaction start');
                                 await Database().switchOrderTransaction(
                                     collection: 'LessonSubjects', docId1: subject.id, docId2: thatSubject.id);
-                                print('getData start');
                                 getDataFromDb();
-                                print('getData end');
                                 Get.back();
+                                setState(() {});
                               } else {
                                 Get.dialog(const AlertDialog(
                                   title: Text('첫번째 레슨입니다.'),
@@ -245,18 +242,15 @@ class _LessonMainState extends State<LessonMain> {
                             },
                             icon: const Icon(Icons.arrow_drop_up_outlined)),
                         IconButton(
-                            onPressed: () {
+                            onPressed: () async {
                               if (index != subjects.length - 1) {
-                                setState(() {
-                                  int newIndex = index + 1;
-                                  LessonSubject thatSubject = subjects[newIndex];
-                                  Database().switchOrderTransaction(
-                                      collection: 'LessonSubjects',
-                                      docId1: subject.id,
-                                      docId2: thatSubject.id);
-                                  getDataFromDb();
-                                  Get.back();
-                                });
+                                int newIndex = index + 1;
+                                LessonSubject thatSubject = subjects[newIndex];
+                                await Database().switchOrderTransaction(
+                                    collection: 'LessonSubjects', docId1: subject.id, docId2: thatSubject.id);
+                                getDataFromDb();
+                                Get.back();
+                                setState(() {});
                               } else {
                                 Get.dialog(const AlertDialog(
                                   title: Text('마지막 레슨입니다.'),
@@ -417,9 +411,12 @@ class _LessonMainState extends State<LessonMain> {
                       },
                     ),
                   ),
-                  DataCell(ElevatedButton(child: const Text('보기'), onPressed: () {
-                    Get.to(const LessonCardMain(), arguments: lesson);
-                  },)),
+                  DataCell(ElevatedButton(
+                    child: const Text('보기'),
+                    onPressed: () {
+                      Get.to(const LessonCardMain(), arguments: lesson);
+                    },
+                  )),
                 ]);
               }),
             );

@@ -6,9 +6,10 @@ class LessonSummary {
   late Map<String, dynamic> content;
   List<dynamic>? examples;
 
-  LessonSummary() {
+  LessonSummary(int order) {
     id = const Uuid().v4();
     content = {};
+    orderId = order;
   }
 
   static const String ID = 'id';
