@@ -28,6 +28,13 @@ class _LessonCardMainState extends State<LessonCardMain> {
   int explainFoIndex = 0;
   HtmlEditorController htmlEditorController = HtmlEditorController();
   Lesson lesson = Get.arguments;
+  final LESSONS = 'Lessons';
+  final LESSON_CARDS = 'LessonCards';
+  final LESSON_SUMMARIES = 'LessonSummaries';
+  final ORDER_ID = 'orderId';
+  final KO = 'ko';
+  final AUDIO = 'audio';
+  final PRONUN = 'pronun';
 
   @override
   void initState() {
@@ -36,9 +43,9 @@ class _LessonCardMainState extends State<LessonCardMain> {
     _controller.lessonSummaries = [];
     _controller.futureList = Future.wait([
       Database().getDocumentsFromDb(
-          collection: 'Lessons/${lesson.id}/LessonCards', orderBy: 'orderId', descending: false),
+          collection: '$LESSONS/${lesson.id}/$LESSON_CARDS', orderBy: ORDER_ID, descending: false),
       Database().getDocumentsFromDb(
-          collection: 'Lessons/${lesson.id}/LessonSummaries', orderBy: 'orderId', descending: false)
+          collection: '$LESSONS/${lesson.id}/$LESSON_SUMMARIES', orderBy: ORDER_ID, descending: false)
     ]);
   }
 
@@ -48,14 +55,12 @@ class _LessonCardMainState extends State<LessonCardMain> {
       _controller.cards.length,
       (index) {
         LessonCard card = _controller.cards[index];
-
-        print('CONTENT: ${card.content}');
         Widget? innerWidget;
         switch (card.type) {
           case MyStrings.subject:
             innerWidget = Column(
               children: [
-                InnerCardTextField().getKo(index, 'ko'),
+                InnerCardTextField().getKo(index, KO),
                 const Divider(height: 30),
                 InnerCardTextField().getFos(index),
               ],
@@ -72,7 +77,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                   children: [
                     ElevatedButton(onPressed: () {}, child: const Text('오디오 업로드')),
                     const SizedBox(width: 10),
-                    Expanded(child: Text(card.content['audio'] ?? '없음')),
+                    Expanded(child: Text(card.content[AUDIO] ?? '없음')),
                   ],
                 ),
               ],
@@ -159,9 +164,9 @@ class _LessonCardMainState extends State<LessonCardMain> {
           case MyStrings.repeat:
             innerWidget = Column(
               children: [
-                InnerCardTextField().getKo(index, 'ko'),
+                InnerCardTextField().getKo(index, KO),
                 const SizedBox(height: 5),
-                InnerCardTextField().getKo(index, 'pronun'),
+                InnerCardTextField().getKo(index, PRONUN),
                 const Divider(height: 30),
                 InnerCardTextField().getFos(index),
                 const Divider(height: 30),
@@ -170,7 +175,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                   children: [
                     ElevatedButton(onPressed: () {}, child: const Text('오디오 업로드')),
                     const SizedBox(width: 10),
-                    Expanded(child: Text(card.content['audio'] ?? '없음')),
+                    Expanded(child: Text(card.content[AUDIO] ?? '없음')),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -189,9 +194,9 @@ class _LessonCardMainState extends State<LessonCardMain> {
           case MyStrings.speaking:
             innerWidget = Column(
               children: [
-                InnerCardTextField().getKo(index, 'ko'),
+                InnerCardTextField().getKo(index, KO),
                 const SizedBox(height: 5),
-                InnerCardTextField().getKo(index, 'pronun'),
+                InnerCardTextField().getKo(index, PRONUN),
                 const Divider(height: 30),
                 InnerCardTextField().getFos(index),
                 const Divider(height: 30),
@@ -200,7 +205,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                   children: [
                     ElevatedButton(onPressed: () {}, child: const Text('오디오 선택')),
                     const SizedBox(width: 10),
-                    Expanded(child: Text(card.content['audio'] ?? '없음')),
+                    Expanded(child: Text(card.content[AUDIO] ?? '없음')),
                   ],
                 ),
               ],
@@ -210,7 +215,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
           case MyStrings.quiz:
             innerWidget = Column(
               children: [
-                InnerCardTextField().getKo(index, 'ko'),
+                InnerCardTextField().getKo(index, KO),
                 const Divider(height: 30),
                 InnerCardTextField().getFos(index),
                 const SizedBox(height: 50),
@@ -235,7 +240,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                   children: [
                     ElevatedButton(onPressed: () {}, child: const Text('오디오 선택')),
                     const SizedBox(width: 10),
-                    Expanded(child: Text(card.content['audio'] ?? '없음')),
+                    Expanded(child: Text(card.content[AUDIO] ?? '없음')),
                   ],
                 ),
               ],
@@ -430,7 +435,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('레슨카드  ( ${lesson.title['ko']} )'),
+        title: Text('레슨카드  ( ${lesson.title[KO]} )'),
       ),
       body: Column(
         children: [

@@ -7,7 +7,7 @@ import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/screens/lesson/lesson_card_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_main_dialog.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
-import 'package:podo_admin/screens/lesson/lesson_subject.dart';
+import 'package:podo_admin/screens/lesson/lesson_course.dart';
 import 'package:podo_admin/screens/lesson/lesson.dart';
 import 'package:flutter/services.dart';
 
@@ -24,6 +24,15 @@ class _LessonMainState extends State<LessonMain> {
   String selectedLevel = '초급';
   late LessonMainDialog lessonMainDialog;
   late bool isBeginner;
+  final LESSON_COURSES = 'LessonCourses';
+  final LESSONS = 'Lessons';
+  final IS_RELEASED = 'isReleased';
+  final TAG = 'tag';
+  final IS_BEGINNER_MODE = 'isBeginnerMode';
+  final ORDER_ID = 'orderId';
+  final DATE = 'date';
+  final KO = 'ko';
+
 
   @override
   void initState() {
@@ -36,19 +45,19 @@ class _LessonMainState extends State<LessonMain> {
     if (selectedToggle[0]) {
       selectedLevel == '초급'
           ? controller.futureList = Database().getDocumentsFromDb(
-              collection: 'LessonSubjects',
-              field: 'isBeginnerMode',
+              collection: LESSON_COURSES,
+              field: IS_BEGINNER_MODE,
               equalTo: true,
-              orderBy: 'orderId',
+              orderBy: ORDER_ID,
               descending: false)
           : controller.futureList = Database().getDocumentsFromDb(
-              collection: 'LessonSubjects',
-              field: 'isBeginnerMode',
+              collection: LESSON_COURSES,
+              field: IS_BEGINNER_MODE,
               equalTo: false,
-              orderBy: 'orderId',
+              orderBy: ORDER_ID,
               descending: false);
     } else {
-      controller.futureList = Database().getDocumentsFromDb(collection: 'Lessons', orderBy: 'date');
+      controller.futureList = Database().getDocumentsFromDb(collection: LESSONS, orderBy: DATE);
     }
   }
 
@@ -107,7 +116,7 @@ class _LessonMainState extends State<LessonMain> {
                       color: Theme.of(context).colorScheme.primary,
                       isSelected: selectedToggle,
                       children: const [
-                        Padding(padding: EdgeInsets.symmetric(horizontal: 20), child: Text('주제')),
+                        Padding(padding: EdgeInsets.symmetric(horizontal: 20), child: Text('코스')),
                         Padding(padding: EdgeInsets.symmetric(horizontal: 20), child: Text('레슨')),
                       ],
                     ),
@@ -118,7 +127,7 @@ class _LessonMainState extends State<LessonMain> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    lessonMainDialog.openDialog(isSubject: selectedToggle[0], isBeginner: isBeginner);
+                    lessonMainDialog.openDialog(isCourse: selectedToggle[0], isBeginner: isBeginner);
                   },
                   child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -132,7 +141,7 @@ class _LessonMainState extends State<LessonMain> {
             ),
             const SizedBox(height: 20),
             Expanded(
-              child: selectedToggle[0] ? subjectTable() : lessonTable(),
+              child: selectedToggle[0] ? courseTable() : lessonTable(),
             ),
           ],
         ),
@@ -140,82 +149,85 @@ class _LessonMainState extends State<LessonMain> {
     );
   }
 
-  Widget subjectTable() {
+  Widget courseTable() {
     return FutureBuilder(
       future: controller.futureList,
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.hasData && snapshot.connectionState != ConnectionState.waiting) {
-          controller.lessonSubjects = [];
+          controller.lessonCourses = [];
           for (dynamic snapshot in snapshot.data) {
-            controller.lessonSubjects.add(LessonSubject.fromJson(snapshot));
+            controller.lessonCourses.add(LessonCourse.fromJson(snapshot));
           }
-          List<LessonSubject> subjects = controller.lessonSubjects;
-          if (subjects.isEmpty) {
-            return const Center(child: Text('검색된 주제가 없습니다.'));
+          List<LessonCourse> courses = controller.lessonCourses;
+          if (courses.isEmpty) {
+            return const Center(child: Text('검색된 코스가 없습니다.'));
           } else {
             return DataTable2(
               columns: const [
                 DataColumn2(label: Text('순서'), size: ColumnSize.S),
                 DataColumn2(label: Text('아이디'), size: ColumnSize.S),
-                DataColumn2(label: Text('주제'), size: ColumnSize.L),
+                DataColumn2(label: Text('코스'), size: ColumnSize.L),
                 DataColumn2(label: Text('레슨개수'), size: ColumnSize.S),
                 DataColumn2(label: Text('태그'), size: ColumnSize.S),
                 DataColumn2(label: Text('상태'), size: ColumnSize.S),
                 DataColumn2(label: Text('순서변경'), size: ColumnSize.S),
                 DataColumn2(label: Text('삭제'), size: ColumnSize.S),
               ],
-              rows: List<DataRow>.generate(subjects.length, (index) {
-                LessonSubject subject = subjects[index];
+              rows: List<DataRow>.generate(courses.length, (index) {
+                LessonCourse course = courses[index];
                 return DataRow(cells: [
                   DataCell(Text(index.toString())),
-                  DataCell(Text(subject.id.substring(0, 8))),
-                  DataCell(Text(subject.subject['ko']!), onTap: () {
+                  DataCell(Text(course.id.substring(0, 8)), onTap: () {
+                    Clipboard.setData(ClipboardData(text: course.id));
+                    Get.snackbar('아이디가 클립보드에 저장되었습니다.', course.id, snackPosition: SnackPosition.BOTTOM);
+                  }),
+                  DataCell(Text(course.title[KO]!), onTap: () {
                     lessonMainDialog.openDialog(
-                        isSubject: true, isBeginner: isBeginner, lessonSubject: subject);
+                        isCourse: true, isBeginner: isBeginner, lessonCourse: course);
                   }),
-                  DataCell(Text(subject.lessons.length.toString()), onTap: () {
-                    lessonMainDialog.openLessonListDialog(subject: subject);
+                  DataCell(Text(course.lessons.length.toString()), onTap: () {
+                    lessonMainDialog.openLessonListDialog(course: course);
                   }),
-                  DataCell(Text(subject.tag != null ? subject.tag.toString() : ''), onTap: () {
+                  DataCell(Text(course.tag != null ? course.tag.toString() : ''), onTap: () {
                     Get.dialog(
                       AlertDialog(
                         title: const Text('태그를 입력하세요'),
                         content: MyTextField().getTextField(
-                            controller: TextEditingController(text: subject.tag),
+                            controller: TextEditingController(text: course.tag),
                             fn: (String? value) {
-                              subject.tag = value!;
+                              course.tag = value!;
                             }),
                         actions: [
                           TextButton(
                               onPressed: () {
                                 updateDB(
-                                    collection: 'LessonSubjects',
-                                    docId: subject.id,
-                                    value: {'tag': subject.tag});
+                                    collection: LESSON_COURSES,
+                                    docId: course.id,
+                                    value: {TAG: course.tag});
                               },
                               child: const Text('저장'))
                         ],
                       ),
                     );
                   }),
-                  DataCell(Text(subject.isReleased ? '게시중' : '입력중'), onTap: () {
+                  DataCell(Text(course.isReleased ? '게시중' : '입력중'), onTap: () {
                     Get.dialog(AlertDialog(
                       content: const Text('상태를 변경하겠습니까?'),
                       actions: [
                         TextButton(
                             onPressed: () {
                               updateDB(
-                                  collection: 'LessonSubjects',
-                                  docId: subject.id,
-                                  value: {'isReleased': true});
+                                  collection: LESSON_COURSES,
+                                  docId: course.id,
+                                  value: {IS_RELEASED: true});
                             },
                             child: const Text('게시중')),
                         TextButton(
                             onPressed: () {
                               updateDB(
-                                  collection: 'LessonSubjects',
-                                  docId: subject.id,
-                                  value: {'isReleased': false});
+                                  collection: LESSON_COURSES,
+                                  docId: course.id,
+                                  value: {IS_RELEASED: false});
                             },
                             child: const Text('입력중')),
                       ],
@@ -228,9 +240,9 @@ class _LessonMainState extends State<LessonMain> {
                             onPressed: () async {
                               if (index != 0) {
                                 int newIndex = index - 1;
-                                LessonSubject thatSubject = subjects[newIndex];
+                                LessonCourse thatCourse = courses[newIndex];
                                 await Database().switchOrderTransaction(
-                                    collection: 'LessonSubjects', docId1: subject.id, docId2: thatSubject.id);
+                                    collection: LESSON_COURSES, docId1: course.id, docId2: thatCourse.id);
                                 getDataFromDb();
                                 Get.back();
                                 setState(() {});
@@ -243,11 +255,11 @@ class _LessonMainState extends State<LessonMain> {
                             icon: const Icon(Icons.arrow_drop_up_outlined)),
                         IconButton(
                             onPressed: () async {
-                              if (index != subjects.length - 1) {
+                              if (index != courses.length - 1) {
                                 int newIndex = index + 1;
-                                LessonSubject thatSubject = subjects[newIndex];
+                                LessonCourse thatCourse = courses[newIndex];
                                 await Database().switchOrderTransaction(
-                                    collection: 'LessonSubjects', docId1: subject.id, docId2: thatSubject.id);
+                                    collection: LESSON_COURSES, docId1: course.id, docId2: thatCourse.id);
                                 getDataFromDb();
                                 Get.back();
                                 setState(() {});
@@ -275,7 +287,7 @@ class _LessonMainState extends State<LessonMain> {
                                 onPressed: () {
                                   setState(() {
                                     Database()
-                                        .deleteLessonFromDb(collection: 'LessonSubjects', lesson: subject);
+                                        .deleteLessonFromDb(collection: LESSON_COURSES, lesson: course);
                                     getDataFromDb();
                                     Get.back();
                                   });
@@ -339,8 +351,8 @@ class _LessonMainState extends State<LessonMain> {
                     Clipboard.setData(ClipboardData(text: lesson.id));
                     Get.snackbar('아이디가 클립보드에 저장되었습니다.', lesson.id, snackPosition: SnackPosition.BOTTOM);
                   }),
-                  DataCell(Text(lesson.title['ko']!), onTap: () {
-                    lessonMainDialog.openDialog(isSubject: false, lesson: lesson);
+                  DataCell(Text(lesson.title[KO]!), onTap: () {
+                    lessonMainDialog.openDialog(isCourse: false, lesson: lesson);
                   }),
                   DataCell(Text(lesson.titleGrammar)),
                   DataCell(Text(lesson.writingTitles.length.toString())),
@@ -351,12 +363,12 @@ class _LessonMainState extends State<LessonMain> {
                       actions: [
                         TextButton(
                             onPressed: () {
-                              updateDB(collection: 'Lessons', docId: lesson.id, value: {'isReleased': true});
+                              updateDB(collection: LESSONS, docId: lesson.id, value: {IS_RELEASED: true});
                             },
                             child: const Text('게시중')),
                         TextButton(
                             onPressed: () {
-                              updateDB(collection: 'Lessons', docId: lesson.id, value: {'isReleased': false});
+                              updateDB(collection: LESSONS, docId: lesson.id, value: {IS_RELEASED: false});
                             },
                             child: const Text('입력중')),
                       ],
@@ -372,7 +384,7 @@ class _LessonMainState extends State<LessonMain> {
                         actions: [
                           TextButton(
                               onPressed: () {
-                                updateDB(collection: 'Lessons', docId: lesson.id, value: {'tag': lesson.tag});
+                                updateDB(collection: LESSONS, docId: lesson.id, value: {TAG: lesson.tag});
                               },
                               child: const Text('저장'))
                         ],
@@ -392,7 +404,7 @@ class _LessonMainState extends State<LessonMain> {
                             TextButton(
                                 onPressed: () {
                                   setState(() {
-                                    Database().deleteLessonFromDb(collection: 'Lessons', lesson: lesson);
+                                    Database().deleteLessonFromDb(collection: LESSONS, lesson: lesson);
                                     getDataFromDb();
                                     Get.back();
                                   });

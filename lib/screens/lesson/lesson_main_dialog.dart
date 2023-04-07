@@ -11,80 +11,91 @@ import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/screens/lesson/lesson_card_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
-import 'package:podo_admin/screens/lesson/lesson_subject.dart';
+import 'package:podo_admin/screens/lesson/lesson_course.dart';
 import 'package:podo_admin/screens/lesson/lesson.dart';
 import 'package:podo_admin/screens/writing/writing_title.dart';
 
 class LessonMainDialog {
   late final VoidCallback updateState;
   late final BuildContext context;
+  final LESSON_COURSES = 'LessonCourses';
+  final KO = 'ko';
+  final FO = 'fo';
+  final DESC = 'desc';
+  final GRAM = 'gram';
+  final LESSONS = 'Lessons';
+  final ID = 'id';
 
   LessonMainDialog(this.context, this.updateState);
 
   LessonStateManager controller = Get.find<LessonStateManager>();
-  late Map<String, TextEditingController> controllersSubject;
+  late Map<String, TextEditingController> controllersCourse;
   late Map<String, TextEditingController> controllersTitle;
   late List<Map<String, dynamic>> controllersWritingTitle;
-  late bool isSubject;
+  late bool isCourse;
   bool? isBeginner;
 
   initDialog() {
     controller.selectedLanguage = Languages().getFos[0];
     controller.isFreeLessonChecked = true;
-    controllersSubject = {};
-    controllersSubject = {
-      'ko': TextEditingController(),
-      'fo': TextEditingController(),
-      'desc': TextEditingController()
+    controllersCourse = {};
+    controllersCourse = {
+      KO: TextEditingController(),
+      FO: TextEditingController(),
+      DESC: TextEditingController()
     };
     controllersTitle = {};
     controllersTitle = {
-      'ko': TextEditingController(),
-      'fo': TextEditingController(),
-      'gram': TextEditingController(),
+      KO: TextEditingController(),
+      FO: TextEditingController(),
+      GRAM: TextEditingController(),
     };
   }
 
-  openDialog({required bool isSubject, bool? isBeginner, LessonSubject? lessonSubject, Lesson? lesson}) {
-    this.isSubject = isSubject;
+  openDialog({required bool isCourse, bool? isBeginner, LessonCourse? lessonCourse, Lesson? lesson}) {
+    this.isCourse = isCourse;
     this.isBeginner = isBeginner;
-    lessonSubject = lessonSubject ?? LessonSubject();
+    lessonCourse = lessonCourse ?? LessonCourse();
     lesson = lesson ?? Lesson();
 
     initDialog();
     String title;
     Widget widget;
 
-    if (isSubject) {
-      isBeginner! ? title = '레슨주제(초급)' : title = '레슨주제(중급)';
+    if (isCourse) {
+      isBeginner! ? title = '레슨코스(초급)' : title = '레슨코스(중급)';
     } else {
       title = '레슨타이틀';
     }
 
     Get.dialog(AlertDialog(
-      title: Text(title),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title),
+          IconButton(onPressed: () => Get.back(), icon: const Icon(Icons.close))
+        ],
+      ),
       content: GetBuilder<LessonStateManager>(
         builder: (_) {
           String selectedLanguage = controller.selectedLanguage;
 
-          if (isSubject) {
-            controllersSubject['ko']!.text = lessonSubject!.subject['ko'] ?? '';
-            controllersSubject['fo']!.text = lessonSubject.subject[selectedLanguage] ?? '';
-            controllersSubject['desc']!.text = lessonSubject.description[selectedLanguage] ?? '';
-            widget = getSubjectDialog(lessonSubject);
+          if (isCourse) {
+            controllersCourse[KO]!.text = lessonCourse!.title[KO] ?? '';
+            controllersCourse[FO]!.text = lessonCourse.title[selectedLanguage] ?? '';
+            controllersCourse[DESC]!.text = lessonCourse.description[selectedLanguage] ?? '';
+            widget = getSubjectDialog(lessonCourse);
           } else {
-            controllersTitle['ko']!.text = lesson!.title['ko'] ?? '';
-            controllersTitle['fo']!.text = lesson.title[selectedLanguage] ?? '';
-            controllersTitle['gram']!.text = lesson.titleGrammar;
+            controllersTitle[KO]!.text = lesson!.title[KO] ?? '';
+            controllersTitle[FO]!.text = lesson.title[selectedLanguage] ?? '';
+            controllersTitle[GRAM]!.text = lesson.titleGrammar;
 
             controllersWritingTitle = [];
-            if (lesson.writingTitles.isEmpty) {
-              controllersWritingTitle.add({'ko': TextEditingController(), 'fo': TextEditingController()});
-            } else {
+            if (lesson.writingTitles.isNotEmpty) {
               for (int i = 0; i < lesson.writingTitles.length; i++) {
-                controllersWritingTitle.add({'ko': TextEditingController(), 'fo': TextEditingController()});
-                controllersWritingTitle[i]['ko']!.text = lesson.writingTitles[i].title['ko'] ?? '';
-                controllersWritingTitle[i]['fo']!.text =
+                controllersWritingTitle.add({KO: TextEditingController(), FO: TextEditingController()});
+                controllersWritingTitle[i][KO]!.text = lesson.writingTitles[i].title[KO] ?? '';
+                controllersWritingTitle[i][FO]!.text =
                     lesson.writingTitles[i].title[selectedLanguage] ?? '';
               }
             }
@@ -118,7 +129,7 @@ class LessonMainDialog {
     ));
   }
 
-  Widget getSubjectDialog(LessonSubject lessonSubject) {
+  Widget getSubjectDialog(LessonCourse lessonCourse) {
     File image;
     final picker = ImagePicker();
     FirebaseStorage storage = FirebaseStorage.instance;
@@ -127,9 +138,9 @@ class LessonMainDialog {
       final pickedFile = await picker.pickImage(source: ImageSource.gallery);
       if (pickedFile != null) {
         image = File(pickedFile.path);
-        String fileName = '${lessonSubject.id.toString()}.jpeg';
+        String fileName = '${lessonCourse.id.toString()}.jpeg';
         try {
-          final ref = storage.ref().child('LessonSubject/$fileName');
+          final ref = storage.ref().child('LessonCourseImages/$fileName');
           ref.putFile((await image.readAsBytes()) as File);
         } catch (e) {
           print('Storage error: $e');
@@ -175,18 +186,18 @@ class LessonMainDialog {
               child: Column(
                 children: [
                   MyTextField().getTextField(
-                    controller: controllersSubject['ko'],
-                    label: '주제입력(한국어)',
+                    controller: controllersCourse[KO],
+                    label: '코스입력(한국어)',
                     fn: (String? value) {
-                      lessonSubject.subject['ko'] = value!;
+                      lessonCourse.title[KO] = value!;
                     },
                   ),
                   const SizedBox(height: 20),
                   MyTextField().getTextField(
-                    controller: controllersSubject['fo'],
-                    label: '주제입력(외국어)',
+                    controller: controllersCourse[FO],
+                    label: '코스입력(외국어)',
                     fn: (String? value) {
-                      lessonSubject.subject[controller.selectedLanguage] = value!;
+                      lessonCourse.title[controller.selectedLanguage] = value!;
                     },
                   ),
                 ],
@@ -196,18 +207,18 @@ class LessonMainDialog {
         ),
         const SizedBox(height: 50),
         MyTextField().getTextField(
-          controller: controllersSubject['desc'],
+          controller: controllersCourse[DESC],
           label: '설명',
           fn: (String? value) {
-            lessonSubject.description[controller.selectedLanguage] = value!;
+            lessonCourse.description[controller.selectedLanguage] = value!;
           },
           minLine: 5,
         ),
         const SizedBox(height: 50),
         ElevatedButton(
           onPressed: () {
-            isBeginner! ? lessonSubject.isBeginnerMode = true : lessonSubject.isBeginnerMode = false;
-            Database().setDoc(collection: 'LessonSubjects', doc: lessonSubject);
+            isBeginner! ? lessonCourse.isBeginnerMode = true : lessonCourse.isBeginnerMode = false;
+            Database().setDoc(collection: LESSON_COURSES, doc: lessonCourse);
             Get.back();
             updateState();
           },
@@ -232,15 +243,15 @@ class LessonMainDialog {
             children: [
               Expanded(
                   child: MyTextField().getTextField(
-                      controller: controllersTitle['ko'],
+                      controller: controllersTitle[KO],
                       label: '한국어',
                       fn: (String? value) {
-                        lesson.title['ko'] = value!;
+                        lesson.title[KO] = value!;
                       })),
               const SizedBox(width: 20),
               Expanded(
                   child: MyTextField().getTextField(
-                      controller: controllersTitle['fo'],
+                      controller: controllersTitle[FO],
                       label: '외국어',
                       fn: (String? value) {
                         lesson.title[controller.selectedLanguage] = value!;
@@ -248,7 +259,7 @@ class LessonMainDialog {
               const SizedBox(width: 20),
               Expanded(
                   child: MyTextField().getTextField(
-                      controller: controllersTitle['gram'],
+                      controller: controllersTitle[GRAM],
                       label: '문법',
                       fn: (String? value) {
                         lesson.titleGrammar = value!;
@@ -277,7 +288,7 @@ class LessonMainDialog {
                   onPressed: () {
                     lesson.writingTitles.add(WritingTitle());
                     controllersWritingTitle
-                        .add({'ko': TextEditingController(), 'fo': TextEditingController()});
+                        .add({KO: TextEditingController(), FO: TextEditingController()});
                     controller.update();
                   },
                   icon: Icon(Icons.add_circle_outline_rounded,
@@ -286,76 +297,78 @@ class LessonMainDialog {
           ),
           const SizedBox(height: 10),
           Expanded(
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: controllersWritingTitle.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  child: Row(
-                    children: [
-                      Expanded(
-                          child: MyTextField().getTextField(
-                              controller: controllersWritingTitle[index]['ko'],
-                              label: '한국어',
-                              fn: (String? value) {
-                                lesson.writingTitles[index].title['ko'] = value!;
-                              })),
-                      const SizedBox(width: 20),
-                      Expanded(
-                          child: MyTextField().getTextField(
-                              controller: controllersWritingTitle[index]['fo'],
-                              label: '외국어',
-                              fn: (String? value) {
-                                lesson.writingTitles[index].title[controller.selectedLanguage] = value!;
-                              })),
-                      const SizedBox(width: 20),
-                      DropdownButton(
-                          value: controller.writingLevel[lesson.writingTitles[index].level],
-                          icon: const Icon(Icons.arrow_drop_down_outlined),
-                          items: controller.writingLevel.map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem(value: value, child: Text(value));
-                          }).toList(),
-                          onChanged: (value) {
-                            lesson.writingTitles[index].level =
-                                controller.writingLevel.indexOf(value.toString());
-                            controller.update();
-                          }),
-                      const SizedBox(width: 20),
-                      Column(
-                        children: [
-                          const Text('무료'),
-                          Checkbox(
-                              value: lesson.writingTitles[index].isFree,
-                              onChanged: (value) {
-                                lesson.writingTitles[index].isFree = value!;
-                                controller.update();
-                              }),
-                        ],
-                      ),
-                      const SizedBox(width: 30),
-                      IconButton(
-                          onPressed: () {
-                            lesson.writingTitles.removeAt(index);
-                            controllersWritingTitle.removeAt(index);
-                            controller.update();
-                          },
-                          icon: const Icon(
-                            Icons.remove_circle_outline_rounded,
-                            size: 30,
-                            color: Colors.red,
-                          )),
-                    ],
-                  ),
-                );
-              },
-            ),
+            child: controllersWritingTitle.isNotEmpty
+                ? ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: controllersWritingTitle.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: Row(
+                          children: [
+                            Expanded(
+                                child: MyTextField().getTextField(
+                                    controller: controllersWritingTitle[index][KO],
+                                    label: '한국어',
+                                    fn: (String? value) {
+                                      lesson.writingTitles[index].title[KO] = value!;
+                                    })),
+                            const SizedBox(width: 20),
+                            Expanded(
+                                child: MyTextField().getTextField(
+                                    controller: controllersWritingTitle[index][FO],
+                                    label: '외국어',
+                                    fn: (String? value) {
+                                      lesson.writingTitles[index].title[controller.selectedLanguage] = value!;
+                                    })),
+                            const SizedBox(width: 20),
+                            DropdownButton(
+                                value: controller.writingLevel[lesson.writingTitles[index].level],
+                                icon: const Icon(Icons.arrow_drop_down_outlined),
+                                items: controller.writingLevel.map<DropdownMenuItem<String>>((String value) {
+                                  return DropdownMenuItem(value: value, child: Text(value));
+                                }).toList(),
+                                onChanged: (value) {
+                                  lesson.writingTitles[index].level =
+                                      controller.writingLevel.indexOf(value.toString());
+                                  controller.update();
+                                }),
+                            const SizedBox(width: 20),
+                            Column(
+                              children: [
+                                const Text('무료'),
+                                Checkbox(
+                                    value: lesson.writingTitles[index].isFree,
+                                    onChanged: (value) {
+                                      lesson.writingTitles[index].isFree = value!;
+                                      controller.update();
+                                    }),
+                              ],
+                            ),
+                            const SizedBox(width: 30),
+                            IconButton(
+                                onPressed: () {
+                                  lesson.writingTitles.removeAt(index);
+                                  controllersWritingTitle.removeAt(index);
+                                  controller.update();
+                                },
+                                icon: const Icon(
+                                  Icons.remove_circle_outline_rounded,
+                                  size: 30,
+                                  color: Colors.red,
+                                )),
+                          ],
+                        ),
+                      );
+                    },
+                  )
+                : const SizedBox.shrink(),
           ),
           const SizedBox(height: 50),
           Center(
             child: ElevatedButton(
               onPressed: () {
-                Database().setDoc(collection: 'Lessons', doc: lesson);
+                Database().setDoc(collection: LESSONS, doc: lesson);
                 Get.back();
                 updateState();
               },
@@ -381,13 +394,13 @@ class LessonMainDialog {
         });
   }
 
-  openLessonListDialog({required LessonSubject subject}) {
+  openLessonListDialog({required LessonCourse course}) {
     String lessonId = '';
     Get.dialog(AlertDialog(
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(subject.subject['ko']),
+          Text(course.title[KO]),
           ElevatedButton(
             onPressed: () {
               Get.dialog(
@@ -400,18 +413,18 @@ class LessonMainDialog {
                     TextButton(
                         onPressed: () {
                           Get.back();
-                          if (subject.lessons.contains(lessonId)) {
+                          if (course.lessons.contains(lessonId)) {
                             Get.dialog(const AlertDialog(
                               title: Text('이미 포함된 레슨 입니다.'),
                             ));
                           } else {
                             Database().addValueTransaction(
-                              collection: 'LessonSubjects',
-                              docId: subject.id,
+                              collection: LESSON_COURSES,
+                              docId: course.id,
                               field: 'lessons',
                               addValue: lessonId,
                             );
-                            subject.lessons.add(lessonId);
+                            course.lessons.add(lessonId);
                           }
                         },
                         child: const Text('저장'))
@@ -431,7 +444,7 @@ class LessonMainDialog {
       ),
       content: GetBuilder<LessonStateManager>(
         builder: (controller) {
-          final list = List.from(subject.lessons);
+          final list = List.from(course.lessons);
           final quotient = (list.length.toDouble() / 10).floor();
           final remainder = list.length % 10;
 
@@ -439,12 +452,12 @@ class LessonMainDialog {
 
           for (int i = 0; i < quotient; i++) {
             futures.add(
-                Database().getDocsFromList(collection: 'Lessons', field: 'id', list: list.sublist(0, 10)));
+                Database().getDocsFromList(collection: LESSONS, field: ID, list: list.sublist(0, 10)));
             list.removeRange(0, 10);
           }
 
           if (remainder != 0) {
-            futures.add(Database().getDocsFromList(collection: 'Lessons', field: 'id', list: list));
+            futures.add(Database().getDocsFromList(collection: LESSONS, field: ID, list: list));
           }
 
           controller.futureList = Future.wait(futures);
@@ -469,7 +482,7 @@ class LessonMainDialog {
                       int length = lessons.length;
                       for (int i = 0; i < length; i++) {
                         for (int j = 0; j < length; j++) {
-                          if (lessons[j].id == subject.lessons[i] && i != j) {
+                          if (lessons[j].id == course.lessons[i] && i != j) {
                             temp = lessons[i];
                             lessons[i] = lessons[j];
                             lessons[j] = temp;
@@ -493,21 +506,21 @@ class LessonMainDialog {
                               DataCell(Text(lesson.id), onTap: () {
                                 Get.to(const LessonCardMain(), arguments: lesson);
                               }),
-                              DataCell(Text(lesson.title['ko'])),
+                              DataCell(Text(lesson.title[KO])),
                               DataCell(Text(lesson.isReleased ? '게시중' : '입력중')),
                               DataCell(Row(
                                 children: [
                                   IconButton(
                                       onPressed: () {
                                         if (index != 0) {
-                                          List<dynamic> lessons = subject.lessons;
+                                          List<dynamic> lessons = course.lessons;
                                           int newIndex = index - 1;
                                           final temp = lessons[newIndex];
                                           lessons[newIndex] = lessons[index];
                                           lessons[index] = temp;
                                           Database().updateField(
-                                              collection: 'LessonSubjects',
-                                              docId: subject.id,
+                                              collection: LESSON_COURSES,
+                                              docId: course.id,
                                               map: {'lessons': lessons});
                                           controller.update();
                                         } else {
@@ -519,15 +532,15 @@ class LessonMainDialog {
                                       icon: const Icon(Icons.arrow_drop_up_outlined)),
                                   IconButton(
                                       onPressed: () {
-                                        if (index != subject.lessons.length - 1) {
-                                          List<dynamic> lessons = subject.lessons;
+                                        if (index != course.lessons.length - 1) {
+                                          List<dynamic> lessons = course.lessons;
                                           int newIndex = index + 1;
                                           final temp = lessons[newIndex];
                                           lessons[newIndex] = lessons[index];
                                           lessons[index] = temp;
                                           Database().updateField(
-                                              collection: 'LessonSubjects',
-                                              docId: subject.id,
+                                              collection: LESSON_COURSES,
+                                              docId: course.id,
                                               map: {'lessons': lessons});
                                           controller.update();
                                         } else {
@@ -551,11 +564,11 @@ class LessonMainDialog {
                                       actions: [
                                         TextButton(
                                             onPressed: () {
-                                              subject.lessons.removeAt(index);
+                                              course.lessons.removeAt(index);
                                               Database().updateField(
-                                                  collection: 'LessonSubjects',
-                                                  docId: subject.id,
-                                                  map: {'lessons': subject.lessons});
+                                                  collection: LESSON_COURSES,
+                                                  docId: course.id,
+                                                  map: {'lessons': course.lessons});
                                               Get.back();
                                               controller.update();
                                             },
