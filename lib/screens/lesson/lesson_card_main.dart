@@ -31,6 +31,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
   final LESSONS = 'Lessons';
   final LESSON_CARDS = 'LessonCards';
   final LESSON_SUMMARIES = 'LessonSummaries';
+  final LESSON_WRITINGS = 'LessonWritings';
   final ORDER_ID = 'orderId';
   final KO = 'ko';
   final AUDIO = 'audio';
@@ -45,7 +46,9 @@ class _LessonCardMainState extends State<LessonCardMain> {
       Database().getDocumentsFromDb(
           collection: '$LESSONS/${lesson.id}/$LESSON_CARDS', orderBy: ORDER_ID, descending: false),
       Database().getDocumentsFromDb(
-          collection: '$LESSONS/${lesson.id}/$LESSON_SUMMARIES', orderBy: ORDER_ID, descending: false)
+          collection: '$LESSONS/${lesson.id}/$LESSON_SUMMARIES', orderBy: ORDER_ID, descending: false),
+      // Database().getDocumentsFromDb(
+      //     collection: '$LESSONS/${lesson.id}/$LESSON_WRITINGS', orderBy: ORDER_ID, descending: false)
     ]);
   }
 
@@ -139,7 +142,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                         ],
                       ),
                       callbacks: Callbacks(onChangeContent: (String? content) {
-                        if(language == Languages().getFos[explainFoIndex]) {
+                        if (language == Languages().getFos[explainFoIndex]) {
                           card.content[language] = content!;
                         }
                       }),
@@ -303,8 +306,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
 
   Widget getExampleList({required int summaryIndex}) {
     if (_controller.lessonSummaries[summaryIndex].examples == null) {
-      _controller.lessonSummaries[summaryIndex].examples = [];
-      _controller.lessonSummaries[summaryIndex].examples!.add('');
+      _controller.lessonSummaries[summaryIndex].examples = [''];
     }
     List<dynamic> exampleList = _controller.lessonSummaries[summaryIndex].examples!;
 
@@ -322,9 +324,9 @@ class _LessonCardMainState extends State<LessonCardMain> {
                 const SizedBox(width: 10),
                 IconButton(
                   onPressed: () {
-                    setState(() {
-                      exampleList.removeAt(index);
-                    });
+                    exampleList.removeAt(index);
+                    _controller.update();
+                    Get.back();
                   },
                   icon: const Icon(Icons.delete, color: Colors.red),
                 ),
@@ -337,28 +339,41 @@ class _LessonCardMainState extends State<LessonCardMain> {
     );
   }
 
-  Widget getSummaryCard() {
+  Widget getSummaryDialog() {
     List<LessonSummary> summaries = _controller.lessonSummaries;
+    if (summaries.isEmpty) {
+      summaries.add(LessonSummary(0));
+    }
 
-    if (summaries.isNotEmpty) {
-      return Column(
-        children: [
-          Row(
+    return GetBuilder<LessonStateManager>(
+      builder: (controller) {
+        return Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
             children: [
-              const Text(MyStrings.summary),
-              TextButton(
-                  onPressed: () {
-                    setState(() {
-                      summaries.add(LessonSummary(summaries.length));
-                    });
-                  },
-                  child: const Text('추가')),
-            ],
-          ),
-          Expanded(
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Text(MyStrings.summary, style: TextStyle(fontSize: 15)),
+                      const SizedBox(width: 10),
+                      TextButton(
+                          onPressed: () {
+                            summaries.add(LessonSummary(summaries.length));
+                            controller.update();
+                          },
+                          child: const Text('추가')),
+                    ],
+                  ),
+                  ElevatedButton(onPressed: (){
+                    Database().setLessonSummaryBatch(lessonId: lesson.id);
+                  }, child: const Text('저장')),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+              Expanded(
                 child: SizedBox(
                   width: cardWidth,
                   child: ListView.builder(
@@ -373,7 +388,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                                   '[${index.toString()}]',
                                   style: const TextStyle(fontSize: 18),
                                 ),
-                                const SizedBox(width: 20),
+                                const SizedBox(width: 10),
                                 TextButton(
                                     onPressed: () {
                                       Get.dialog(AlertDialog(
@@ -381,10 +396,9 @@ class _LessonCardMainState extends State<LessonCardMain> {
                                         actions: [
                                           TextButton(
                                               onPressed: () {
-                                                setState(() {
-                                                  summaries.removeAt(index);
-                                                  Get.back();
-                                                });
+                                                summaries.removeAt(index);
+                                                controller.update();
+                                                Get.back();
                                               },
                                               child: const Text('네', style: TextStyle(color: Colors.red))),
                                           TextButton(
@@ -398,38 +412,35 @@ class _LessonCardMainState extends State<LessonCardMain> {
                                     child: const Text('삭제')),
                               ],
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 30),
                             InnerCardTextField().getSummaryKo(index),
                             const Divider(height: 30),
                             InnerCardTextField().getSummaryFos(index),
-                            const SizedBox(height: 15),
-                            const Text('${MyStrings.example}s)'),
-                            const SizedBox(height: 10),
-                            getExampleList(summaryIndex: index),
-                            Align(
-                                alignment: Alignment.center,
-                                child: IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _controller.lessonSummaries[index].examples!.add('');
-                                    });
-                                  },
-                                  icon: const Icon(Icons.add_circle_rounded),
-                                )),
                             const SizedBox(height: 20),
+                            TextButton(
+                                onPressed: () {
+                                  _controller.lessonSummaries[index].examples!.add('');
+                                  controller.update();
+                                },
+                                child: const Text('예문추가')),
+                            const SizedBox(height: 20),
+                            getExampleList(summaryIndex: index),
+                            const SizedBox(height: 30),
                           ],
                         );
                       }),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
-      );
-    } else {
-      return const SizedBox.shrink();
-    }
+        );
+      },
+    );
   }
+
+  // Widget getWritingDialog() {
+  //
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -437,139 +448,144 @@ class _LessonCardMainState extends State<LessonCardMain> {
       appBar: AppBar(
         title: Text('레슨카드  ( ${lesson.title[KO]} )'),
       ),
-      body: Column(
-        children: [
-          GetBuilder<LessonStateManager>(
-            builder: (_) {
-              return Row(
-                children: [
-                  MyRadioBtn().getRadioButton(
-                      context: context,
-                      value: MyStrings.subject,
-                      groupValue: _controller.cardType,
-                      f: _controller.changeCardTypeRadio()),
-                  MyRadioBtn().getRadioButton(
-                      context: context,
-                      value: MyStrings.mention,
-                      groupValue: _controller.cardType,
-                      f: _controller.changeCardTypeRadio()),
-                  MyRadioBtn().getRadioButton(
-                      context: context,
-                      value: MyStrings.tip,
-                      groupValue: _controller.cardType,
-                      f: _controller.changeCardTypeRadio()),
-                  MyRadioBtn().getRadioButton(
-                      context: context,
-                      value: MyStrings.explain,
-                      groupValue: _controller.cardType,
-                      f: _controller.changeCardTypeRadio()),
-                  MyRadioBtn().getRadioButton(
-                      context: context,
-                      value: MyStrings.repeat,
-                      groupValue: _controller.cardType,
-                      f: _controller.changeCardTypeRadio()),
-                  MyRadioBtn().getRadioButton(
-                      context: context,
-                      value: MyStrings.speaking,
-                      groupValue: _controller.cardType,
-                      f: _controller.changeCardTypeRadio()),
-                  MyRadioBtn().getRadioButton(
-                      context: context,
-                      value: MyStrings.quiz,
-                      groupValue: _controller.cardType,
-                      f: _controller.changeCardTypeRadio()),
-                  MyRadioBtn().getRadioButton(
-                      width: 180,
-                      context: context,
-                      value: MyStrings.summary,
-                      groupValue: _controller.cardType,
-                      f: _controller.changeCardTypeRadio()),
-                  const SizedBox(width: 20),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _controller.addCardItem();
-                      });
-                    },
-                    child: Row(
-                      children: const [
-                        Icon(Icons.add),
-                        SizedBox(width: 10),
-                        Text('카드추가'),
-                      ],
+      body: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          children: [
+            GetBuilder<LessonStateManager>(
+              builder: (_) {
+                return Row(
+                  children: [
+                    MyRadioBtn().getRadioButton(
+                        context: context,
+                        value: MyStrings.subject,
+                        groupValue: _controller.cardType,
+                        f: _controller.changeCardTypeRadio()),
+                    MyRadioBtn().getRadioButton(
+                        context: context,
+                        value: MyStrings.mention,
+                        groupValue: _controller.cardType,
+                        f: _controller.changeCardTypeRadio()),
+                    MyRadioBtn().getRadioButton(
+                        context: context,
+                        value: MyStrings.tip,
+                        groupValue: _controller.cardType,
+                        f: _controller.changeCardTypeRadio()),
+                    MyRadioBtn().getRadioButton(
+                        context: context,
+                        value: MyStrings.explain,
+                        groupValue: _controller.cardType,
+                        f: _controller.changeCardTypeRadio()),
+                    MyRadioBtn().getRadioButton(
+                        context: context,
+                        value: MyStrings.repeat,
+                        groupValue: _controller.cardType,
+                        f: _controller.changeCardTypeRadio()),
+                    MyRadioBtn().getRadioButton(
+                        context: context,
+                        value: MyStrings.speaking,
+                        groupValue: _controller.cardType,
+                        f: _controller.changeCardTypeRadio()),
+                    MyRadioBtn().getRadioButton(
+                        context: context,
+                        value: MyStrings.quiz,
+                        groupValue: _controller.cardType,
+                        f: _controller.changeCardTypeRadio()),
+                    const SizedBox(width: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _controller.addCardItem();
+                        });
+                      },
+                      child: Row(
+                        children: const [
+                          Icon(Icons.add),
+                          SizedBox(width: 10),
+                          Text('카드추가'),
+                        ],
+                      ),
                     ),
-                  )
-                ],
-              );
-            },
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: FutureBuilder(
-              future: _controller.futureList,
-              builder: (BuildContext context, AsyncSnapshot snapshot) {
-                if (snapshot.hasData && snapshot.connectionState != ConnectionState.waiting) {
-                  if (_controller.cards.isEmpty) {
-                    for (dynamic snapshot in snapshot.data[0]) {
-                      _controller.cards.add(LessonCard.fromJson(snapshot));
-                    }
-                    for (dynamic snapshot in snapshot.data[1]) {
-                      _controller.lessonSummaries.add(LessonSummary.fromJson(snapshot));
-                    }
-                  }
-                  setCards();
-                  if (_controller.cards.isEmpty) {
-                    return const Center(child: Text('카드가 없습니다.'));
-                  } else {
-                    return Row(
-                      children: [
-                        Expanded(
-                          child: Scrollbar(
-                            controller: scrollController,
-                            child: ReorderableListView(
-                              scrollController: scrollController,
-                              padding: const EdgeInsets.all(20),
-                              scrollDirection: Axis.horizontal,
-                              onReorder: (int oldIndex, int newIndex) {
-                                setState(() {
-                                  _controller.reorderCardItem(oldIndex, newIndex);
-                                });
-                              },
-                              children: cardWidgets,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                          child: getSummaryCard(),
-                        ),
-                      ],
-                    );
-                  }
-                } else {
-                  return const Center(child: CircularProgressIndicator());
-                }
+                    const Expanded(child: SizedBox.shrink()),
+                    ElevatedButton(
+                      onPressed: () {
+                        Get.dialog(AlertDialog(
+                          content: getSummaryDialog(),
+                        ));
+                      },
+                      child: const Text('요약보기'),
+                    ),
+                    const SizedBox(width: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        // Get.dialog(AlertDialog(
+                        //   content: getWritingDialog(),
+                        // ));
+                      },
+                      child: const Text('쓰기보기'),
+                    ),
+                  ],
+                );
               },
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(30),
-            child: ElevatedButton(
-              onPressed: () {
-                if (_controller.cards.isNotEmpty) {
-                  Database().setLessonCardBatch(lessonId: lesson.id);
-                }
-              },
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Text(
-                  '저장',
-                  style: TextStyle(fontSize: 20),
+            const SizedBox(height: 20),
+            Expanded(
+              child: FutureBuilder(
+                future: _controller.futureList,
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  if (snapshot.hasData && snapshot.connectionState != ConnectionState.waiting) {
+                    if (_controller.cards.isEmpty) {
+                      for (dynamic snapshot in snapshot.data[0]) {
+                        _controller.cards.add(LessonCard.fromJson(snapshot));
+                      }
+                      for (dynamic snapshot in snapshot.data[1]) {
+                        _controller.lessonSummaries.add(LessonSummary.fromJson(snapshot));
+                      }
+                    }
+                    setCards();
+                    if (_controller.cards.isEmpty) {
+                      return const Center(child: Text('카드가 없습니다.'));
+                    } else {
+                      return Scrollbar(
+                        controller: scrollController,
+                        child: ReorderableListView(
+                          scrollController: scrollController,
+                          padding: const EdgeInsets.all(20),
+                          scrollDirection: Axis.horizontal,
+                          onReorder: (int oldIndex, int newIndex) {
+                            setState(() {
+                              _controller.reorderCardItem(oldIndex, newIndex);
+                            });
+                          },
+                          children: cardWidgets,
+                        ),
+                      );
+                    }
+                  } else {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(30),
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_controller.cards.isNotEmpty) {
+                    Database().setLessonCardBatch(lessonId: lesson.id);
+                  }
+                },
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: Text(
+                    '저장',
+                    style: TextStyle(fontSize: 20),
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

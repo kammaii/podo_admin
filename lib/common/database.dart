@@ -118,6 +118,22 @@ class Database {
     }).catchError((e) => print(e));
   }
 
+  Future<void> setLessonSummaryBatch({required String lessonId}) async {
+    final batch = firestore.batch();
+    final controller = Get.find<LessonStateManager>();
+    for (LessonSummary summary in controller.lessonSummaries) {
+      final ref = firestore.collection('Lessons/$lessonId/LessonSummaries').doc(summary.id);
+      batch.set(ref, summary.toJson());
+    }
+    await batch.commit().then((value) {
+      Get.snackbar('LessonSummaries are saved', '', snackPosition: SnackPosition.BOTTOM);
+      print('LessonSummaries are saved');
+    }).catchError((e) {
+      print(e);
+      Get.snackbar('Error', e, snackPosition: SnackPosition.BOTTOM);
+    });
+  }
+
   Future<void> setLessonCardBatch({required String lessonId}) async {
     final batch = firestore.batch();
     final controller = Get.find<LessonStateManager>();
@@ -125,14 +141,13 @@ class Database {
       final ref = firestore.collection('Lessons/$lessonId/LessonCards').doc(card.id);
       batch.set(ref, card.toJson());
     }
-    for (LessonSummary summary in controller.lessonSummaries) {
-      final ref = firestore.collection('Lessons/$lessonId/LessonSummaries').doc(summary.id);
-      batch.set(ref, summary.toJson());
-    }
-    await batch
-        .commit()
-        .then((value) => Get.snackbar('Lesson is saved', '', snackPosition: SnackPosition.BOTTOM))
-        .catchError((e) => print(e));
+    await batch.commit().then((value) {
+      Get.snackbar('LessonCards are saved', '', snackPosition: SnackPosition.BOTTOM);
+      print('LessonCards are saved');
+    }).catchError((e) {
+      print(e);
+      Get.snackbar('Error', e, snackPosition: SnackPosition.BOTTOM);
+    });
   }
 
   Future<void> updateField(
@@ -158,8 +173,7 @@ class Database {
       transaction.update(ref2, {'orderId': doc1Index});
     }).then((value) {
       print('Transaction completed');
-      Get.snackbar('Transaction completed', '',
-          snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Transaction completed', '', snackPosition: SnackPosition.BOTTOM);
     }).onError((e, stackTrace) {
       Get.snackbar('에러', e.toString(), snackPosition: SnackPosition.BOTTOM);
     });

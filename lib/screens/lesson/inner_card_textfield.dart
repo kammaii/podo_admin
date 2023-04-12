@@ -57,7 +57,7 @@ class InnerCardTextField {
         _controller.lessonSummaries[index].content[language] = text;
       };
       widgets.add(Padding(
-        padding: const EdgeInsets.only(bottom: 5),
+        padding: const EdgeInsets.only(bottom: 10),
         child: getTextField(),
       ));
     }
