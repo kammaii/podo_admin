@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:podo_admin/screens/lesson/lesson_card.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:podo_admin/screens/lesson/lesson_summary.dart';
+import 'package:podo_admin/screens/lesson/lesson_writing.dart';
 import 'package:podo_admin/screens/question/question.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
@@ -118,32 +119,38 @@ class Database {
     }).catchError((e) => print(e));
   }
 
-  Future<void> setLessonSummaryBatch({required String lessonId}) async {
+  Future<void> runLessonBatch({required String lessonId, required String collection}) async {
     final batch = firestore.batch();
     final controller = Get.find<LessonStateManager>();
-    for (LessonSummary summary in controller.lessonSummaries) {
-      final ref = firestore.collection('Lessons/$lessonId/LessonSummaries').doc(summary.id);
-      batch.set(ref, summary.toJson());
-    }
-    await batch.commit().then((value) {
-      Get.snackbar('LessonSummaries are saved', '', snackPosition: SnackPosition.BOTTOM);
-      print('LessonSummaries are saved');
-    }).catchError((e) {
-      print(e);
-      Get.snackbar('Error', e, snackPosition: SnackPosition.BOTTOM);
-    });
-  }
+    final types = ['LessonCards', 'LessonSummaries', 'LessonWritings'];
+    final List<List<dynamic>> docs = [controller.cards, controller.lessonSummaries, controller.lessonWritings];
+    final snapshotIndex = types.indexOf(collection);
 
-  Future<void> setLessonCardBatch({required String lessonId}) async {
-    final batch = firestore.batch();
-    final controller = Get.find<LessonStateManager>();
-    for (LessonCard card in controller.cards) {
-      final ref = firestore.collection('Lessons/$lessonId/LessonCards').doc(card.id);
-      batch.set(ref, card.toJson());
+    // 기존에 저장된 ids
+    List<String> beforeIds = [];
+    for(dynamic snapshot in controller.snapshots.data[snapshotIndex]) {
+      beforeIds.add(snapshot['id']);
     }
+
+    for (dynamic doc in docs[snapshotIndex]) {
+      final ref = firestore.collection('Lessons/$lessonId/$collection').doc(doc.id);
+      batch.set(ref, doc.toJson());
+      if(beforeIds.contains(doc.id)) {
+        beforeIds.remove(doc.id);
+      }
+    }
+
+    // 삭제된 ids 가 있으면 DB 에서 제거
+    if(beforeIds.isNotEmpty) {
+      for(final id in beforeIds) {
+        final ref = firestore.collection('Lessons/$lessonId/$collection').doc(id);
+        batch.delete(ref);
+      }
+    }
+
     await batch.commit().then((value) {
-      Get.snackbar('LessonCards are saved', '', snackPosition: SnackPosition.BOTTOM);
-      print('LessonCards are saved');
+      Get.snackbar('$collection are saved', '', snackPosition: SnackPosition.BOTTOM);
+      print('$collection are saved');
     }).catchError((e) {
       print(e);
       Get.snackbar('Error', e, snackPosition: SnackPosition.BOTTOM);

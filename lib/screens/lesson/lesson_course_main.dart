@@ -170,7 +170,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
         const SizedBox(height: 50),
         ElevatedButton(
           onPressed: () {
-            isBeginner! ? lessonCourse.isBeginnerMode = true : lessonCourse.isBeginnerMode = false;
+            isBeginner ? lessonCourse.isBeginnerMode = true : lessonCourse.isBeginnerMode = false;
             Database().setDoc(collection: LESSON_COURSES, doc: lessonCourse);
             Get.back();
             updateState();
@@ -360,7 +360,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('레슨'),
+        title: const Text('레슨코스'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -407,12 +407,13 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                         columns: const [
                           DataColumn2(label: Text('순서'), size: ColumnSize.S),
                           DataColumn2(label: Text('아이디'), size: ColumnSize.S),
-                          DataColumn2(label: Text('코스'), size: ColumnSize.L),
+                          DataColumn2(label: Text('코스'), size: ColumnSize.S),
                           DataColumn2(label: Text('레슨개수'), size: ColumnSize.S),
                           DataColumn2(label: Text('태그'), size: ColumnSize.S),
                           DataColumn2(label: Text('상태'), size: ColumnSize.S),
                           DataColumn2(label: Text('순서변경'), size: ColumnSize.S),
                           DataColumn2(label: Text('삭제'), size: ColumnSize.S),
+                          DataColumn2(label: Text('레슨보기'), size: ColumnSize.S),
                         ],
                         rows: List<DataRow>.generate(courses.length, (index) {
                           LessonCourse course = courses[index];
@@ -426,9 +427,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                             DataCell(Text(course.title[KO]!), onTap: () {
                               courseDialog(lessonCourse: course);
                             }),
-                            DataCell(Text(course.lessons.length.toString()), onTap: () {
-                              Get.to(const LessonListMain(), arguments: course);
-                            }),
+                            DataCell(Text(course.lessons.length.toString())),
                             DataCell(Text(course.tag != null ? course.tag.toString() : ''), onTap: () {
                               Get.dialog(
                                 AlertDialog(
@@ -550,7 +549,12 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                                   ));
                                 },
                               ),
-                            )
+                            ),
+                            DataCell(
+                              ElevatedButton(onPressed: (){
+                                Get.to(const LessonListMain(), arguments: course);
+                              }, child: const Text('보기'))
+                            ),
                           ]);
                         }),
                       );

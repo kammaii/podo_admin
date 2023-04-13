@@ -1,9 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/languages.dart';
 import 'package:podo_admin/screens/lesson/lesson_card.dart';
 import 'package:podo_admin/screens/lesson/lesson_course.dart';
 import 'package:podo_admin/screens/lesson/lesson_summary.dart';
 import 'package:podo_admin/screens/lesson/lesson.dart';
+import 'package:podo_admin/screens/lesson/lesson_writing.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
 class LessonStateManager extends GetxController {
@@ -11,12 +13,14 @@ class LessonStateManager extends GetxController {
   late List<LessonCard> cards;
   late Map<String, bool> isEditMode;
   late List<LessonSummary> lessonSummaries;
+  late List<LessonWriting> lessonWritings;
   late String selectedLanguage;
   bool isFreeLessonChecked = true;
   List<String> writingLevel = ['쉬움', '보통', '어려움'];
   late Future<List<dynamic>> futureList;
   late List<LessonCourse> lessonCourses;
   late List<Lesson> lessons;
+  late AsyncSnapshot snapshots;
 
   @override
   void onInit() {
@@ -26,6 +30,7 @@ class LessonStateManager extends GetxController {
     selectedLanguage = Languages().getFos[0];
     isEditMode = {};
     lessonSummaries = [];
+    lessonWritings = [];
     lessonCourses = [];
     lessons = [];
   }
@@ -36,24 +41,10 @@ class LessonStateManager extends GetxController {
   }
 
   void setNewIndex() {
-    int newIndex = 0;
-    for (LessonCard card in cards) {
-      card.orderId = newIndex;
-      newIndex++;
+    for(int i=0; i<cards.length; i++) {
+      cards[i].orderId = i;
     }
     setEditMode();
-  }
-
-  void addCardItem() {
-    if(cardType == MyStrings.summary) {
-      lessonSummaries.add(LessonSummary(lessonSummaries.length));
-    } else {
-      LessonCard card = LessonCard();
-      card.orderId = cards.length;
-      card.type = cardType;
-      cards.add(card);
-      setEditMode(id: card.id);
-    }
   }
 
   void addSpeakingCardFromRepeat(LessonCard repeat) {

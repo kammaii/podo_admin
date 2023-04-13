@@ -1,46 +1,45 @@
+import 'package:get/get.dart';
+import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:uuid/uuid.dart';
 
-class Lesson {
+class LessonWriting {
 
   late String id;
+  late int orderId;
+  late int level;
   late Map<String,dynamic> title;
   late bool isFree;
-  late bool isReleased;
-  String? tag;
 
-  Lesson() {
+  LessonWriting() {
     id = const Uuid().v4();
+    orderId = Get.find<LessonStateManager>().lessonWritings.length;
+    level = 0;
     title = {};
     isFree = true;
-    isReleased = false;
   }
 
   static const String ID = 'id';
+  static const String ORDERID = 'orderId';
+  static const String LEVEL = 'level';
   static const String TITLE = 'title';
   static const String ISFREE = 'isFree';
-  static const String ISRELEASED = 'isReleased';
-  static const String TAG = 'tag';
 
-  Lesson.fromJson(Map<String, dynamic> json) {
+  LessonWriting.fromJson(Map<String, dynamic> json) {
     id = json[ID];
+    orderId = json[ORDERID];
+    level = json[LEVEL];
     title = json[TITLE];
     isFree = json[ISFREE];
-    isReleased = json[ISRELEASED];
-    tag = json[TAG] ?? null;
   }
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> map = {
       ID: id,
+      ORDERID: orderId,
+      LEVEL: level,
       TITLE: title,
       ISFREE: isFree,
-      ISRELEASED: isReleased,
-      // DATE: date,
     };
-    List<Map<String,dynamic>> writingTitleJson = [];
-    map[TAG] = tag ?? null;
     return map;
   }
-
-
 }

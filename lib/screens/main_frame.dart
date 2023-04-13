@@ -18,12 +18,11 @@ class MainFrame extends StatefulWidget {
 
 class _MainFrameState extends State<MainFrame> {
   final List<Widget> _buildScreens = [
-    LessonCourseMain(),
-
     WritingMain(),
     QuestionMain(),
     UserMain(),
     NoticeMain(),
+    LessonCourseMain(),
     ReadingMain(),
     const TestDB(),
   ];
