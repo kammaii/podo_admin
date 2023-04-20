@@ -208,17 +208,17 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
   }
 
   Future getImage(String courseId) async {
-    File image;
+    final image;
     final picker = ImagePicker();
     FirebaseStorage storage = FirebaseStorage.instance;
 
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
-      image = File(pickedFile.path);
+      image = await pickedFile.readAsBytes();
       String fileName = '$courseId.jpeg';
       try {
         final ref = storage.ref().child('LessonCourseImages/$fileName');
-        ref.putFile((await image.readAsBytes()) as File);
+        ref.putData(image);
       } catch (e) {
         print('Storage error: $e');
       }
