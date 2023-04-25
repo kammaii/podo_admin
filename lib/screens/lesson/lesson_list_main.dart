@@ -21,11 +21,14 @@ class _LessonListMainState extends State<LessonListMain> {
   late Map<String, TextEditingController> controllersTitle;
   LessonStateManager controller = Get.find<LessonStateManager>();
   LessonCourse course = Get.arguments;
+  List<bool> typeToggle = [true, false];
   final KO = 'ko';
   final FO = 'fo';
   final ID = 'id';
   final LESSON_COURSES = 'LessonCourses';
   final LESSONS = 'lessons';
+  final TYPE_LESSON = 'Lesson';
+  final TYPE_REVIEW = 'Review';
 
   initDialog() {
     controllersTitle = {};
@@ -35,6 +38,7 @@ class _LessonListMainState extends State<LessonListMain> {
       FO: TextEditingController(),
     };
     controller.selectedLanguage = Languages().getFos[0];
+    typeToggle = [true, false];
   }
 
   Widget getLanguageRadio(String lang) {
@@ -59,6 +63,9 @@ class _LessonListMainState extends State<LessonListMain> {
       lesson = Lesson.fromJson(course.lessons[index]);
     }
     initDialog();
+    typeToggle[0] = lesson.type == TYPE_LESSON;
+    typeToggle[1] = lesson.type == TYPE_REVIEW;
+
     Get.dialog(AlertDialog(
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -98,6 +105,33 @@ class _LessonListMainState extends State<LessonListMain> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Row(
+                          children: [
+                            const Text('타입', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            const SizedBox(width: 20),
+                            ToggleButtons(
+                              isSelected: typeToggle,
+                              onPressed: (int index) {
+                                typeToggle[0] = index == 0;
+                                typeToggle[1] = index == 1;
+                                index == 0
+                                    ? lesson.type = TYPE_LESSON
+                                    : lesson.type = TYPE_REVIEW;
+                                controller.update();
+                              },
+                              borderRadius: const BorderRadius.all(Radius.circular(10)),
+                              children: [
+                                Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                                    child: Text(TYPE_LESSON)),
+                                Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                                    child: Text(TYPE_REVIEW)),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
                         Row(
                           children: [
                             const Text('레슨아이디', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -195,7 +229,7 @@ class _LessonListMainState extends State<LessonListMain> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('레슨리스트 (${course.title[KO]})')),
+      appBar: AppBar(title: Text('레슨리스트 (${course.title[KO]} : ${course.id.substring(0, 8)})')),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Column(children: [
@@ -244,6 +278,7 @@ class _LessonListMainState extends State<LessonListMain> {
                   columns: const [
                     DataColumn2(label: Text('순서'), size: ColumnSize.S),
                     DataColumn2(label: Text('아이디'), size: ColumnSize.S),
+                    DataColumn2(label: Text('타입'), size: ColumnSize.S),
                     DataColumn2(label: Text('타이틀'), size: ColumnSize.L),
                     DataColumn2(label: Text('무료'), size: ColumnSize.S),
                     DataColumn2(label: Text('상태'), size: ColumnSize.S),
@@ -258,6 +293,7 @@ class _LessonListMainState extends State<LessonListMain> {
                       return DataRow(cells: [
                         DataCell(Text(index.toString())),
                         DataCell(Text(lesson.id.substring(0, 8))),
+                        DataCell(Text(lesson.type)),
                         DataCell(Text(lesson.title[KO]), onTap: () {
                           lessonDialog(index: index);
                         }),
@@ -378,10 +414,10 @@ class _LessonListMainState extends State<LessonListMain> {
                     } else {
                       String category = course.lessons[index];
                       return DataRow(
-                          cells: List<DataCell>.generate(9, (idx) {
+                          cells: List<DataCell>.generate(10, (idx) {
                         if (idx == 0) {
                           return DataCell(Text(index.toString()));
-                        } else if (idx == 2) {
+                        } else if (idx == 3) {
                           return DataCell(Text(category), onTap: () {
                             Get.dialog(
                               AlertDialog(
@@ -402,7 +438,7 @@ class _LessonListMainState extends State<LessonListMain> {
                               ),
                             );
                           });
-                        } else if (idx == 7) {
+                        } else if (idx == 8) {
                           return DataCell(
                             IconButton(
                               icon: const Icon(

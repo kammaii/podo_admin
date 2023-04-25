@@ -35,9 +35,10 @@ class LessonStateManager extends GetxController {
     lessons = [];
   }
 
+
   void setEditMode({String? id}) {
     isEditMode.updateAll((key, value) => value = false);
-    id != null ? isEditMode[id] = true : '';
+    id != null ? isEditMode[id] = true : null;
   }
 
   void setNewIndex() {

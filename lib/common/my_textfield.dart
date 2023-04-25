@@ -12,7 +12,6 @@ class MyTextField {
       autofocus: autoFocus,
       onChanged: fn,
       maxLines: null,
-
     );
   }
 }
