@@ -78,14 +78,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
               children: [
                 InnerCardTextField().getFos(index),
                 const Divider(height: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    ElevatedButton(onPressed: () {}, child: const Text('오디오 업로드')),
-                    const SizedBox(width: 10),
-                    Expanded(child: Text(card.content[AUDIO] ?? '없음')),
-                  ],
-                ),
+                InnerCardTextField().getAudio(index, AUDIO),
               ],
             );
             break;
@@ -176,14 +169,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                 const Divider(height: 30),
                 InnerCardTextField().getFos(index),
                 const Divider(height: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    ElevatedButton(onPressed: () {}, child: const Text('오디오 업로드')),
-                    const SizedBox(width: 10),
-                    Expanded(child: Text(card.content[AUDIO] ?? '없음')),
-                  ],
-                ),
+                InnerCardTextField().getAudio(index, AUDIO),
                 const SizedBox(height: 20),
                 TextButton(
                   onPressed: () {
@@ -206,14 +192,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                 const Divider(height: 30),
                 InnerCardTextField().getFos(index),
                 const Divider(height: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    ElevatedButton(onPressed: () {}, child: const Text('오디오 선택')),
-                    const SizedBox(width: 10),
-                    Expanded(child: Text(card.content[AUDIO] ?? '없음')),
-                  ],
-                ),
+                InnerCardTextField().getAudio(index, AUDIO),
               ],
             );
             break;
@@ -242,13 +221,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                   ],
                 ),
                 const Divider(height: 30),
-                Row(
-                  children: [
-                    ElevatedButton(onPressed: () {}, child: const Text('오디오 선택')),
-                    const SizedBox(width: 10),
-                    Expanded(child: Text(card.content[AUDIO] ?? '없음')),
-                  ],
-                ),
+                InnerCardTextField().getAudio(index, AUDIO),
               ],
             );
             break;

@@ -1,10 +1,12 @@
 import 'dart:io';
+
 import 'package:data_table_2/data_table_2.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:podo_admin/common/cloud_storage.dart';
 import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/languages.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
@@ -82,108 +84,6 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
     };
   }
 
-  Widget getCourseDialog(LessonCourse lessonCourse) {
-    File image;
-    final picker = ImagePicker();
-    FirebaseStorage storage = FirebaseStorage.instance;
-
-    Future getImage() async {
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-      if (pickedFile != null) {
-        image = File(pickedFile.path);
-        String fileName = '${lessonCourse.id.toString()}.jpeg';
-        try {
-          final ref = storage.ref().child('LessonCourseImages/$fileName');
-          ref.putFile((await image.readAsBytes()) as File);
-        } catch (e) {
-          print('Storage error: $e');
-        }
-      } else {
-        print('No image selected.');
-      }
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Row(
-          children: [
-            Column(
-              children: [
-                Container(
-                  width: 130.0,
-                  height: 130.0,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    image: DecorationImage(
-                      fit: BoxFit.cover,
-                      image: NetworkImage(
-                          "https://www.helpguide.org/wp-content/uploads/king-charles-spaniel-resting-head.jpg"),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    getImage();
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    child: Text('이미지 업로드'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(width: 50),
-            Expanded(
-              child: Column(
-                children: [
-                  MyTextField().getTextField(
-                    controller: controllersCourse[KO],
-                    label: '코스입력(한국어)',
-                    fn: (String? value) {
-                      lessonCourse.title[KO] = value!;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  MyTextField().getTextField(
-                    controller: controllersCourse[FO],
-                    label: '코스입력(외국어)',
-                    fn: (String? value) {
-                      lessonCourse.title[controller.selectedLanguage] = value!;
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 50),
-        MyTextField().getTextField(
-          controller: controllersCourse[DESC],
-          label: '설명',
-          fn: (String? value) {
-            lessonCourse.description[controller.selectedLanguage] = value!;
-          },
-          minLine: 5,
-        ),
-        const SizedBox(height: 50),
-        ElevatedButton(
-          onPressed: () {
-            isBeginner ? lessonCourse.isBeginnerMode = true : lessonCourse.isBeginnerMode = false;
-            Database().setDoc(collection: LESSON_COURSES, doc: lessonCourse);
-            Get.back();
-            updateState();
-          },
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Text('저장', style: TextStyle(fontSize: 20)),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget getLanguageRadio(String lang) {
     return MyRadioBtn().getRadioButton(
         context: context,
@@ -207,31 +107,25 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
     );
   }
 
-  Future getImage(String courseId) async {
-    final image;
+  Future uploadImage(String courseId) async {
     final picker = ImagePicker();
-    FirebaseStorage storage = FirebaseStorage.instance;
-
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
-      image = await pickedFile.readAsBytes();
+      File image = (await pickedFile.readAsBytes()) as File;
       String fileName = '$courseId.jpeg';
-      try {
-        final ref = storage.ref().child('LessonCourseImages/$fileName');
-        ref.putData(image);
-      } catch (e) {
-        print('Storage error: $e');
-      }
+      CloudStorage().uploadCourseImage(image: image, fileName: fileName);
     } else {
       print('No image selected.');
     }
   }
 
-  courseDialog({LessonCourse? lessonCourse}) {
+  courseDialog({LessonCourse? lessonCourse}) async {
     lessonCourse = lessonCourse ?? LessonCourse();
     initDialog();
     String title;
     isBeginner ? title = '레슨코스(초급)' : title = '레슨코스(중급)';
+
+    String? imageUrl = await CloudStorage().getCourseImage(courseId: lessonCourse.id);
 
     Get.dialog(AlertDialog(
       title: Row(
@@ -272,21 +166,18 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                           Column(
                             children: [
                               Container(
-                                width: 130.0,
-                                height: 130.0,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  image: DecorationImage(
-                                    fit: BoxFit.cover,
-                                    image: NetworkImage(
-                                        "https://www.helpguide.org/wp-content/uploads/king-charles-spaniel-resting-head.jpg"),
+                                  width: 130.0,
+                                  height: 130.0,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
                                   ),
-                                ),
-                              ),
+                                  child: imageUrl != null
+                                      ? Image.network(imageUrl, headers: const {'Access-Control-Allow-Origin': '*'})
+                                      : Image.asset('assets/podo.png')),
                               const SizedBox(height: 10),
                               ElevatedButton(
                                 onPressed: () {
-                                  getImage(lessonCourse!.id);
+                                  uploadImage(lessonCourse!.id);
                                 },
                                 child: const Padding(
                                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -550,11 +441,11 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                                 },
                               ),
                             ),
-                            DataCell(
-                              ElevatedButton(onPressed: (){
-                                Get.to(const LessonListMain(), arguments: course);
-                              }, child: const Text('보기'))
-                            ),
+                            DataCell(ElevatedButton(
+                                onPressed: () {
+                                  Get.to(const LessonListMain(), arguments: course);
+                                },
+                                child: const Text('보기'))),
                           ]);
                         }),
                       );
