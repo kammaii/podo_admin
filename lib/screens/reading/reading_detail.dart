@@ -46,6 +46,7 @@ class _ReadingDetailState extends State<ReadingDetail> {
   }
 
   Widget textFieldForKoContent() {
+    textEditControllerForKo.text = reading.content['ko'];
     return TextField(
       maxLines: null,
       minLines: 10,
@@ -83,6 +84,7 @@ class _ReadingDetailState extends State<ReadingDetail> {
                         selectedText = textEditControllerForKo.text.substring(start, end);
                         wholeText = wholeText.replaceRange(start, end, '&&$selectedText&&');
                         textEditControllerForKo.text = wholeText;
+                        reading.content['ko'] = wholeText;
                       }
                     },
                     child: const Text('단어설정'))
