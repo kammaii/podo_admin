@@ -125,7 +125,6 @@ class _ReadingMainState extends State<ReadingMain> {
                 DataColumn2(label: Text('타이틀'), size: ColumnSize.L),
                 DataColumn2(label: Text('레벨'), size: ColumnSize.S),
                 DataColumn2(label: Text('태그'), size: ColumnSize.S),
-                DataColumn2(label: Text('좋아요'), size: ColumnSize.S),
                 DataColumn2(label: Text('상태'), size: ColumnSize.S),
                 DataColumn2(label: Text('순서변경'), size: ColumnSize.S),
                 DataColumn2(label: Text('삭제'), size: ColumnSize.S),
@@ -163,7 +162,6 @@ class _ReadingMainState extends State<ReadingMain> {
                       ),
                     );
                   }),
-                  DataCell(Text(reading.likeCount.toString())),
                   DataCell(Text(reading.isReleased ? '게시중' : '입력중'), onTap: () {
                     Get.dialog(AlertDialog(
                       content: const Text('상태를 변경하겠습니까?'),

@@ -12,8 +12,7 @@ class Reading {
   String? tag;
   late Map<String, dynamic> content;
   late Map<String, dynamic> words;
-  late Map<int, dynamic> quizzes;
-  late int likeCount;
+  //late Map<int, dynamic> quizzes;
   late bool isReleased;
 
   Reading() {
@@ -25,8 +24,7 @@ class Reading {
     category = controller.categories[0];
     content = {};
     words = {};
-    quizzes = {0: List.generate(5, (index) => '')};
-    likeCount = 0;
+    //quizzes = {0: List.generate(5, (index) => '')};
     isReleased = false;
   }
 
@@ -39,7 +37,6 @@ class Reading {
   static const String CONTENT = 'content';
   static const String WORDS = 'words';
   static const String QUIZZES = 'quizzes';
-  static const String LIKECOUNT = 'likeCount';
   static const String ISRELEASED = 'isReleased';
 
   Reading.fromJson(Map<String, dynamic> json) {
@@ -49,14 +46,13 @@ class Reading {
     level = json[LEVEL];
     category = json[CATEGORY];
     tag = json[TAG] ?? null;
-    content = json[CONTENT];
+    content = json[CONTENT] ?? {};
     words = json[WORDS];
-    quizzes = {};
-    Map<String, dynamic> quizzesMap = json[QUIZZES];
-    quizzesMap.forEach((key, value) {
-      quizzes[int.parse(key)] = value;
-    });
-    likeCount = json[LIKECOUNT];
+    // quizzes = {};
+    // Map<String, dynamic> quizzesMap = json[QUIZZES];
+    // quizzesMap.forEach((key, value) {
+    //   quizzes[int.parse(key)] = value;
+    // });
     isReleased = json[ISRELEASED];
   }
 
@@ -69,13 +65,12 @@ class Reading {
       CATEGORY: category,
       CONTENT: content,
       WORDS: words,
-      LIKECOUNT: likeCount,
       ISRELEASED: isReleased,
     };
     Map<String, dynamic> quizzesJson = {};
-    quizzes.forEach((key, value) {
-      quizzesJson[key.toString()] = value;
-    });
+    // quizzes.forEach((key, value) {
+    //   quizzesJson[key.toString()] = value;
+    // });
     map[QUIZZES] = quizzesJson;
     map[TAG] = tag ?? null;
     return map;

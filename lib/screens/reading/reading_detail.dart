@@ -27,13 +27,15 @@ class _ReadingDetailState extends State<ReadingDetail> {
   final languages = [...Languages().getFos];
   Map<String, List<String>> wordsMap = {};
   late Map<int, dynamic> quizMap;
+  late List<dynamic> wordList;
 
   @override
   void initState() {
     super.initState();
     reading = Get.arguments ?? Reading();
+    wordList = reading.words['ko'];
     languages.insert(0, 'ko');
-    quizMap = {...reading.quizzes};
+    // quizMap = {...reading.quizzes};
   }
 
   Widget getCards() {
@@ -45,28 +47,16 @@ class _ReadingDetailState extends State<ReadingDetail> {
     return Row(children: cards);
   }
 
-  Widget textFieldForKoContent() {
-    textEditControllerForKo.text = reading.content['ko'];
-    return TextField(
-      maxLines: null,
-      minLines: 10,
-      controller: textEditControllerForKo,
-      selectionControls: MaterialTextSelectionControls(),
-      onTap: () {
-        textEditControllerForKo.selection =
-            TextSelection.collapsed(offset: textEditControllerForKo.text.length);
-      },
-      decoration: const InputDecoration(
-        border: OutlineInputBorder(),
-        labelText: '내용',
-      ),
-      onChanged: (value) {
-        reading.content['ko'] = value;
-      },
-    );
-  }
-
   Widget readingCard({required String language}) {
+    final contentController = TextEditingController();
+    String contentText = '';
+    if (reading.content[language] != null) {
+      for (String content in reading.content[language]) {
+        contentText = '$contentText$content\n\n';
+      }
+    }
+    contentController.text = contentText;
+
     Widget widget = Column(
       children: [
         Row(
@@ -77,15 +67,15 @@ class _ReadingDetailState extends State<ReadingDetail> {
                 ? ElevatedButton(
                     onPressed: () {
                       String selectedText = '';
-                      int start = textEditControllerForKo.selection.start;
-                      int end = textEditControllerForKo.selection.end;
+                      int start = contentController.selection.start;
+                      int end = contentController.selection.end;
                       if (start != end) {
-                        String wholeText = textEditControllerForKo.text;
-                        selectedText = textEditControllerForKo.text.substring(start, end);
-                        wholeText = wholeText.replaceRange(start, end, '&&$selectedText&&');
-                        textEditControllerForKo.text = wholeText;
-                        reading.content['ko'] = wholeText;
+                        selectedText = contentController.text.substring(start, end);
+                        if (!wordList.contains(selectedText)) {
+                          wordList.add(selectedText);
+                        }
                       }
+                      controller.update();
                     },
                     child: const Text('단어설정'))
                 : const SizedBox.shrink(),
@@ -100,26 +90,60 @@ class _ReadingDetailState extends State<ReadingDetail> {
                 child: SizedBox(
                   width: cardWidth,
                   child: SingleChildScrollView(
-                      child: Column(
-                    children: [
-                      MyTextField().getTextField(
-                          controller: TextEditingController(text: reading.title[language]),
-                          label: '제목',
-                          fn: (value) {
-                            reading.title[language] = value;
-                          }),
-                      const SizedBox(height: 10),
-                      language == 'ko'
-                          ? textFieldForKoContent()
-                          : MyTextField().getTextField(
-                              controller: TextEditingController(text: reading.content[language]),
-                              label: '내용',
-                              minLine: 10,
-                              fn: (value) {
-                                reading.content[language] = value;
-                              }),
-                    ],
-                  )),
+                    child: Column(
+                      children: [
+                        MyTextField().getTextField(
+                            controller: TextEditingController(text: reading.title[language]),
+                            label: '제목',
+                            fn: (value) {
+                              reading.title[language] = value;
+                            }),
+                        const SizedBox(height: 10),
+                        MyTextField().getTextField(
+                            controller: contentController,
+                            label: '내용',
+                            minLine: 20,
+                            fn: (value) {
+                              List<String> content = value.split('\n');
+                              content.removeWhere((element) => element.isEmpty);
+                              reading.content[language] = content;
+                            }),
+                        language == 'ko'
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 10),
+                                  GetBuilder<ReadingStateManager>(
+                                    builder: (_) {
+                                      String words = '';
+                                      for (String word in wordList) {
+                                        words = '$words$word,';
+                                      }
+                                      final tec = TextEditingController(text: words);
+                                      return SizedBox(
+                                        height: 50,
+                                        width: cardWidth,
+                                        child: MyTextField().getTextField(
+                                            controller: tec,
+                                            label: '단어리스트',
+                                            minLine: 2,
+                                            fn: (value) {
+                                              if (value.endsWith(',')) {
+                                                value.substring(0, value.length - 1);
+                                              }
+                                              wordList = value.split(',');
+                                            }),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 10),
+                                  const Text('# 기본형은 괄호 안에 적을 것', style: TextStyle(color: Colors.red)),
+                                ],
+                              )
+                            : const SizedBox.shrink(),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -140,7 +164,7 @@ class _ReadingDetailState extends State<ReadingDetail> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: GetBuilder<ReadingStateManager>(
-            builder: (controller) {
+            builder: (_) {
               return Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -170,15 +194,16 @@ class _ReadingDetailState extends State<ReadingDetail> {
                   const SizedBox(width: 20),
                   ElevatedButton(
                       onPressed: () {
-                        String? contentKo = reading.content['ko'];
-                        if(contentKo != null && contentKo.contains('&&')) {
+                        List<dynamic> contentsKo = reading.content['ko'] ?? [];
+
+                        if (contentsKo.isNotEmpty && wordList.isNotEmpty) {
                           Get.dialog(AlertDialog(
                             title: const Text('자동번역을 사용하겠습니까?'),
                             actions: [
                               TextButton(
                                   onPressed: () {
                                     Get.back();
-                                    final future = getTranslatedFuture();
+                                    final future = getTranslatedWordFuture();
                                     Get.dialog(AlertDialog(
                                       title: const Text('단어입력'),
                                       content: FutureBuilder(
@@ -197,9 +222,8 @@ class _ReadingDetailState extends State<ReadingDetail> {
                                                     child: Column(
                                                       children: List.generate(
                                                         Languages().getFos.length + 1,
-                                                            (index) =>
-                                                            getWordList(
-                                                                index, snapshot.data[languages[index]]),
+                                                        (index) =>
+                                                            getWordList(index, snapshot.data[languages[index]]),
                                                       ),
                                                     ),
                                                   ),
@@ -236,7 +260,7 @@ class _ReadingDetailState extends State<ReadingDetail> {
                                               child: Column(
                                                 children: List.generate(
                                                   Languages().getFos.length + 1,
-                                                      (index) => getWordList(index, reading.words[languages[index]]),
+                                                  (index) => getWordList(index, reading.words[languages[index]]),
                                                 ),
                                               ),
                                             ),
@@ -262,64 +286,67 @@ class _ReadingDetailState extends State<ReadingDetail> {
                   const SizedBox(width: 20),
                   ElevatedButton(
                       onPressed: () {
-                        Get.dialog(AlertDialog(
-                          title: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('퀴즈입력'),
-                              Row(
-                                children: [
-                                  TextButton(
-                                      onPressed: () {
-                                        if (quizMap.isNotEmpty) {
-                                          int maxKey = quizMap.keys.reduce((a, b) => a > b ? a : b);
-                                          quizMap.remove(maxKey);
-                                          controller.update();
-                                        }
-                                      },
-                                      child: const Text('삭제', style: TextStyle(color: Colors.red))),
-                                  const SizedBox(width: 10),
-                                  TextButton(
-                                      onPressed: () {
-                                        int nextKey = quizMap.keys.isNotEmpty
-                                            ? quizMap.keys.reduce((a, b) => a > b ? a : b) + 1
-                                            : 0;
-                                        quizMap[nextKey] = List.generate(5, (index) => '');
-                                        controller.update();
-                                      },
-                                      child: const Text('추가')),
-                                ],
-                              ),
-                            ],
-                          ),
-                          content: GetBuilder<ReadingStateManager>(
-                            builder: (controller) {
-                              return Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Scrollbar(
-                                    controller: sc3,
-                                    child: SingleChildScrollView(
-                                      controller: sc3,
-                                      scrollDirection: Axis.horizontal,
-                                      child: Column(
-                                        children: List.generate(5, (index) => getQuizList(index)),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  ElevatedButton(
-                                      onPressed: () {
-                                        reading.quizzes = {...quizMap};
-                                        Get.back();
-                                      },
-                                      child: const Text('저장', style: TextStyle(fontSize: 20))),
-                                ],
-                              );
-                            },
-                          ),
-                        ));
+                        // Get.dialog(AlertDialog(
+                        //   title: Row(
+                        //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        //     children: [
+                        //       const Text('퀴즈입력'),
+                        //       Row(
+                        //         children: [
+                        //           TextButton(
+                        //               onPressed: () {
+                        //                 if (quizMap.isNotEmpty) {
+                        //                   int maxKey = quizMap.keys.reduce((a, b) => a > b ? a : b);
+                        //                   quizMap.remove(maxKey);
+                        //                   controller.update();
+                        //                 }
+                        //               },
+                        //               child: const Text('삭제', style: TextStyle(color: Colors.red))),
+                        //           const SizedBox(width: 10),
+                        //           TextButton(
+                        //               onPressed: () {
+                        //                 int nextKey = quizMap.keys.isNotEmpty
+                        //                     ? quizMap.keys.reduce((a, b) => a > b ? a : b) + 1
+                        //                     : 0;
+                        //                 quizMap[nextKey] = List.generate(5, (index) => '');
+                        //                 controller.update();
+                        //               },
+                        //               child: const Text('추가')),
+                        //         ],
+                        //       ),
+                        //     ],
+                        //   ),
+                        //   content: GetBuilder<ReadingStateManager>(
+                        //     builder: (controller) {
+                        //       return Column(
+                        //         mainAxisSize: MainAxisSize.min,
+                        //         children: [
+                        //           Scrollbar(
+                        //             controller: sc3,
+                        //             child: SingleChildScrollView(
+                        //               controller: sc3,
+                        //               scrollDirection: Axis.horizontal,
+                        //               child: Column(
+                        //                 children: List.generate(5, (index) => getQuizList(index)),
+                        //               ),
+                        //             ),
+                        //           ),
+                        //           const SizedBox(height: 20),
+                        //           ElevatedButton(
+                        //               onPressed: () {
+                        //                 // reading.quizzes = {...quizMap};
+                        //                 Get.back();
+                        //               },
+                        //               child: const Text('저장', style: TextStyle(fontSize: 20))),
+                        //         ],
+                        //       );
+                        //     },
+                        //   ),
+                        // ));
                       },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey,
+                      ),
                       child: const Text('퀴즈입력')),
                 ],
               );
@@ -330,8 +357,7 @@ class _ReadingDetailState extends State<ReadingDetail> {
         Expanded(
           child: Scrollbar(
             controller: sc1,
-            child:
-                SingleChildScrollView(controller: sc1, scrollDirection: Axis.horizontal, child: getCards()),
+            child: SingleChildScrollView(controller: sc1, scrollDirection: Axis.horizontal, child: getCards()),
           ),
         ),
         const SizedBox(height: 10),
@@ -356,25 +382,30 @@ class _ReadingDetailState extends State<ReadingDetail> {
     );
   }
 
-  Future<dynamic> getTranslatedFuture() async {
-    final wholeText = textEditControllerForKo.text;
-    final regex = RegExp(r'&&(.+?)&&');
-    final matches = regex.allMatches(wholeText);
+  Future<dynamic> getTranslatedWordFuture() async {
     final wordsFuture = {};
+    for (int i = 0; i < languages.length; i++) {
+      wordsMap[languages[i]] = List.generate(wordList.length, (index) => '');
+      wordsFuture[languages[i]] = [];
 
-    if (matches.isNotEmpty) {
-      for (int i = 0; i < languages.length; i++) {
-        wordsMap[languages[i]] = List.generate(matches.length, (index) => '');
-        wordsFuture[languages[i]] = [];
-        for (final match in matches) {
-          final word = await translator.translate(match.group(1)!, to: languages[i]);
+      for (String word in wordList) {
+        if (languages[i] == 'ko') {
           wordsFuture[languages[i]].add(word);
+        } else {
+          final regex = RegExp(r'\((.*?)\)');
+          final matches = regex.allMatches(word);
+
+          if (matches.isNotEmpty) {
+            final match = matches.first;
+            final textInsideParentheses = match.group(1) ?? '';
+            word = textInsideParentheses;
+          }
+          final translatedWord = await translator.translate(word, to: languages[i]);
+          wordsFuture[languages[i]].add(translatedWord);
         }
       }
-      return wordsFuture;
-    } else {
-      return;
     }
+    return wordsFuture;
   }
 
   Widget getWordList(int index, dynamic snapshot) {
@@ -409,27 +440,27 @@ class _ReadingDetailState extends State<ReadingDetail> {
     Get.back();
   }
 
-  Widget getQuizList(int index) {
-    List<Widget> widgets = [];
-    final titles = ['질문', '보기1(정답)', '보기2', '보기3', '보기4'];
-    widgets.add(SizedBox(width: 100, child: Text(titles[index])));
-
-    for (int i = 0; i < quizMap.length; i++) {
-      final quiz = quizMap[i];
-      widgets.add(SizedBox(
-        width: 200,
-        child: Padding(
-          padding: const EdgeInsets.all(5),
-          child: MyTextField().getTextField(
-              controller: TextEditingController(text: quiz![index]),
-              fn: (value) {
-                quiz[index] = value;
-              }),
-        ),
-      ));
-    }
-    return Row(
-      children: widgets,
-    );
-  }
+// Widget getQuizList(int index) {
+//   List<Widget> widgets = [];
+//   final titles = ['질문', '보기1(정답)', '보기2', '보기3', '보기4'];
+//   widgets.add(SizedBox(width: 100, child: Text(titles[index])));
+//
+//   for (int i = 0; i < quizMap.length; i++) {
+//     final quiz = quizMap[i];
+//     widgets.add(SizedBox(
+//       width: 200,
+//       child: Padding(
+//         padding: const EdgeInsets.all(5),
+//         child: MyTextField().getTextField(
+//             controller: TextEditingController(text: quiz![index]),
+//             fn: (value) {
+//               quiz[index] = value;
+//             }),
+//       ),
+//     ));
+//   }
+//   return Row(
+//     children: widgets,
+//   );
+// }
 }
