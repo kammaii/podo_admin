@@ -1,5 +1,6 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
@@ -134,7 +135,10 @@ class _ReadingMainState extends State<ReadingMain> {
                 return DataRow(cells: [
                   DataCell(Text(reading.orderId.toString())),
                   DataCell(Text(reading.id.substring(0, 8)), onTap: () {
-                    Get.to(const ReadingDetail(), arguments: reading);
+                    Clipboard.setData(ClipboardData(text: reading.id));
+                    Get.snackbar('아이디가 클립보드에 저장되었습니다.', reading.id,
+                        snackPosition: SnackPosition.BOTTOM);
+
                   }),
                   DataCell(Text(reading.title['ko'] ?? ''), onTap: () {
                     Get.to(const ReadingDetail(), arguments: reading);
