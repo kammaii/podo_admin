@@ -5,7 +5,7 @@ import 'package:podo_admin/screens/lesson/lesson_card.dart';
 import 'package:podo_admin/screens/lesson/lesson_course.dart';
 import 'package:podo_admin/screens/lesson/lesson_summary.dart';
 import 'package:podo_admin/screens/lesson/lesson.dart';
-import 'package:podo_admin/screens/lesson/lesson_writing.dart';
+import 'package:podo_admin/screens/writing/writing_question.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
 class LessonStateManager extends GetxController {
@@ -13,7 +13,7 @@ class LessonStateManager extends GetxController {
   late List<LessonCard> cards;
   late Map<String, bool> isEditMode;
   late List<LessonSummary> lessonSummaries;
-  late List<LessonWriting> lessonWritings;
+  late List<WritingQuestion> writingQuestions;
   late String selectedLanguage;
   bool isFreeLessonChecked = true;
   List<String> writingLevel = ['쉬움', '보통', '어려움'];
@@ -30,7 +30,7 @@ class LessonStateManager extends GetxController {
     selectedLanguage = Languages().getFos[0];
     isEditMode = {};
     lessonSummaries = [];
-    lessonWritings = [];
+    writingQuestions = [];
     lessonCourses = [];
     lessons = [];
   }

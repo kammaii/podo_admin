@@ -9,8 +9,8 @@ class WritingStateManager extends GetxController {
   int writingIndex = 0;
   List<Writing> writings = [];
   late Future<List<dynamic>> futureWritings;
-  Map<int, String> statusMap = {0: '신규', 1: '교정완료', 2: '요청취소', 3: '교정불가'};
-  Map<int, Color> statusColor = {0: Colors.orange, 1: Colors.green, 2: Colors.grey, 3: Colors.red};
+  Map<int, String> statusMap = {0: '신규', 1: '교정완료', 2: '교정불필요', 3: '교정불가', 4: '요청취소'};
+  Map<int, Color> statusColor = {0: Colors.orange, 1: Colors.green, 2: Colors.yellow, 3: Colors.red, 4: Colors.grey};
 
   @override
   void onInit() {
@@ -43,7 +43,6 @@ class WritingStateManager extends GetxController {
       } else {
         futureWritings = Database().getDocumentsFromDb(collection: 'Writings', orderBy: 'dateWriting');
       }
-      print('hoi!');
     };
   }
 }

@@ -345,7 +345,7 @@ class _ReadingDetailState extends State<ReadingDetail> {
                         // ));
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey,
+                        onPrimary: Colors.grey,
                       ),
                       child: const Text('퀴즈입력')),
                 ],

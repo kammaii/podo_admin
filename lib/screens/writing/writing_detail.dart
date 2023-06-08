@@ -60,7 +60,7 @@ class WritingDetail extends StatelessWidget {
     Get.back();
     Get.defaultDialog(title: '저장중', content: const Center(child: CircularProgressIndicator()));
     await Database()
-        .updateCorrection(writingId: writing.writingId, correction: writing.correction);
+        .updateCorrection(writingId: writing.id, correction: writing.correction);
     controller.writings.removeAt(controller.writingIndex);
     controller.getWriting();
     Get.back();
@@ -133,7 +133,7 @@ class WritingDetail extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Text(writing.writingTitle, textScaleFactor: 2),
+                            Text(writing.questionTitle, textScaleFactor: 2),
                             const SizedBox(width: 20),
                             Text('( ${writing.userEmail} )'),
                           ],
@@ -194,7 +194,7 @@ class WritingDetail extends StatelessWidget {
                                     TextButton(
                                       onPressed: () {
                                         Database().updateCorrection(
-                                            writingId: writing.writingId, isUncorrectable: true);
+                                            writingId: writing.id, isUncorrectable: true);
                                         controller.writings.removeAt(controller.writingIndex);
                                         controller.getWriting();
                                         Get.back();
@@ -246,7 +246,7 @@ class WritingDetail extends StatelessWidget {
                             ],
                           ),
                           callbacks: Callbacks(onChangeContent: (String? content) {
-                            writing.correction = content;
+                            writing.correction = content!;
                           }),
                         ),
                       ),

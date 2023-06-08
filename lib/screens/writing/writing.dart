@@ -1,17 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Writing {
-  late String writingId;
-  late String writingTitle;
+  late String id;
+  late String questionId;
+  late String questionTitle;
   late String userEmail;
   late String userWriting;
-  String? correction;
+  late String correction;
   late DateTime dateWriting;
   DateTime? dateReply;
   late int status;
 
-  static const String WRITINGID = 'writingId';
-  static const String WRITINGTITLE = 'writingTitle';
+  static const String ID = 'id';
+  static const String QUESTIONID = 'questionId';
+  static const String QUESTIONTITLE = 'questionTitle';
   static const String USEREMAIL = 'userEmail';
   static const String USERWRITING = 'userWriting';
   static const String CORRECTION = 'correction';
@@ -20,8 +22,9 @@ class Writing {
   static const String STATUS = 'status';
 
   Writing.fromJson(Map<String, dynamic> json) {
-    writingId = json[WRITINGID];
-    writingTitle = json[WRITINGTITLE];
+    id = json[ID];
+    questionId = json[QUESTIONID];
+    questionTitle = json[QUESTIONTITLE];
     userEmail = json[USEREMAIL];
     userWriting = json[USERWRITING];
     correction = json[CORRECTION];
@@ -36,16 +39,15 @@ class Writing {
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> map = {
-      WRITINGID: writingId,
-      WRITINGTITLE: writingTitle,
+      ID: id,
+      QUESTIONID: questionId,
+      QUESTIONTITLE: questionTitle,
       USEREMAIL: userEmail,
       USERWRITING: userWriting,
+      CORRECTION: correction,
       DATEWRITING: Timestamp.fromDate(dateWriting),
       STATUS: status,
     };
-    if(correction!= null) {
-      map[CORRECTION] = correction;
-    }
     if(dateReply != null) {
       map[DATEREPLY] = Timestamp.fromDate(dateReply!);
     }

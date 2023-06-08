@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:podo_admin/screens/lesson/lesson_card.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:podo_admin/screens/lesson/lesson_summary.dart';
-import 'package:podo_admin/screens/lesson/lesson_writing.dart';
+import 'package:podo_admin/screens/writing/writing_question.dart';
 import 'package:podo_admin/screens/question/question.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
@@ -122,8 +122,8 @@ class Database {
   Future<void> runLessonBatch({required String lessonId, required String collection}) async {
     final batch = firestore.batch();
     final controller = Get.find<LessonStateManager>();
-    final types = ['LessonCards', 'LessonSummaries', 'LessonWritings'];
-    final List<List<dynamic>> docs = [controller.cards, controller.lessonSummaries, controller.lessonWritings];
+    final types = ['LessonCards', 'LessonSummaries', 'WritingQuestions'];
+    final List<List<dynamic>> docs = [controller.cards, controller.lessonSummaries, controller.writingQuestions];
     final snapshotIndex = types.indexOf(collection);
 
     // 기존에 저장된 ids

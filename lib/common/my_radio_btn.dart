@@ -5,7 +5,7 @@ class MyRadioBtn {
     required BuildContext context,
     required String value,
     required String groupValue,
-    double width = 150,
+    double width = 160,
     required Function(String? value) f,
   }) {
     return SizedBox(

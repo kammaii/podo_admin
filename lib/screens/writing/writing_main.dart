@@ -14,7 +14,9 @@ class WritingMain extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     WritingStateManager controller = Get.put(WritingStateManager());
+
     Widget getRadioBtn(String title) {
       return MyRadioBtn().getRadioButton(
           context: context,
@@ -36,8 +38,9 @@ class WritingMain extends StatelessWidget {
                 children: [
                   getRadioBtn('신규'),
                   getRadioBtn('교정완료'),
-                  getRadioBtn('요청취소'),
+                  getRadioBtn('교정불필요'),
                   getRadioBtn('교정불가'),
+                  getRadioBtn('요청취소'),
                   getRadioBtn('전체'),
                   const SizedBox(width: 30),
                   const SizedBox(height: 30, child: VerticalDivider()),
@@ -91,7 +94,7 @@ class WritingMain extends StatelessWidget {
 
                             return DataRow(cells: [
                               DataCell(Text(MyDateFormat().getDateFormat(writing.dateWriting))),
-                              DataCell(Text(writing.writingTitle)),
+                              DataCell(Text(writing.questionTitle)),
                               DataCell(Text(writing.userWriting), onTap: () {
                                 controller.writingIndex = index;
                                 Get.to(WritingDetail());

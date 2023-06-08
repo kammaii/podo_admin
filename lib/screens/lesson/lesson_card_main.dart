@@ -11,7 +11,7 @@ import 'package:podo_admin/screens/lesson/lesson.dart';
 import 'package:podo_admin/screens/lesson/lesson_card.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:podo_admin/screens/lesson/lesson_summary.dart';
-import 'package:podo_admin/screens/lesson/lesson_writing.dart';
+import 'package:podo_admin/screens/writing/writing_question.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
 class LessonCardMain extends StatefulWidget {
@@ -33,7 +33,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
   final LESSONS = 'Lessons';
   final LESSON_CARDS = 'LessonCards';
   final LESSON_SUMMARIES = 'LessonSummaries';
-  final LESSON_WRITINGS = 'LessonWritings';
+  final WRITING_QUESTIONS = 'WritingQuestions';
   final ORDER_ID = 'orderId';
   final KO = 'ko';
   final FO = 'fo';
@@ -45,13 +45,14 @@ class _LessonCardMainState extends State<LessonCardMain> {
     super.initState();
     _controller.cards = [];
     _controller.lessonSummaries = [];
+    _controller.writingQuestions = [];
     _controller.futureList = Future.wait([
       Database().getDocumentsFromDb(
           collection: '$LESSONS/${lesson.id}/$LESSON_CARDS', orderBy: ORDER_ID, descending: false),
       Database().getDocumentsFromDb(
           collection: '$LESSONS/${lesson.id}/$LESSON_SUMMARIES', orderBy: ORDER_ID, descending: false),
       Database().getDocumentsFromDb(
-          collection: '$LESSONS/${lesson.id}/$LESSON_WRITINGS', orderBy: ORDER_ID, descending: false)
+          collection: '$LESSONS/${lesson.id}/$WRITING_QUESTIONS', orderBy: ORDER_ID, descending: false)
     ]);
   }
 
@@ -429,7 +430,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
 
   Widget getWritingDialog() {
     writingControllers = [];
-    for (int i = 0; i < _controller.lessonWritings.length; i++) {
+    for (int i = 0; i < _controller.writingQuestions.length; i++) {
       writingControllers.add({KO: TextEditingController(), FO: TextEditingController()});
     }
     _controller.selectedLanguage = Languages().getFos[0];
@@ -465,7 +466,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                       const SizedBox(width: 20),
                       TextButton(
                         onPressed: () {
-                          _controller.lessonWritings.add(LessonWriting());
+                          _controller.writingQuestions.add(WritingQuestion());
                           writingControllers.add({KO: TextEditingController(), FO: TextEditingController()});
                           _controller.update();
                         },
@@ -474,17 +475,17 @@ class _LessonCardMainState extends State<LessonCardMain> {
                     ]),
                     const SizedBox(height: 20),
                     Expanded(
-                      child: _controller.lessonWritings.isNotEmpty
+                      child: _controller.writingQuestions.isNotEmpty
                           ? ListView.builder(
                               shrinkWrap: true,
-                              itemCount: _controller.lessonWritings.length,
+                              itemCount: _controller.writingQuestions.length,
                               itemBuilder: (context, index) {
                                 final writingController = writingControllers[index];
                                 String selectedLanguage = _controller.selectedLanguage;
                                 writingController[KO]!.text =
-                                    _controller.lessonWritings[index].title[KO] ?? '';
+                                    _controller.writingQuestions[index].title[KO] ?? '';
                                 writingController[FO]!.text =
-                                    _controller.lessonWritings[index].title[selectedLanguage] ?? '';
+                                    _controller.writingQuestions[index].title[selectedLanguage] ?? '';
 
                                 return Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 10),
@@ -495,7 +496,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                                               controller: writingController[KO],
                                               label: '한국어',
                                               fn: (String? value) {
-                                                _controller.lessonWritings[index].title[KO] = value!;
+                                                _controller.writingQuestions[index].title[KO] = value!;
                                               })),
                                       const SizedBox(width: 20),
                                       Expanded(
@@ -503,41 +504,29 @@ class _LessonCardMainState extends State<LessonCardMain> {
                                               controller: writingController[FO],
                                               label: '외국어',
                                               fn: (String? value) {
-                                                _controller.lessonWritings[index].title[selectedLanguage] =
+                                                _controller.writingQuestions[index].title[selectedLanguage] =
                                                     value!;
                                               })),
                                       const SizedBox(width: 20),
                                       DropdownButton(
                                           value: _controller
-                                              .writingLevel[_controller.lessonWritings[index].level],
+                                              .writingLevel[_controller.writingQuestions[index].level],
                                           icon: const Icon(Icons.arrow_drop_down_outlined),
                                           items: _controller.writingLevel
                                               .map<DropdownMenuItem<String>>((String value) {
                                             return DropdownMenuItem(value: value, child: Text(value));
                                           }).toList(),
                                           onChanged: (value) {
-                                            _controller.lessonWritings[index].level =
+                                            _controller.writingQuestions[index].level =
                                                 _controller.writingLevel.indexOf(value.toString());
                                             _controller.update();
                                           }),
-                                      const SizedBox(width: 20),
-                                      Column(
-                                        children: [
-                                          const Text('무료'),
-                                          Checkbox(
-                                              value: _controller.lessonWritings[index].isFree,
-                                              onChanged: (value) {
-                                                _controller.lessonWritings[index].isFree = value!;
-                                                _controller.update();
-                                              }),
-                                        ],
-                                      ),
                                       const SizedBox(width: 30),
                                       IconButton(
                                           onPressed: () {
-                                            _controller.lessonWritings.removeAt(index);
-                                            for (int i = 0; i < _controller.lessonWritings.length; i++) {
-                                              _controller.lessonWritings[i].orderId = i;
+                                            _controller.writingQuestions.removeAt(index);
+                                            for (int i = 0; i < _controller.writingQuestions.length; i++) {
+                                              _controller.writingQuestions[i].orderId = i;
                                             }
                                             writingControllers.removeAt(index);
                                             _controller.update();
@@ -558,7 +547,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                     Center(
                       child: ElevatedButton(
                         onPressed: () {
-                          Database().runLessonBatch(lessonId: lesson.id, collection: LESSON_WRITINGS);
+                          Database().runLessonBatch(lessonId: lesson.id, collection: WRITING_QUESTIONS);
                           Get.back();
                         },
                         child: const Padding(
@@ -689,7 +678,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                         _controller.lessonSummaries.add(LessonSummary.fromJson(snapshot));
                       }
                       for (dynamic snapshot in snapshot.data[2]) {
-                        _controller.lessonWritings.add(LessonWriting.fromJson(snapshot));
+                        _controller.writingQuestions.add(WritingQuestion.fromJson(snapshot));
                       }
                     }
                     setCards();

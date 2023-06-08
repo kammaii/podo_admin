@@ -81,7 +81,7 @@ class TestDB extends StatelessWidget {
   makeWritingDb() {
     List<Writing> writings = getSampleWritings();
     for(Writing writing in writings) {
-      Database().saveSampleDb(id: writing.writingId, sample: writing, reference: 'Writings');
+      Database().saveSampleDb(id: writing.id, sample: writing, reference: 'Writings');
     }
   }
   static const String WRITINGID = 'writingId';
