@@ -60,7 +60,7 @@ class WritingDetail extends StatelessWidget {
     Get.back();
     Get.defaultDialog(title: '저장중', content: const Center(child: CircularProgressIndicator()));
     await Database()
-        .updateCorrection(writingId: writing.id, correction: writing.correction);
+        .updateCorrection(writingId: writing.id, correction: writing.correction, status: 1);
     controller.writings.removeAt(controller.writingIndex);
     controller.getWriting();
     Get.back();
@@ -98,7 +98,7 @@ class WritingDetail extends StatelessWidget {
               builder: (controller) {
                 writing = controller.writings[controller.writingIndex];
                 htmlController.clear();
-                (writing.correction == null)
+                (writing.correction.isEmpty)
                     ? htmlController.setText(writing.userWriting)
                     : htmlController.setText(writing.correction!);
 
@@ -177,6 +177,37 @@ class WritingDetail extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(' 교정하기', textScaleFactor: 2),
+                        TextButton(
+                          onPressed: () {
+                            Get.dialog(
+                              AlertDialog(
+                                content: const Text('Perfect로 체크하겠습니까?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Get.back();
+                                    },
+                                    child: const Text('아니요'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Database().updateCorrection(
+                                          writingId: writing.id, status: 2);
+                                      controller.writings.removeAt(controller.writingIndex);
+                                      controller.getWriting();
+                                      Get.back();
+                                    },
+                                    child: const Text('네'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Perfect',
+                            style: TextStyle(color: Colors.blueAccent),
+                          ),
+                        ),
                         Visibility(
                           visible: writing.status != 3,
                           child: TextButton(
@@ -194,7 +225,7 @@ class WritingDetail extends StatelessWidget {
                                     TextButton(
                                       onPressed: () {
                                         Database().updateCorrection(
-                                            writingId: writing.id, isUncorrectable: true);
+                                            writingId: writing.id, status: 3);
                                         controller.writings.removeAt(controller.writingIndex);
                                         controller.getWriting();
                                         Get.back();
@@ -226,8 +257,7 @@ class WritingDetail extends StatelessWidget {
                           controller: htmlController,
                           htmlEditorOptions: HtmlEditorOptions(
                             initialText:
-                                (writing.correction == null) ? writing.userWriting : writing.correction,
-                            hint: (writing.correction == null) ? '문장을 교정하세요.' : '',
+                                (writing.correction.isEmpty) ? writing.userWriting : writing.correction,
                           ),
                           htmlToolbarOptions: HtmlToolbarOptions(
                             defaultToolbarButtons: [
@@ -263,7 +293,7 @@ class WritingDetail extends StatelessWidget {
                             child: const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                               child: Text(
-                                '저장',
+                                '완료',
                                 style: TextStyle(fontSize: 20),
                               ),
                             ),

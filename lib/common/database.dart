@@ -71,19 +71,27 @@ class Database {
     return titles;
   }
 
-  updateCorrection({required String writingId, String? correction, bool isUncorrectable = false}) {
+  updateCorrection({required String writingId, String? correction, required int status}) {
     DocumentReference ref = firestore.collection('Writings').doc(writingId);
-    if (isUncorrectable) {
-      return ref
-          .update({'correction': MyStrings.unCorrectable, 'replyDate': Timestamp.now(), 'status': 3})
-          .then((value) => print('Correction updated'))
-          .catchError((e) => print('ERROR : $e'));
-    } else {
-      return ref
-          .update({'correction': correction, 'replyDate': Timestamp.now(), 'status': 1})
-          .then((value) => print('Correction updated'))
-          .catchError((e) => print('ERROR : $e'));
+    String correctionText = '';
+    switch (status) {
+      case 1 :
+        correctionText = correction!;
+        break;
+
+      case 2 :
+        correctionText = MyStrings.perfect;
+        break;
+
+      case 3 :
+        correctionText = MyStrings.unCorrectable;
+        break;
     }
+
+      return ref
+          .update({'correction': correctionText, 'dateReply': Timestamp.now(), 'status': status})
+          .then((value) => print('Correction updated'))
+          .catchError((e) => print('ERROR : $e'));
   }
 
   updateQuestion({required Question question}) {

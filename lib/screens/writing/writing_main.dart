@@ -40,7 +40,6 @@ class WritingMain extends StatelessWidget {
                   getRadioBtn('교정완료'),
                   getRadioBtn('교정불필요'),
                   getRadioBtn('교정불가'),
-                  getRadioBtn('요청취소'),
                   getRadioBtn('전체'),
                   const SizedBox(width: 30),
                   const SizedBox(height: 30, child: VerticalDivider()),
@@ -94,7 +93,10 @@ class WritingMain extends StatelessWidget {
 
                             return DataRow(cells: [
                               DataCell(Text(MyDateFormat().getDateFormat(writing.dateWriting))),
-                              DataCell(Text(writing.questionTitle)),
+                              DataCell(Text(writing.questionTitle), onTap: () {
+                                controller.writingIndex = index;
+                                Get.to(WritingDetail());
+                              }),
                               DataCell(Text(writing.userWriting), onTap: () {
                                 controller.writingIndex = index;
                                 Get.to(WritingDetail());
