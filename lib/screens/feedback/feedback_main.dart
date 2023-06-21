@@ -3,24 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/my_date_format.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
-import 'package:podo_admin/screens/question/question.dart';
-import 'package:podo_admin/screens/question/question_detail.dart';
-import 'package:podo_admin/screens/question/question_state_manager.dart';
+import 'package:podo_admin/screens/feedback/feedback_detail.dart';
+import 'package:podo_admin/screens/feedback/feedback_state_manager.dart';
+import 'package:podo_admin/screens/feedback/feedback.dart' as fb;
 
-class QuestionMain extends StatelessWidget {
-  QuestionMain({Key? key}) : super(key: key);
+class FeedbackMain extends StatelessWidget {
+  FeedbackMain({Key? key}) : super(key: key);
 
   final TextEditingController _searchController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    Get.put(QuestionStateManager());
+    Get.put(FeedbackStateManager());
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('질문'),
+        title: const Text('피드백'),
       ),
-      body: GetX<QuestionStateManager>(
+      body: GetX<FeedbackStateManager>(
         builder: (controller) {
           String radioString = controller.searchRadio.value;
           Function(String?) radioFn = controller.changeSearchRadio();
@@ -37,9 +37,8 @@ class QuestionMain extends StatelessWidget {
               Row(
                 children: [
                   getRadioBtn('신규'),
-                  getRadioBtn('미선정'),
-                  getRadioBtn('선정'),
-                  getRadioBtn('게시중'),
+                  getRadioBtn('검토중'),
+                  getRadioBtn('검토완료'),
                   getRadioBtn('전체'),
                   const SizedBox(width: 30),
                   const SizedBox(height: 30, child: VerticalDivider()),
@@ -68,35 +67,35 @@ class QuestionMain extends StatelessWidget {
               const SizedBox(height: 20),
               Expanded(
                 child: FutureBuilder(
-                  future: controller.futureQuestions,
+                  future: controller.futureFeedbacks,
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
                     if(snapshot.hasData == true) {
-                      List<Question> questions = [];
+                      List<fb.Feedback> feedbacks = [];
                       for(dynamic snapshot in snapshot.data) {
-                        questions.add(Question.fromJson(snapshot));
+                        feedbacks.add(fb.Feedback.fromJson(snapshot));
                       }
-                      controller.questions = questions;
-                      if(questions.isEmpty) {
-                        return const Center(child: Text('검색된 질문이 없습니다.'));
+                      controller.feedbacks = feedbacks;
+                      if(feedbacks.isEmpty) {
+                        return const Center(child: Text('검색된 피드백이 없습니다.'));
                       } else {
                         return DataTable2(
                           columns: const [
                             DataColumn2(label: Text('날짜'), size: ColumnSize.S),
                             DataColumn2(label: Text('내용'), size: ColumnSize.L),
-                            DataColumn2(label: Text('유저'), size: ColumnSize.S),
+                            DataColumn2(label: Text('유저이메일'), size: ColumnSize.S),
                             DataColumn2(label: Text('상태'), size: ColumnSize.S),
                           ],
-                          rows: List<DataRow>.generate(controller.questions.length, (index) {
-                            Question question = controller.questions[index];
-                            String? status = controller.statusMap[question.status];
+                          rows: List<DataRow>.generate(controller.feedbacks.length, (index) {
+                            fb.Feedback feedback = controller.feedbacks[index];
+                            String? status = controller.statusMap[feedback.status];
 
                             return DataRow(cells: [
-                              DataCell(Text(MyDateFormat().getDateFormat(question.dateQuestion))),
-                              DataCell(Text(question.question), onTap: () {
-                                controller.questionIndex = index;
-                                Get.to(QuestionDetail());
+                              DataCell(Text(MyDateFormat().getDateFormat(feedback.date))),
+                              DataCell(Text(feedback.message), onTap: () {
+                                controller.feedbackIndex = index;
+                                Get.to(FeedbackDetail());
                               }),
-                              DataCell(Text(question.userEmail), onTap: () {
+                              DataCell(Text(feedback.userEmail), onTap: () {
                                 //todo: '유저로검색'
                               }, onDoubleTap: () {
                                 //todo: '유저정보열기'

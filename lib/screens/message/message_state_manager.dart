@@ -1,15 +1,15 @@
 import 'package:get/get.dart';
-import 'package:podo_admin/screens/notice/notice.dart';
+import 'package:podo_admin/screens/message/message.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
-class NoticeStateManager extends GetxController{
-  late List<Notice> notices;
+class MessageStateManager extends GetxController{
+  late List<Message> notices;
   late String noticeTag;
   late bool hasDeadLine;
 
   @override
   void onInit() {
-    notices = List.from(Notice.getSampleNotices()); // todo: DB에서 가져오기
+    notices = List.from(Message.getSampleNotices()); // todo: DB에서 가져오기
     noticeTag = MyStrings.tagInfo;
     hasDeadLine = false;
   }
@@ -24,7 +24,7 @@ class NoticeStateManager extends GetxController{
     dbUpdate();
   }
 
-  void addNewNotice(Notice notice) {
+  void addNewNotice(Message notice) {
     notices.add(notice);
     dbUpdate();
   }

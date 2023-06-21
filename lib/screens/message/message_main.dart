@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -6,13 +5,13 @@ import 'package:html_editor_enhanced/html_editor.dart';
 import 'package:podo_admin/common/my_date_format.dart';
 import 'package:podo_admin/common/my_html_color.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
-import 'package:podo_admin/screens/notice/notice.dart';
-import 'package:podo_admin/screens/notice/notice_state_manager.dart';
+import 'package:podo_admin/screens/message/message.dart';
+import 'package:podo_admin/screens/message/message_state_manager.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
-class NoticeMain extends StatelessWidget {
-  NoticeMain({Key? key}) : super(key: key);
-  final NoticeStateManager _controller = Get.put(NoticeStateManager());
+class MessageMain extends StatelessWidget {
+  MessageMain({Key? key}) : super(key: key);
+  final MessageStateManager _controller = Get.put(MessageStateManager());
   late final TextEditingController _textEditingController = TextEditingController();
   late final HtmlEditorController _htmlEditorController = HtmlEditorController();
 
@@ -27,7 +26,7 @@ class NoticeMain extends StatelessWidget {
       appBar: AppBar(
         title: const Text('알림'),
       ),
-      body: GetBuilder<NoticeStateManager>(
+      body: GetBuilder<MessageStateManager>(
         builder: (controller) {
           return DataTable2(
             columns: const [
@@ -40,7 +39,7 @@ class NoticeMain extends StatelessWidget {
               DataColumn2(label: Text(''), size: ColumnSize.S),
             ],
             rows: List<DataRow>.generate(controller.notices.length, (index) {
-              Notice notice = controller.notices[index];
+              Message notice = controller.notices[index];
 
               return DataRow(cells: [
                 DataCell(Text(index.toString())),
@@ -114,7 +113,7 @@ class NoticeMain extends StatelessWidget {
 
   void getNoticeDialog({
     required BuildContext context,
-    required Notice notice,
+    required Message notice,
     required String title,
   }) {
     notice.deadLine == null ? _controller.hasDeadLine = false : _controller.hasDeadLine = true;
@@ -123,7 +122,7 @@ class NoticeMain extends StatelessWidget {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: GetBuilder<NoticeStateManager>(
+          content: GetBuilder<MessageStateManager>(
             builder: (controller) {
               return Column(
                 mainAxisSize: MainAxisSize.min,
@@ -261,7 +260,7 @@ class NoticeMain extends StatelessWidget {
     );
   }
 
-  Future<void> selectDate(BuildContext context, Notice notice) async {
+  Future<void> selectDate(BuildContext context, Message notice) async {
     DateTime deadLine = notice.deadLine!;
     final DateTime? pickedDate = await showDatePicker(
       context: context,

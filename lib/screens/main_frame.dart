@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:podo_admin/screens/feedback/feedback_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_course_main.dart';
 import 'package:podo_admin/screens/loading_controller.dart';
-import 'package:podo_admin/screens/notice/notice_main.dart';
-import 'package:podo_admin/screens/question/question_main.dart';
+import 'package:podo_admin/screens/message/message_main.dart';
 import 'package:podo_admin/screens/reading/reading_main.dart';
-import 'package:podo_admin/screens/test/testdb.dart';
 import 'package:podo_admin/screens/user/user_main.dart';
 import 'package:podo_admin/screens/writing/writing_main.dart';
 
@@ -19,12 +18,11 @@ class MainFrame extends StatefulWidget {
 class _MainFrameState extends State<MainFrame> {
   final List<Widget> _buildScreens = [
     WritingMain(),
-    QuestionMain(),
+    FeedbackMain(),
     UserMain(),
-    NoticeMain(),
+    MessageMain(),
     LessonCourseMain(),
     ReadingMain(),
-    const TestDB(),
   ];
 
   int _selectedIndex = 0;
@@ -52,9 +50,9 @@ class _MainFrameState extends State<MainFrame> {
                     label: Text('교정'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.question_mark_outlined),
-                    selectedIcon: Icon(Icons.question_mark_rounded),
-                    label: Text('질문'),
+                    icon: Icon(Icons.feedback_outlined),
+                    selectedIcon: Icon(Icons.feedback),
+                    label: Text('피드백'),
                   ),
                   NavigationRailDestination(
                     icon: Icon(Icons.people_outline),
@@ -62,9 +60,9 @@ class _MainFrameState extends State<MainFrame> {
                     label: Text('유저'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.circle_notifications_outlined),
-                    selectedIcon: Icon(Icons.circle_notifications),
-                    label: Text('알림'),
+                    icon: Icon(Icons.cloud_outlined),
+                    selectedIcon: Icon(Icons.cloud),
+                    label: Text('메시지'),
                   ),
                   NavigationRailDestination(
                     icon: Icon(Icons.play_lesson_outlined),
@@ -75,11 +73,6 @@ class _MainFrameState extends State<MainFrame> {
                     icon: Icon(Icons.menu_book_outlined),
                     selectedIcon: Icon(Icons.menu_book),
                     label: Text('읽기'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.balance_outlined),
-                    selectedIcon: Icon(Icons.balance_rounded),
-                    label: Text('샘플만들기'),
                   ),
                 ],
                 selectedIndex: _selectedIndex,

@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 import 'package:uuid/uuid.dart';
 
-class Notice {
+class Message {
   late String noticeId;
   late String tag;
   late String title;
@@ -10,7 +10,7 @@ class Notice {
   late bool isActive;
   DateTime? deadLine;
 
-  Notice() {
+  Message() {
     noticeId = const Uuid().v4();
     tag = MyStrings.tagInfo;
     title = '';
@@ -26,7 +26,7 @@ class Notice {
   static const String DEADLINE = 'deadLine';
 
 
-  Notice.fromJson(Map<String, dynamic> json) {
+  Message.fromJson(Map<String, dynamic> json) {
     noticeId = json[NOTICEID];
     tag = json[TAG];
     title = json[TITLE];
@@ -52,7 +52,7 @@ class Notice {
     return map;
   }
 
-  static List<Notice> getSampleNotices() {
+  static List<Message> getSampleNotices() {
     Map<String, dynamic> sampleJson1 = {
       NOTICEID: '0000-0000-0000',
       TAG: MyStrings.tagInfo,
@@ -69,6 +69,6 @@ class Notice {
       ISACTIVE: true,
       DEADLINE: Timestamp.now(),
     };
-    return [Notice.fromJson(sampleJson1), Notice.fromJson(sampleJson2)];
+    return [Message.fromJson(sampleJson1), Message.fromJson(sampleJson2)];
   }
 }

@@ -1,10 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import 'package:podo_admin/screens/lesson/lesson_card.dart';
+import 'package:podo_admin/screens/feedback/feedback.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
-import 'package:podo_admin/screens/lesson/lesson_summary.dart';
-import 'package:podo_admin/screens/writing/writing_question.dart';
-import 'package:podo_admin/screens/question/question.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
 class Database {
@@ -94,29 +91,29 @@ class Database {
           .catchError((e) => print('ERROR : $e'));
   }
 
-  updateQuestion({required Question question}) {
-    DocumentReference ref = firestore.collection('Questions').doc(question.questionId);
-    if (question.status != 0) {
-      if (question.status == 2) {
-        // 미선정
-        return ref
-            .update({'status': 2, 'answerDate': Timestamp.now()})
-            .then((value) => print('Answer updated'))
-            .catchError((e) => print('ERROR : $e'));
-      } else {
-        // 선정, 게시중
-        return ref
-            .update({
-              'question': question.question,
-              'answer': (question.answer != null) ? question.answer : null,
-              'answerDate': Timestamp.now(),
-              'tag': (question.tag != null) ? question.tag : null,
-              'status': question.status
-            })
-            .then((value) => print('Correction updated'))
-            .catchError((e) => print('ERROR : $e'));
-      }
-    }
+  updateQuestion({required Feedback question}) {
+    //DocumentReference ref = firestore.collection('Questions').doc(question.questionId);
+    // if (question.status != 0) {
+    //   if (question.status == 2) {
+    //     // 미선정
+    //     return ref
+    //         .update({'status': 2, 'answerDate': Timestamp.now()})
+    //         .then((value) => print('Answer updated'))
+    //         .catchError((e) => print('ERROR : $e'));
+    //   } else {
+    //     // 선정, 게시중
+    //     return ref
+    //         .update({
+    //           'question': question.question,
+    //           'answer': (question.answer != null) ? question.answer : null,
+    //           'answerDate': Timestamp.now(),
+    //           'tag': (question.tag != null) ? question.tag : null,
+    //           'status': question.status
+    //         })
+    //         .then((value) => print('Correction updated'))
+    //         .catchError((e) => print('ERROR : $e'));
+    //   }
+    // }
   }
 
   Future<void> setDoc({required String collection, required dynamic doc}) async {

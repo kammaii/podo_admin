@@ -101,7 +101,7 @@ class WritingMain extends StatelessWidget {
                                 controller.writingIndex = index;
                                 Get.to(WritingDetail());
                               }),
-                              DataCell(Text(writing.id), onTap: () {
+                              DataCell(Text(writing.id.substring(0, 8)), onTap: () {
                                 //todo: '유저로검색'
                               }, onDoubleTap: () {
                                 //todo: '유저정보열기'
