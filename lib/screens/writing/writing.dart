@@ -4,7 +4,8 @@ class Writing {
   late String id;
   late String questionId;
   late String questionTitle;
-  late String userEmail;
+  late int questionLevel;
+  late String userId;
   late String userWriting;
   late String correction;
   late DateTime dateWriting;
@@ -14,7 +15,8 @@ class Writing {
   static const String ID = 'id';
   static const String QUESTIONID = 'questionId';
   static const String QUESTIONTITLE = 'questionTitle';
-  static const String USEREMAIL = 'userEmail';
+  static const String QUESTIONLEVEL = 'questionLevel';
+  static const String USERID = 'userId';
   static const String USERWRITING = 'userWriting';
   static const String CORRECTION = 'correction';
   static const String DATEWRITING = 'dateWriting';
@@ -25,7 +27,8 @@ class Writing {
     id = json[ID];
     questionId = json[QUESTIONID];
     questionTitle = json[QUESTIONTITLE];
-    userEmail = json[USEREMAIL];
+    questionLevel = json[QUESTIONLEVEL];
+    userId = json[USERID];
     userWriting = json[USERWRITING];
     correction = json[CORRECTION];
     Timestamp writingStamp = json[DATEWRITING];
@@ -42,7 +45,8 @@ class Writing {
       ID: id,
       QUESTIONID: questionId,
       QUESTIONTITLE: questionTitle,
-      USEREMAIL: userEmail,
+      QUESTIONLEVEL: questionLevel,
+      USERID: userId,
       USERWRITING: userWriting,
       CORRECTION: correction,
       DATEWRITING: Timestamp.fromDate(dateWriting),

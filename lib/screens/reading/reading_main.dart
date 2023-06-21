@@ -127,6 +127,7 @@ class _ReadingMainState extends State<ReadingMain> {
                 DataColumn2(label: Text('레벨'), size: ColumnSize.S),
                 DataColumn2(label: Text('태그'), size: ColumnSize.S),
                 DataColumn2(label: Text('상태'), size: ColumnSize.S),
+                DataColumn2(label: Text('무료'), size: ColumnSize.S),
                 DataColumn2(label: Text('순서변경'), size: ColumnSize.S),
                 DataColumn2(label: Text('삭제'), size: ColumnSize.S),
               ],
@@ -186,6 +187,29 @@ class _ReadingMainState extends State<ReadingMain> {
                                   value: {'isReleased': false});
                             },
                             child: const Text('입력중')),
+                      ],
+                    ));
+                  }),
+                  DataCell(Text(reading.isFree ? 'O' : 'X'), onTap: () {
+                    Get.dialog(AlertDialog(
+                      content: const Text('상태를 변경하겠습니까?'),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              updateDB(
+                                  collection: 'Readings',
+                                  docId: reading.id,
+                                  value: {'isFree': true});
+                            },
+                            child: const Text('무료')),
+                        TextButton(
+                            onPressed: () {
+                              updateDB(
+                                  collection: 'Readings',
+                                  docId: reading.id,
+                                  value: {'isFree': false});
+                            },
+                            child: const Text('유료')),
                       ],
                     ));
                   }),

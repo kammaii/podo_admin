@@ -135,7 +135,7 @@ class WritingDetail extends StatelessWidget {
                           children: [
                             Text(writing.questionTitle, textScaleFactor: 2),
                             const SizedBox(width: 20),
-                            Text('( ${writing.userEmail} )'),
+                            Text('( ${writing.id} )'),
                           ],
                         ),
                         Row(

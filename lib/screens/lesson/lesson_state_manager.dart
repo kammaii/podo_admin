@@ -15,7 +15,6 @@ class LessonStateManager extends GetxController {
   late List<LessonSummary> lessonSummaries;
   late List<WritingQuestion> writingQuestions;
   late String selectedLanguage;
-  bool isFreeLessonChecked = true;
   List<String> writingLevel = ['쉬움', '보통', '어려움'];
   late Future<List<dynamic>> futureList;
   late List<LessonCourse> lessonCourses;

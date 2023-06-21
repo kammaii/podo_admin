@@ -1,7 +1,5 @@
 import 'dart:io';
-
 import 'package:data_table_2/data_table_2.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -75,7 +73,6 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
 
   initDialog() {
     controller.selectedLanguage = Languages().getFos[0];
-    controller.isFreeLessonChecked = true;
     controllersCourse = {};
     controllersCourse = {
       KO: TextEditingController(),

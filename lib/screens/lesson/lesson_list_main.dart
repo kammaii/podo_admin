@@ -173,19 +173,6 @@ class _LessonListMainState extends State<LessonListMain> {
                                           lesson.title[controller.selectedLanguage] = value!;
                                         }))
                                 : const SizedBox.shrink(),
-                            const SizedBox(width: 20),
-                            Column(
-                              children: [
-                                const Text('무료'),
-                                Checkbox(
-                                    value: controller.isFreeLessonChecked,
-                                    onChanged: (value) {
-                                      controller.isFreeLessonChecked = value!;
-                                      lesson.isFree = value;
-                                      controller.update();
-                                    }),
-                              ],
-                            )
                           ],
                         ),
                         const SizedBox(height: 50),
@@ -280,7 +267,6 @@ class _LessonListMainState extends State<LessonListMain> {
                     DataColumn2(label: Text('아이디'), size: ColumnSize.S),
                     DataColumn2(label: Text('타입'), size: ColumnSize.S),
                     DataColumn2(label: Text('타이틀'), size: ColumnSize.L),
-                    DataColumn2(label: Text('무료'), size: ColumnSize.S),
                     DataColumn2(label: Text('상태'), size: ColumnSize.S),
                     DataColumn2(label: Text('태그'), size: ColumnSize.S),
                     DataColumn2(label: Text('순서변경'), size: ColumnSize.S),
@@ -297,7 +283,6 @@ class _LessonListMainState extends State<LessonListMain> {
                         DataCell(Text(lesson.title[KO]), onTap: () {
                           lessonDialog(index: index);
                         }),
-                        DataCell(Text(lesson.isFree ? 'O' : 'X')),
                         DataCell(Text(lesson.isReleased ? '게시중' : '입력중'), onTap: () {
                           Get.dialog(AlertDialog(
                             content: const Text('상태를 변경하겠습니까?'),
@@ -414,7 +399,7 @@ class _LessonListMainState extends State<LessonListMain> {
                     } else {
                       String category = course.lessons[index];
                       return DataRow(
-                          cells: List<DataCell>.generate(10, (idx) {
+                          cells: List<DataCell>.generate(9, (idx) {
                         if (idx == 0) {
                           return DataCell(Text(index.toString()));
                         } else if (idx == 3) {
