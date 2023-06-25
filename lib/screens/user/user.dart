@@ -1,26 +1,35 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:podo_admin/screens/user/premium.dart';
 
 class User {
 
-  late String id;
-  late String email;
-  late String name;
-  late String language;
-  late List<Premium>? premiumRecord;
-  late Map<String, dynamic> lessonRecord;
-  late Map<String, dynamic> readingRecord;
+  String id = '';
+  String email = '';
+  String name = '';
+  late DateTime dateSignUp;
+  late DateTime dateSignIn;
+  String language = '';
+  List<Premium>? premiumRecord = [];
+  Map<String, dynamic> lessonHistory = {};
+  Map<String, dynamic> readingHistory = {};
+  Map<String, dynamic> cloudMessageHistory = {};
   String? fcmToken;
   String? fcmState;
-  late int status;
+  int status = 0;
+
+  User();
 
 
   static const String ID = 'id';
   static const String EMAIL = 'email';
   static const String NAME = 'name';
+  static const String DATE_SIGNUP = 'dateSignUp';
+  static const String DATE_SIGNIN = 'dateSignIn';
   static const String LANGUAGE = 'language';
   static const String PREMIUM_RECORD = 'premiumRecord';
-  static const String LESSON_RECORD = 'lessonRecord';
-  static const String READING_RECORD = 'readingRecord';
+  static const String LESSON_HISTORY = 'lessonHistory';
+  static const String READING_HISTORY = 'readingHistory';
+  static const String CLOUD_MESSAGE_HISTORY = 'cloudMessageHistory';
   static const String FCM_TOKEN = 'fcmToken';
   static const String FCM_STATE = 'fcmState';
   static const String STATUS = 'status';
@@ -29,10 +38,15 @@ class User {
     id = json[ID];
     email = json[EMAIL];
     name = json[NAME];
+    Timestamp stamp = json[DATE_SIGNUP];
+    dateSignUp = stamp.toDate();
+    stamp = json[DATE_SIGNIN];
+    dateSignIn = stamp.toDate();
     language = json[LANGUAGE];
     premiumRecord = json[PREMIUM_RECORD];
-    lessonRecord = json[LESSON_RECORD];
-    readingRecord = json[READING_RECORD];
+    lessonHistory = json[LESSON_HISTORY];
+    readingHistory = json[READING_HISTORY];
+    cloudMessageHistory = json[CLOUD_MESSAGE_HISTORY];
     if(json[FCM_TOKEN] != null) {
       fcmToken = json[FCM_TOKEN];
     }
@@ -49,9 +63,12 @@ class User {
       ID: id,
       EMAIL: email,
       NAME: name,
+      DATE_SIGNUP: Timestamp.fromDate(dateSignUp),
+      DATE_SIGNIN: Timestamp.fromDate(dateSignIn),
       LANGUAGE: language,
-      LESSON_RECORD: lessonRecord,
-      READING_RECORD: readingRecord,
+      LESSON_HISTORY: lessonHistory,
+      READING_HISTORY: readingHistory,
+      CLOUD_MESSAGE_HISTORY: cloudMessageHistory,
       STATUS: status,
     };
     if(fcmToken != null) {

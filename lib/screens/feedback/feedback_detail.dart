@@ -5,7 +5,6 @@ import 'package:html_editor_enhanced/html_editor.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/screens/feedback/feedback.dart' as fb;
 import 'package:podo_admin/screens/feedback/feedback_state_manager.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class FeedbackDetail extends StatelessWidget {
   FeedbackDetail({Key? key}) : super(key: key);

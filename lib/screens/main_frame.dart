@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:podo_admin/screens/cloud_message/cloud_message_main.dart';
 import 'package:podo_admin/screens/feedback/feedback_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_course_main.dart';
 import 'package:podo_admin/screens/loading_controller.dart';
-import 'package:podo_admin/screens/message/message_main.dart';
 import 'package:podo_admin/screens/reading/reading_main.dart';
 import 'package:podo_admin/screens/user/user_main.dart';
 import 'package:podo_admin/screens/writing/writing_main.dart';
@@ -18,11 +18,11 @@ class MainFrame extends StatefulWidget {
 class _MainFrameState extends State<MainFrame> {
   final List<Widget> _buildScreens = [
     WritingMain(),
-    FeedbackMain(),
-    UserMain(),
-    MessageMain(),
+    CloudMessageMain(),
     LessonCourseMain(),
     ReadingMain(),
+    FeedbackMain(),
+    UserMain(),
   ];
 
   int _selectedIndex = 0;
@@ -50,16 +50,6 @@ class _MainFrameState extends State<MainFrame> {
                     label: Text('교정'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.feedback_outlined),
-                    selectedIcon: Icon(Icons.feedback),
-                    label: Text('피드백'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.people_outline),
-                    selectedIcon: Icon(Icons.people_rounded),
-                    label: Text('유저'),
-                  ),
-                  NavigationRailDestination(
                     icon: Icon(Icons.cloud_outlined),
                     selectedIcon: Icon(Icons.cloud),
                     label: Text('메시지'),
@@ -73,6 +63,16 @@ class _MainFrameState extends State<MainFrame> {
                     icon: Icon(Icons.menu_book_outlined),
                     selectedIcon: Icon(Icons.menu_book),
                     label: Text('읽기'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.feedback_outlined),
+                    selectedIcon: Icon(Icons.feedback),
+                    label: Text('피드백'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.people_outline),
+                    selectedIcon: Icon(Icons.people_rounded),
+                    label: Text('유저'),
                   ),
                 ],
                 selectedIndex: _selectedIndex,

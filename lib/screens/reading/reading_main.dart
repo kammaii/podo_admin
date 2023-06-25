@@ -29,7 +29,7 @@ class _ReadingMainState extends State<ReadingMain> {
   }
 
   getDataFromDb() {
-    controller.futureList = Database().getDocumentsFromDb(
+    controller.futureList = Database().getDocs(
         collection: 'Readings',
         field: 'category',
         equalTo: selectedCategory,
@@ -268,7 +268,7 @@ class _ReadingMainState extends State<ReadingMain> {
                             TextButton(
                                 onPressed: () {
                                   setState(() {
-                                    Database().deleteLessonFromDb(collection: 'Readings', lesson: reading);
+                                    Database().deleteDoc(collection: 'Readings', doc: reading);
                                     getDataFromDb();
                                     Get.back();
                                   });

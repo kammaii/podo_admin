@@ -47,11 +47,11 @@ class _LessonCardMainState extends State<LessonCardMain> {
     _controller.lessonSummaries = [];
     _controller.writingQuestions = [];
     _controller.futureList = Future.wait([
-      Database().getDocumentsFromDb(
+      Database().getDocs(
           collection: '$LESSONS/${lesson.id}/$LESSON_CARDS', orderBy: ORDER_ID, descending: false),
-      Database().getDocumentsFromDb(
+      Database().getDocs(
           collection: '$LESSONS/${lesson.id}/$LESSON_SUMMARIES', orderBy: ORDER_ID, descending: false),
-      Database().getDocumentsFromDb(
+      Database().getDocs(
           collection: '$LESSONS/${lesson.id}/$WRITING_QUESTIONS', orderBy: ORDER_ID, descending: false)
     ]);
   }

@@ -17,12 +17,20 @@ class Database {
     print('Database 초기화');
   }
 
-  Future<List<dynamic>> getDocumentsFromDb(
-      {required String collection,
-      dynamic field,
-      dynamic equalTo,
-      required String orderBy,
-      bool descending = true}) async {
+  Future<int> getCount({required String collection, required String field, required dynamic equalTo}) async {
+    int count = 0;
+    final ref = firestore.collection(collection).where(field, isEqualTo: equalTo);
+     await ref.count().get().then((snapshot) {
+       count = snapshot.count;
+     }, onError: (error) => print('Count error: $error'));
+     return count;
+  }
+
+  Future<List<dynamic>> getDocs({required String collection,
+    dynamic field,
+    dynamic equalTo,
+    required String orderBy,
+    bool descending = true}) async {
     List<dynamic> documents = [];
     final ref = firestore.collection(collection);
     final queryRef;
@@ -72,48 +80,23 @@ class Database {
     DocumentReference ref = firestore.collection('Writings').doc(writingId);
     String correctionText = '';
     switch (status) {
-      case 1 :
+      case 1:
         correctionText = correction!;
         break;
 
-      case 2 :
+      case 2:
         correctionText = MyStrings.perfect;
         break;
 
-      case 3 :
+      case 3:
         correctionText = MyStrings.unCorrectable;
         break;
     }
 
-      return ref
-          .update({'correction': correctionText, 'dateReply': Timestamp.now(), 'status': status})
-          .then((value) => print('Correction updated'))
-          .catchError((e) => print('ERROR : $e'));
-  }
-
-  updateQuestion({required Feedback question}) {
-    //DocumentReference ref = firestore.collection('Questions').doc(question.questionId);
-    // if (question.status != 0) {
-    //   if (question.status == 2) {
-    //     // 미선정
-    //     return ref
-    //         .update({'status': 2, 'answerDate': Timestamp.now()})
-    //         .then((value) => print('Answer updated'))
-    //         .catchError((e) => print('ERROR : $e'));
-    //   } else {
-    //     // 선정, 게시중
-    //     return ref
-    //         .update({
-    //           'question': question.question,
-    //           'answer': (question.answer != null) ? question.answer : null,
-    //           'answerDate': Timestamp.now(),
-    //           'tag': (question.tag != null) ? question.tag : null,
-    //           'status': question.status
-    //         })
-    //         .then((value) => print('Correction updated'))
-    //         .catchError((e) => print('ERROR : $e'));
-    //   }
-    // }
+    return ref
+        .update({'correction': correctionText, 'dateReply': Timestamp.now(), 'status': status})
+        .then((value) => print('Correction updated'))
+        .catchError((e) => print('ERROR : $e'));
   }
 
   Future<void> setDoc({required String collection, required dynamic doc}) async {
@@ -133,21 +116,21 @@ class Database {
 
     // 기존에 저장된 ids
     List<String> beforeIds = [];
-    for(dynamic snapshot in controller.snapshots.data[snapshotIndex]) {
+    for (dynamic snapshot in controller.snapshots.data[snapshotIndex]) {
       beforeIds.add(snapshot['id']);
     }
 
     for (dynamic doc in docs[snapshotIndex]) {
       final ref = firestore.collection('Lessons/$lessonId/$collection').doc(doc.id);
       batch.set(ref, doc.toJson());
-      if(beforeIds.contains(doc.id)) {
+      if (beforeIds.contains(doc.id)) {
         beforeIds.remove(doc.id);
       }
     }
 
     // 삭제된 ids 가 있으면 DB 에서 제거
-    if(beforeIds.isNotEmpty) {
-      for(final id in beforeIds) {
+    if (beforeIds.isNotEmpty) {
+      for (final id in beforeIds) {
         final ref = firestore.collection('Lessons/$lessonId/$collection').doc(id);
         batch.delete(ref);
       }
@@ -191,11 +174,10 @@ class Database {
     });
   }
 
-  Future<void> addValueTransaction(
-      {required String collection,
-      required String docId,
-      required String field,
-      required dynamic addValue}) async {
+  Future<void> addValueTransaction({required String collection,
+    required String docId,
+    required String field,
+    required dynamic addValue}) async {
     firestore.runTransaction((transaction) async {
       final ref = firestore.collection(collection).doc(docId);
       final doc = await transaction.get(ref);
@@ -212,11 +194,11 @@ class Database {
     });
   }
 
-  Future<void> deleteLessonFromDb({required String collection, required dynamic lesson}) async {
-    DocumentReference ref = firestore.collection(collection).doc(lesson.id);
+  Future<void> deleteDoc({required String collection, required dynamic doc}) async {
+    DocumentReference ref = firestore.collection(collection).doc(doc.id);
     return await ref.delete().then((value) {
-      print('Lesson is Deleted');
-      Get.snackbar('Lesson is Deleted', 'id: ${lesson.id}', snackPosition: SnackPosition.BOTTOM);
+      print('${doc.id} is Deleted');
+      Get.snackbar('Document is deleted', 'id: ${doc.id}', snackPosition: SnackPosition.BOTTOM);
     }).catchError((e) => print(e));
   }
 

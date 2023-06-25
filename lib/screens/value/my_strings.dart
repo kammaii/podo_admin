@@ -1,7 +1,7 @@
 class MyStrings {
   // 스크린에 표기되는 것들은 번역을 위해 이곳에 입력하기
   static const String unCorrectable = 'I\'m sorry, but I\'m having trouble understanding the sentence.';
-  static const String perfect = 'Perfect!';
+  static const String perfect = '잘했어요! :)';
 
 
 

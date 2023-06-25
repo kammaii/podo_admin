@@ -45,13 +45,13 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
 
   getDataFromDb() {
     selectedLevel == '초급'
-        ? controller.futureList = Database().getDocumentsFromDb(
+        ? controller.futureList = Database().getDocs(
             collection: LESSON_COURSES,
             field: IS_BEGINNER_MODE,
             equalTo: true,
             orderBy: ORDER_ID,
             descending: false)
-        : controller.futureList = Database().getDocumentsFromDb(
+        : controller.futureList = Database().getDocs(
             collection: LESSON_COURSES,
             field: IS_BEGINNER_MODE,
             equalTo: false,
@@ -418,8 +418,8 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                                       TextButton(
                                           onPressed: () {
                                             setState(() {
-                                              Database().deleteLessonFromDb(
-                                                  collection: LESSON_COURSES, lesson: course);
+                                              Database().deleteDoc(
+                                                  collection: LESSON_COURSES, doc: course);
                                               getDataFromDb();
                                               Get.back();
                                             });

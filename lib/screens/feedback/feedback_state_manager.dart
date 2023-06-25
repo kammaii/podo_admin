@@ -21,7 +21,7 @@ class FeedbackStateManager extends GetxController {
 
   @override
   void onInit() async {
-    futureFeedbacks = Database().getDocumentsFromDb(collection: 'Feedbacks', field: 'status', equalTo: 0, orderBy: 'date');
+    futureFeedbacks = Database().getDocs(collection: 'Feedbacks', field: 'status', equalTo: 0, orderBy: 'date');
   }
 
   void changeFeedbackIndex({required isNext}) {
@@ -44,9 +44,9 @@ class FeedbackStateManager extends GetxController {
       searchRadio.value = value!;
       if(value != '전체') {
         int key = statusMap.keys.firstWhere((key) => statusMap[key] == value);
-        futureFeedbacks = Database().getDocumentsFromDb(collection: 'Feedbacks', field: 'status', equalTo: key, orderBy: 'date');
+        futureFeedbacks = Database().getDocs(collection: 'Feedbacks', field: 'status', equalTo: key, orderBy: 'date');
       } else {
-        futureFeedbacks = Database().getDocumentsFromDb(collection: 'Feedbacks', orderBy: 'date');
+        futureFeedbacks = Database().getDocs(collection: 'Feedbacks', orderBy: 'date');
       }
     };
   }
