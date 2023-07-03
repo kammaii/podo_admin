@@ -4,7 +4,7 @@ import 'package:podo_admin/screens/cloud_message/cloud_message_main.dart';
 import 'package:podo_admin/screens/feedback/feedback_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_course_main.dart';
 import 'package:podo_admin/screens/loading_controller.dart';
-import 'package:podo_admin/screens/reading/reading_main.dart';
+import 'package:podo_admin/screens/reading/reading_title_main.dart';
 import 'package:podo_admin/screens/user/user_main.dart';
 import 'package:podo_admin/screens/writing/writing_main.dart';
 
@@ -17,10 +17,11 @@ class MainFrame extends StatefulWidget {
 
 class _MainFrameState extends State<MainFrame> {
   final List<Widget> _buildScreens = [
+    ReadingTitleMain(),
+
     WritingMain(),
     CloudMessageMain(),
     LessonCourseMain(),
-    ReadingMain(),
     FeedbackMain(),
     UserMain(),
   ];

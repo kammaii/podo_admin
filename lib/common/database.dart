@@ -17,20 +17,26 @@ class Database {
     print('Database 초기화');
   }
 
-  Future<int> getCount({required String collection, required String field, required dynamic equalTo}) async {
+  Future<int> getCount({required String collection, String? field, dynamic equalTo}) async {
     int count = 0;
-    final ref = firestore.collection(collection).where(field, isEqualTo: equalTo);
-     await ref.count().get().then((snapshot) {
-       count = snapshot.count;
-     }, onError: (error) => print('Count error: $error'));
-     return count;
+    late final Query<Map<String, dynamic>> ref;
+    if(field != null) {
+      ref = firestore.collection(collection).where(field, isEqualTo: equalTo);
+    } else {
+      ref = firestore.collection(collection);
+    }
+    await ref.count().get().then((snapshot) {
+      count = snapshot.count;
+    }, onError: (error) => print('Count error: $error'));
+    return count;
   }
 
-  Future<List<dynamic>> getDocs({required String collection,
-    dynamic field,
-    dynamic equalTo,
-    required String orderBy,
-    bool descending = true}) async {
+  Future<List<dynamic>> getDocs(
+      {required String collection,
+      dynamic field,
+      dynamic equalTo,
+      required String orderBy,
+      bool descending = true}) async {
     List<dynamic> documents = [];
     final ref = firestore.collection(collection);
     final queryRef;
@@ -174,10 +180,11 @@ class Database {
     });
   }
 
-  Future<void> addValueTransaction({required String collection,
-    required String docId,
-    required String field,
-    required dynamic addValue}) async {
+  Future<void> addValueTransaction(
+      {required String collection,
+      required String docId,
+      required String field,
+      required dynamic addValue}) async {
     firestore.runTransaction((transaction) async {
       final ref = firestore.collection(collection).doc(docId);
       final doc = await transaction.get(ref);

@@ -1,11 +1,24 @@
 import 'package:get/get.dart';
-import 'package:podo_admin/screens/reading/reading.dart';
+import 'package:podo_admin/common/database.dart';
+import 'package:podo_admin/screens/reading/reading_title.dart';
 
 class ReadingStateManager extends GetxController{
-  final categories = ['culture', 'food', 'travel', 'language', 'k-pop', 'k-drama', 'story book']; //todo: 더 많이 추가하기
+  final categories = ['About Korea', 'Entertainment', 'Daily life', 'Story book', 'all'];
   late Future<List<dynamic>> futureList;
-  late List<Reading> readings = [];
+  late List<ReadingTitle> readingTitles = [];
   final readingLevel = ['쉬움', '보통', '어려움'];
-  final languages = ['en','es','fr','de','pt','id','ru'];
+  late String selectedCategory;
+  late int totalReadingTitleLength;
 
+  @override
+  void onInit() {
+    super.onInit();
+    selectedCategory = categories[0];
+    getTotalLength();
+  }
+
+  void getTotalLength() async {
+    totalReadingTitleLength = await Database().getCount(collection: 'ReadingTitles');
+    print(totalReadingTitleLength);
+  }
 }
