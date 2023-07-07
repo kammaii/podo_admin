@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:html_editor_enhanced/html_editor.dart';
 import 'package:podo_admin/common/database.dart';
@@ -47,12 +48,11 @@ class _LessonCardMainState extends State<LessonCardMain> {
     _controller.lessonSummaries = [];
     _controller.writingQuestions = [];
     _controller.futureList = Future.wait([
-      Database().getDocs(
-          collection: '$LESSONS/${lesson.id}/$LESSON_CARDS', orderBy: ORDER_ID, descending: false),
-      Database().getDocs(
-          collection: '$LESSONS/${lesson.id}/$LESSON_SUMMARIES', orderBy: ORDER_ID, descending: false),
-      Database().getDocs(
-          collection: '$LESSONS/${lesson.id}/$WRITING_QUESTIONS', orderBy: ORDER_ID, descending: false)
+      Database().getDocs(collection: '$LESSONS/${lesson.id}/$LESSON_CARDS', orderBy: ORDER_ID, descending: false),
+      Database()
+          .getDocs(collection: '$LESSONS/${lesson.id}/$LESSON_SUMMARIES', orderBy: ORDER_ID, descending: false),
+      Database()
+          .getDocs(collection: '$LESSONS/${lesson.id}/$WRITING_QUESTIONS', orderBy: ORDER_ID, descending: false)
     ]);
   }
 
@@ -125,12 +125,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                           const ListButtons(listStyles: false),
                           const InsertButtons(),
                           const OtherButtons(
-                              fullscreen: false,
-                              undo: false,
-                              redo: false,
-                              copy: false,
-                              paste: false,
-                              help: false),
+                              fullscreen: false, undo: false, redo: false, copy: false, paste: false, help: false),
                         ],
                         customToolbarButtons: [
                           MyHtmlColor().colorButton(controller: htmlEditorController, color: MyStrings.red),
@@ -258,7 +253,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
               ],
             ),
             card.type == MyStrings.explain
-                ? const Text('** 붙여넣기 시 \'Ctrl+Shift+V\', <p>태그 확인 **',
+                ? const Text('** 붙여넣기 시 \'Ctrl+Shift+V\', <p>태그로 감싸기 확인 **',
                     style: TextStyle(
                       color: Colors.red,
                       backgroundColor: Colors.yellow,
@@ -280,7 +275,12 @@ class _LessonCardMainState extends State<LessonCardMain> {
               ),
             ),
             const SizedBox(height: 20),
-            Text(card.id, style: const TextStyle(color: Colors.grey)),
+            GestureDetector(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: card.id));
+                  Get.snackbar('아이디가 클립보드에 저장되었습니다.', card.id, snackPosition: SnackPosition.BOTTOM);
+                },
+                child: Text(card.id, style: const TextStyle(color: Colors.grey))),
           ],
         );
         return widget;
@@ -482,8 +482,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                               itemBuilder: (context, index) {
                                 final writingController = writingControllers[index];
                                 String selectedLanguage = _controller.selectedLanguage;
-                                writingController[KO]!.text =
-                                    _controller.writingQuestions[index].title[KO] ?? '';
+                                writingController[KO]!.text = _controller.writingQuestions[index].title[KO] ?? '';
                                 writingController[FO]!.text =
                                     _controller.writingQuestions[index].title[selectedLanguage] ?? '';
 
@@ -509,8 +508,8 @@ class _LessonCardMainState extends State<LessonCardMain> {
                                               })),
                                       const SizedBox(width: 20),
                                       DropdownButton(
-                                          value: _controller
-                                              .writingLevel[_controller.writingQuestions[index].level],
+                                          value:
+                                              _controller.writingLevel[_controller.writingQuestions[index].level],
                                           icon: const Icon(Icons.arrow_drop_down_outlined),
                                           items: _controller.writingLevel
                                               .map<DropdownMenuItem<String>>((String value) {

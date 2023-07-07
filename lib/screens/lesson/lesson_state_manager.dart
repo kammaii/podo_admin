@@ -52,6 +52,7 @@ class LessonStateManager extends GetxController {
     card.orderId = cards.length;
     card.type = MyStrings.speaking;
     card.content = Map.from(repeat.content);
+    card.content[MyStrings.audio] = repeat.id;
     cards.add(card);
     setEditMode(id: card.id);
   }

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/languages.dart';
 import 'package:podo_admin/common/my_textfield.dart';
+import 'package:podo_admin/screens/lesson/lesson_card.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
+import 'package:podo_admin/screens/value/my_strings.dart';
 
 class InnerCardTextField {
   final LessonStateManager _controller = Get.find<LessonStateManager>();
@@ -40,7 +42,11 @@ class InnerCardTextField {
   }
 
   Widget getAudio(int index, String lab) {
-    cardValue = _controller.cards[index].content[lab];
+    LessonCard card = _controller.cards[index];
+    cardValue = card.content[lab];
+    if(cardValue == null && card.type == MyStrings.repeat) {
+      cardValue = card.id;
+    }
     label = lab;
     f = (text) {
       _controller.cards[index].content[lab] = text;
