@@ -4,7 +4,7 @@ import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/screens/writing/writing.dart';
 
 class WritingStateManager extends GetxController {
-  RxString statusRadio = '신규'.obs;
+  String statusRadio = '신규';
   int key = 0;
   int writingIndex = 0;
   List<Writing> writings = [];
@@ -33,9 +33,10 @@ class WritingStateManager extends GetxController {
     }
   }
 
+
   Function(String? value) changeStatusRadio() {
     return (String? value) {
-      statusRadio.value = value!;
+      statusRadio = value!;
       if (value != '전체') {
         key = statusMap.keys.firstWhere((key) => statusMap[key] == value);
         futureWritings =
@@ -43,6 +44,13 @@ class WritingStateManager extends GetxController {
       } else {
         futureWritings = Database().getDocs(collection: 'Writings', orderBy: 'dateWriting');
       }
+      update();
     };
+  }
+
+  void searchUserWriting(String userId) {
+    futureWritings =
+        Database().getDocs(collection: 'Writings', field: 'userId', equalTo: userId, orderBy: 'dateWriting');
+    update();
   }
 }

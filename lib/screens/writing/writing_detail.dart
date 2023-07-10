@@ -119,7 +119,7 @@ class WritingDetail extends StatelessWidget {
                         Text(controller.statusMap[writing.status]!, textScaleFactor: 2),
                         const SizedBox(width: 20),
                         Visibility(
-                          visible: controller.statusRadio.value == '신규',
+                          visible: controller.statusRadio == '신규',
                           child: Text(
                             '(남은 교정 수 : ${controller.writings.length})',
                             style: const TextStyle(color: Colors.red),

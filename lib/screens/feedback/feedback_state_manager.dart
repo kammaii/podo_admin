@@ -5,7 +5,7 @@ import 'package:podo_admin/screens/feedback/feedback.dart' as fb;
 
 class FeedbackStateManager extends GetxController {
 
-  RxString searchRadio = '신규'.obs;
+  String searchRadio = '신규';
   String statusRadio = '';
   bool isChecked = true;
   late Future<List<dynamic>> futureFeedbacks;
@@ -22,6 +22,11 @@ class FeedbackStateManager extends GetxController {
   @override
   void onInit() async {
     futureFeedbacks = Database().getDocs(collection: 'Feedbacks', field: 'status', equalTo: 0, orderBy: 'date');
+  }
+
+  void searchUserFeedback(String userEmail) {
+    futureFeedbacks = Database().getDocs(collection: 'Feedbacks', field: 'userEmail', equalTo: userEmail, orderBy: 'date');
+    update();
   }
 
   void changeFeedbackIndex({required isNext}) {
@@ -41,7 +46,7 @@ class FeedbackStateManager extends GetxController {
 
   Function(String? value) changeSearchRadio() {
     return (String? value) {
-      searchRadio.value = value!;
+      searchRadio = value!;
       if(value != '전체') {
         int key = statusMap.keys.firstWhere((key) => statusMap[key] == value);
         futureFeedbacks = Database().getDocs(collection: 'Feedbacks', field: 'status', equalTo: key, orderBy: 'date');

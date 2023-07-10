@@ -6,6 +6,7 @@ import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/screens/feedback/feedback_detail.dart';
 import 'package:podo_admin/screens/feedback/feedback_state_manager.dart';
 import 'package:podo_admin/screens/feedback/feedback.dart' as fb;
+import 'package:podo_admin/screens/user/user_main.dart';
 
 class FeedbackMain extends StatelessWidget {
   FeedbackMain({Key? key}) : super(key: key);
@@ -20,9 +21,9 @@ class FeedbackMain extends StatelessWidget {
       appBar: AppBar(
         title: const Text('피드백'),
       ),
-      body: GetX<FeedbackStateManager>(
+      body: GetBuilder<FeedbackStateManager>(
         builder: (controller) {
-          String radioString = controller.searchRadio.value;
+          String radioString = controller.searchRadio;
           Function(String?) radioFn = controller.changeSearchRadio();
           Widget getRadioBtn(String title) {
             return MyRadioBtn().getRadioButton(
@@ -96,9 +97,9 @@ class FeedbackMain extends StatelessWidget {
                                 Get.to(FeedbackDetail());
                               }),
                               DataCell(Text(feedback.userEmail), onTap: () {
-                                //todo: '유저로검색'
+                                controller.searchUserFeedback(feedback.userEmail);
                               }, onDoubleTap: () {
-                                //todo: '유저정보열기'
+                                Get.to(UserMain(), arguments: {'userEmail': feedback.userEmail});
                               }),
                               DataCell(Text(status!)),
                             ]);

@@ -20,7 +20,7 @@ class Database {
   Future<int> getCount({required String collection, String? field, dynamic equalTo}) async {
     int count = 0;
     late final Query<Map<String, dynamic>> ref;
-    if(field != null) {
+    if (field != null) {
       ref = firestore.collection(collection).where(field, isEqualTo: equalTo);
     } else {
       ref = firestore.collection(collection);
@@ -36,6 +36,7 @@ class Database {
       dynamic field,
       dynamic equalTo,
       required String orderBy,
+      bool hasLimit = false,
       bool descending = true}) async {
     List<dynamic> documents = [];
     final ref = firestore.collection(collection);
@@ -45,6 +46,7 @@ class Database {
     } else {
       queryRef = ref.orderBy(orderBy, descending: descending);
     }
+
     await queryRef.get().then((QuerySnapshot snapshot) {
       print('quiring');
       for (QueryDocumentSnapshot documentSnapshot in snapshot.docs) {

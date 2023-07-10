@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:podo_admin/common/my_date_format.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:data_table_2/data_table_2.dart';
+import 'package:podo_admin/screens/user/user_main.dart';
 import 'package:podo_admin/screens/writing/writing.dart';
 import 'package:podo_admin/screens/writing/writing_detail.dart';
 import 'package:podo_admin/screens/writing/writing_state_manager.dart';
@@ -21,7 +22,7 @@ class WritingMain extends StatelessWidget {
       return MyRadioBtn().getRadioButton(
           context: context,
           value: title,
-          groupValue: controller.statusRadio.value,
+          groupValue: controller.statusRadio,
           f: controller.changeStatusRadio(),
       );
     }
@@ -30,7 +31,7 @@ class WritingMain extends StatelessWidget {
       appBar: AppBar(
         title: const Text('교정'),
       ),
-      body: GetX<WritingStateManager>(
+      body: GetBuilder<WritingStateManager>(
         builder: (controller) {
           return Column(
             children: [
@@ -70,6 +71,7 @@ class WritingMain extends StatelessWidget {
                 child: FutureBuilder(
                   future: controller.futureWritings,
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
+                    print('FUTURE');
                     if (snapshot.hasData == true) {
                       List<Writing> writings = [];
                       for (dynamic snapshot in snapshot.data) {
@@ -101,10 +103,10 @@ class WritingMain extends StatelessWidget {
                                 controller.writingIndex = index;
                                 Get.to(WritingDetail());
                               }),
-                              DataCell(Text(writing.id.substring(0, 8)), onTap: () {
-                                //todo: '유저로검색'
+                              DataCell(Text(writing.userId.substring(0, 8)), onTap: () {
+                                controller.searchUserWriting(writing.userId);
                               }, onDoubleTap: () {
-                                //todo: '유저정보열기'
+                                Get.to(UserMain(), arguments: {'userId': writing.userId});
                               }),
                               DataCell(Text(status!)),
                             ]);
