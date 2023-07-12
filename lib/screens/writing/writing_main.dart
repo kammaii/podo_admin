@@ -106,7 +106,7 @@ class WritingMain extends StatelessWidget {
                               DataCell(Text(writing.userId.substring(0, 8)), onTap: () {
                                 controller.searchUserWriting(writing.userId);
                               }, onDoubleTap: () {
-                                Get.to(UserMain(), arguments: {'userId': writing.userId});
+                                Get.to(UserMain(userId: writing.userId));
                               }),
                               DataCell(Text(status!)),
                             ]);

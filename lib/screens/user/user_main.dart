@@ -7,7 +7,11 @@ import 'package:podo_admin/screens/user/user.dart' as user_info;
 import 'package:podo_admin/screens/user/user_writing_record.dart';
 
 class UserMain extends StatefulWidget {
-  UserMain({Key? key}) : super(key: key);
+  UserMain({Key? key, this.userId, this.userEmail}) : super(key: key);
+
+  String? userId;
+  String? userEmail;
+
 
   @override
   State<UserMain> createState() => _UserMainState();
@@ -23,20 +27,19 @@ class _UserMainState extends State<UserMain> {
   int? readingCount;
   int? cloudCount;
   int? flashcardCount;
-  String? userId = Get.arguments['userId'];
-  String? userEmail = Get.arguments['userEmail'];
 
   @override
   Widget build(BuildContext context) {
-    if (userId != null && !isSearched) {
-      userFuture = Database().getDocs(collection: 'Users', field: 'id', equalTo: userId, orderBy: 'status');
+    if (widget.userId != null && !isSearched) {
+      userFuture = Database().getDocs(collection: 'Users', field: 'id', equalTo: widget.userId, orderBy: 'status');
       isSearched = true;
     }
 
-    if (userEmail != null && !isSearched) {
-      userFuture = Database().getDocs(collection: 'Users', field: 'email', equalTo: userEmail, orderBy: 'status');
+    if (widget.userEmail != null && !isSearched) {
+      userFuture = Database().getDocs(collection: 'Users', field: 'email', equalTo: widget.userEmail, orderBy: 'status');
       isSearched = true;
     }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('유저'),
@@ -170,18 +173,11 @@ class _UserMainState extends State<UserMain> {
                                       ),
                                     ),
                                     const SizedBox(height: 30),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        ElevatedButton(
-                                            onPressed: () {
-                                              Get.to(UserWritingRecord(), arguments: user.id);
-                                            },
-                                            child: const Text('교정내역 보기')),
-                                        const SizedBox(width: 10),
-                                        ElevatedButton(onPressed: () {}, child: const Text('구매정보 보기')),
-                                      ],
-                                    )
+                                    ElevatedButton(
+                                        onPressed: () {
+                                          Get.to(UserWritingRecord(), arguments: user.id);
+                                        },
+                                        child: const Text('교정내역 보기'))
                                   ],
                                 ),
                                 const Expanded(child: Text('')),

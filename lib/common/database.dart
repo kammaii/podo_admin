@@ -210,9 +210,4 @@ class Database {
       Get.snackbar('Document is deleted', 'id: ${doc.id}', snackPosition: SnackPosition.BOTTOM);
     }).catchError((e) => print(e));
   }
-
-  Future<void> saveSampleDb({required String id, required dynamic sample, required String reference}) {
-    DocumentReference ref = firestore.collection(reference).doc(id);
-    return ref.set(sample.toJson()).then((value) {}).catchError((e) => print(e));
-  }
 }

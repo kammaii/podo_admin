@@ -99,7 +99,7 @@ class FeedbackMain extends StatelessWidget {
                               DataCell(Text(feedback.userEmail), onTap: () {
                                 controller.searchUserFeedback(feedback.userEmail);
                               }, onDoubleTap: () {
-                                Get.to(UserMain(), arguments: {'userEmail': feedback.userEmail});
+                                Get.to(UserMain(userEmail: feedback.userEmail));
                               }),
                               DataCell(Text(status!)),
                             ]);

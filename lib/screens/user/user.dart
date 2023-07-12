@@ -9,6 +9,8 @@ class User {
   String name = '';
   late DateTime dateSignUp;
   late DateTime dateSignIn;
+  DateTime? trialStart;
+  DateTime? trialEnd;
   String language = '';
   List<Premium>? premiumRecord = [];
   String? fcmState;
@@ -25,6 +27,8 @@ class User {
   static const String NAME = 'name';
   static const String DATE_SIGNUP = 'dateSignUp';
   static const String DATE_SIGNIN = 'dateSignIn';
+  static const String TRIAL_START = 'trialStart';
+  static const String TRIAL_END = 'trialEnd';
   static const String LANGUAGE = 'language';
   static const String PREMIUM_RECORD = 'premiumRecord';
   static const String FCM_TOKEN = 'fcmToken';
@@ -52,28 +56,12 @@ class User {
     if(json[FCM_TOPIC] != null) {
       fcmTopic = json[FCM_TOPIC];
     }
+    if(json[TRIAL_START] != null) {
+      trialStart = json[TRIAL_START];
+    }
+    if(json[TRIAL_END] != null) {
+      trialEnd = json[TRIAL_END];
+    }
     status = json[STATUS];
-  }
-
-  Map<String, dynamic> toJson() {
-    Map<String, dynamic> map = {
-      ID: id,
-      EMAIL: email,
-      NAME: name,
-      DATE_SIGNUP: Timestamp.fromDate(dateSignUp),
-      DATE_SIGNIN: Timestamp.fromDate(dateSignIn),
-      LANGUAGE: language,
-      STATUS: status,
-    };
-    if(fcmToken != null) {
-      map[FCM_TOKEN] = fcmToken;
-    }
-    if(fcmState != null) {
-      map[FCM_STATE] = fcmState;
-    }
-    if(fcmTopic != null) {
-      map[FCM_TOPIC] = fcmTopic;
-    }
-    return map;
   }
 }
