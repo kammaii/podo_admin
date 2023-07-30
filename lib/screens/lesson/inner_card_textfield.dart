@@ -46,6 +46,7 @@ class InnerCardTextField {
     cardValue = card.content[lab];
     if(cardValue == null && card.type == MyStrings.repeat) {
       cardValue = card.id;
+      card.content[lab] = card.id;
     }
     label = lab;
     f = (text) {

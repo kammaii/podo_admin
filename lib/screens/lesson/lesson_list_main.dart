@@ -1,5 +1,6 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/languages.dart';
@@ -27,6 +28,7 @@ class _LessonListMainState extends State<LessonListMain> {
   final ID = 'id';
   final LESSON_COURSES = 'LessonCourses';
   final LESSONS = 'lessons';
+  final LESSON_COLLECTION = 'Lessons';
   final TYPE_LESSON = 'Lesson';
   final TYPE_REVIEW = 'Review';
 
@@ -179,12 +181,15 @@ class _LessonListMainState extends State<LessonListMain> {
                         Center(
                           child: ElevatedButton(
                             onPressed: () {
-                              if (isEditMode) {
-                                course.lessons[index!] = lesson.toJson();
-                              } else {
-                                course.lessons.add(lesson.toJson());
+                              if(lesson.title.isNotEmpty) {
+                                if (isEditMode) {
+                                  course.lessons[index!] = lesson.toJson();
+                                } else {
+                                  course.lessons.add(lesson.toJson());
+                                }
+                                updateLessons();
+                                Database().setEmptyDoc(collection: LESSON_COLLECTION, docId: lesson.id);
                               }
-                              updateLessons();
                             },
                             child: const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -278,7 +283,11 @@ class _LessonListMainState extends State<LessonListMain> {
                       Lesson lesson = Lesson.fromJson(course.lessons[index]);
                       return DataRow(cells: [
                         DataCell(Text(index.toString())),
-                        DataCell(Text(lesson.id.substring(0, 8))),
+                        DataCell(Text(lesson.id.substring(0, 8)), onTap: () {
+                          Clipboard.setData(ClipboardData(text: lesson.id));
+                          Get.snackbar('아이디가 클립보드에 저장되었습니다.', lesson.id,
+                              snackPosition: SnackPosition.BOTTOM);
+                        }),
                         DataCell(Text(lesson.type)),
                         DataCell(Text(lesson.title[KO]), onTap: () {
                           lessonDialog(index: index);
@@ -372,6 +381,7 @@ class _LessonListMainState extends State<LessonListMain> {
                                 actions: [
                                   TextButton(
                                       onPressed: () {
+                                        Database().deleteDoc(collection: LESSON_COLLECTION, doc: lesson);
                                         course.lessons.removeAt(index);
                                         updateLessons();
                                       },

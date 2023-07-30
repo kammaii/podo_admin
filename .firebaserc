@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "podo-49335"
-  }
+    "default": "podo-49335",
+    "podo": "podo-49335"
+  },
+  "targets": {},
+  "etags": {}
 }

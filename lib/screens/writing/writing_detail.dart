@@ -284,18 +284,15 @@ class WritingDetail extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.all(30),
                       child: Center(
-                        child: Visibility(
-                          visible: writing.status != 2,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              completeCorrection();
-                            },
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                              child: Text(
-                                '완료',
-                                style: TextStyle(fontSize: 20),
-                              ),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            completeCorrection();
+                          },
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            child: Text(
+                              '완료',
+                              style: TextStyle(fontSize: 20),
                             ),
                           ),
                         ),

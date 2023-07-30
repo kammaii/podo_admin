@@ -79,6 +79,8 @@ class _LessonCardMainState extends State<LessonCardMain> {
               children: [
                 InnerCardTextField().getFos(index),
                 const Divider(height: 30),
+                InnerCardTextField().getKo(index, KO),
+                const SizedBox(height: 5),
                 InnerCardTextField().getAudio(index, AUDIO),
               ],
             );
@@ -253,12 +255,20 @@ class _LessonCardMainState extends State<LessonCardMain> {
               ],
             ),
             card.type == MyStrings.explain
-                ? const Text('** 붙여넣기 시 \'Ctrl+Shift+V\', <p>태그로 감싸기 확인 **',
+                ? const Text('** 붙여넣기 시 <>클릭하고 \'Ctrl+Shift+V\', <p>태그로 감싸기 확인 **',
                     style: TextStyle(
                       color: Colors.red,
                       backgroundColor: Colors.yellow,
                       fontWeight: FontWeight.bold,
                     ))
+                : const SizedBox.shrink(),
+            card.type == MyStrings.quiz
+                ? const Text('** ko와 fo중 하나만 입력 / 정답은 ex1에 입력 **',
+                style: TextStyle(
+                  color: Colors.red,
+                  backgroundColor: Colors.yellow,
+                  fontWeight: FontWeight.bold,
+                ))
                 : const SizedBox.shrink(),
             Expanded(
               child: Padding(
