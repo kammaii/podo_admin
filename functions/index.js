@@ -1,5 +1,6 @@
 const functions = require("firebase-functions");
 const admin = require('firebase-admin');
+const nodemailer = require('nodemailer');
 
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
@@ -24,7 +25,7 @@ function sendMessage(token, payload) {
 function onCloudMsgActive(change, context) {
    let afterData = change.after.data();
    if(afterData.isActive) {
-       //todo: send fcmMsg to users who have accepted fcm. (maybe can send to every users?)
+       //todo: send fcmMsg to users who have accepted fcm. (or 베스트 리플라이 선정 끝나면 모두에게 보내기?)
    }
 }
 

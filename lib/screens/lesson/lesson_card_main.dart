@@ -172,10 +172,10 @@ class _LessonCardMainState extends State<LessonCardMain> {
                 TextButton(
                   onPressed: () {
                     setState(() {
-                      _controller.addSpeakingCardFromRepeat(card);
+                      _controller.copyRepeat(card);
                     });
                   },
-                  child: const Text('말하기카드만들기'),
+                  child: const Text('복사하기'),
                 )
               ],
             );
@@ -231,6 +231,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                Text('$index  '),
                 card.type == MyStrings.explain
                     ? Text('${card.type} (${Languages().getFos[explainFoIndex]})')
                     : Text(card.type),
@@ -300,38 +301,41 @@ class _LessonCardMainState extends State<LessonCardMain> {
   }
 
   Widget getExampleList({required int summaryIndex}) {
-    if (_controller.lessonSummaries[summaryIndex].examples == null) {
-      _controller.lessonSummaries[summaryIndex].examples = [''];
+    // if (_controller.lessonSummaries[summaryIndex].examples == null) {
+    //   _controller.lessonSummaries[summaryIndex].examples = [''];
+    // }
+    List<dynamic> exampleList = _controller.lessonSummaries[summaryIndex].examples ?? [];
+    if(exampleList.isNotEmpty) {
+      return ListView.builder(
+        shrinkWrap: true,
+        itemCount: exampleList.length,
+        itemBuilder: (context, index) {
+          return Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: InnerCardTextField().getSummaryEx(summaryIndex: summaryIndex, exampleIndex: index),
+                  ),
+                  const SizedBox(width: 10),
+                  IconButton(
+                    onPressed: () {
+                      exampleList.removeAt(index);
+                      _controller.update();
+                    },
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+            ],
+          );
+        },
+      );
+    } else {
+      return const SizedBox.shrink();
     }
-    List<dynamic> exampleList = _controller.lessonSummaries[summaryIndex].examples!;
 
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: exampleList.length,
-      itemBuilder: (context, index) {
-        return Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: InnerCardTextField().getSummaryEx(summaryIndex: summaryIndex, exampleIndex: index),
-                ),
-                const SizedBox(width: 10),
-                IconButton(
-                  onPressed: () {
-                    exampleList.removeAt(index);
-                    _controller.update();
-                    Get.back();
-                  },
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-          ],
-        );
-      },
-    );
   }
 
   Widget getSummaryDialog() {

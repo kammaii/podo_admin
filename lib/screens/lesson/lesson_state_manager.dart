@@ -47,10 +47,10 @@ class LessonStateManager extends GetxController {
     setEditMode();
   }
 
-  void addSpeakingCardFromRepeat(LessonCard repeat) {
+  void copyRepeat(LessonCard repeat) {
     LessonCard card = LessonCard();
     card.orderId = cards.length;
-    card.type = MyStrings.speaking;
+    card.type = MyStrings.repeat;
     card.content = Map.from(repeat.content);
     card.content[MyStrings.audio] = repeat.id;
     cards.add(card);
