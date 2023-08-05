@@ -4,12 +4,13 @@ class LessonSummary {
   late String id;
   late int orderId;
   late Map<String, dynamic> content;
-  List<dynamic>? examples;
+  late List<dynamic> examples;
 
   LessonSummary(int order) {
     id = const Uuid().v4();
     content = {};
     orderId = order;
+    examples = [];
   }
 
   static const String ID = 'id';
@@ -21,7 +22,7 @@ class LessonSummary {
       : id = json[ID],
         orderId = json[ORDERID],
         content = json[CONTENT],
-        examples = json[EXAMPLES] ?? null;
+        examples = json[EXAMPLES];
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> map = {
@@ -29,7 +30,7 @@ class LessonSummary {
       ORDERID: orderId,
       CONTENT: content,
     };
-    map[EXAMPLES] = examples ?? null;
+    map[EXAMPLES] = examples;
     return map;
   }
 }

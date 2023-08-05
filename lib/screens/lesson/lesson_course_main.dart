@@ -1,10 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:podo_admin/common/cloud_storage.dart';
 import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/languages.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
@@ -12,6 +11,7 @@ import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/screens/lesson/lesson_course.dart';
 import 'package:podo_admin/screens/lesson/lesson_list_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
+import 'package:file_picker/file_picker.dart';
 
 class LessonCourseMain extends StatefulWidget {
   LessonCourseMain({Key? key}) : super(key: key);
@@ -35,6 +35,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
   final FO = 'fo';
   final DESC = 'desc';
   late Map<String, TextEditingController> controllersCourse;
+  File? imageFile;
 
   @override
   void initState() {
@@ -74,11 +75,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
   initDialog() {
     controller.selectedLanguage = Languages().getFos[0];
     controllersCourse = {};
-    controllersCourse = {
-      KO: TextEditingController(),
-      FO: TextEditingController(),
-      DESC: TextEditingController()
-    };
+    controllersCourse = {KO: TextEditingController(), FO: TextEditingController(), DESC: TextEditingController()};
   }
 
   Widget getLanguageRadio(String lang) {
@@ -104,13 +101,18 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
     );
   }
 
-  Future uploadImage(String courseId) async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+  Future uploadImage(LessonCourse lessonCourse) async {
+    final pickedFile = await FilePicker.platform.pickFiles(type: FileType.image);
+
     if (pickedFile != null) {
-      File image = (await pickedFile.readAsBytes()) as File;
-      String fileName = '$courseId.jpeg';
-      CloudStorage().uploadCourseImage(image: image, fileName: fileName);
+      Uint8List? imageBytes = pickedFile.files.single.bytes;
+      if (imageBytes != null) {
+        String base64Image = base64Encode(imageBytes);
+        lessonCourse.image = base64Image;
+        controller.update();
+      } else {
+        print('Failed to read image file.');
+      }
     } else {
       print('No image selected.');
     }
@@ -120,9 +122,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
     lessonCourse = lessonCourse ?? LessonCourse();
     initDialog();
     String title;
-    isBeginner ? title = '레슨코스(초급)' : title = '레슨코스(중급)';
-
-    String? imageUrl = await CloudStorage().getCourseImage(courseId: lessonCourse.id);
+    isBeginner ? title = '레슨코스(초급) : ${lessonCourse.id}' : title = '레슨코스(중급) : ${lessonCourse.id}';
 
     Get.dialog(AlertDialog(
       title: Row(
@@ -162,19 +162,31 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                         children: [
                           Column(
                             children: [
-                              Container(
-                                  width: 130.0,
-                                  height: 130.0,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: imageUrl != null
-                                      ? Image.network(imageUrl, headers: const {'Access-Control-Allow-Origin': '*'})
-                                      : Image.asset('assets/podo.png')),
+                              lessonCourse.image != null
+                                  ? Stack(
+                                    children: [
+                                      Image.memory(base64Decode(lessonCourse.image!), height: 100, width: 100),
+                                      Positioned(
+                                        top: 0,
+                                        right: 0,
+                                        child: IconButton(
+                                          alignment: Alignment.topRight,
+                                          padding: const EdgeInsets.all(0),
+                                          icon: const Icon(Icons.remove_circle_outline_outlined),
+                                          color: Colors.red,
+                                          onPressed: () {
+                                            lessonCourse!.image = null;
+                                            controller.update();
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                  : const Icon(Icons.error),
                               const SizedBox(height: 10),
                               ElevatedButton(
                                 onPressed: () {
-                                  uploadImage(lessonCourse!.id);
+                                  uploadImage(lessonCourse!);
                                 },
                                 child: const Padding(
                                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -219,9 +231,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                       const SizedBox(height: 50),
                       ElevatedButton(
                         onPressed: () {
-                          isBeginner!
-                              ? lessonCourse!.isBeginnerMode = true
-                              : lessonCourse!.isBeginnerMode = false;
+                          isBeginner ? lessonCourse!.isBeginnerMode = true : lessonCourse!.isBeginnerMode = false;
                           Database().setDoc(collection: LESSON_COURSES, doc: lessonCourse);
                           Get.back();
                           updateState();
@@ -305,17 +315,22 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                         ],
                         rows: List<DataRow>.generate(courses.length, (index) {
                           LessonCourse course = courses[index];
+                          int lessonLength = 0;
+                          for (dynamic lesson in course.lessons) {
+                            if (lesson is Map) {
+                              lessonLength++;
+                            }
+                          }
                           return DataRow(cells: [
                             DataCell(Text(index.toString())),
                             DataCell(Text(course.id.substring(0, 8)), onTap: () {
                               Clipboard.setData(ClipboardData(text: course.id));
-                              Get.snackbar('아이디가 클립보드에 저장되었습니다.', course.id,
-                                  snackPosition: SnackPosition.BOTTOM);
+                              Get.snackbar('아이디가 클립보드에 저장되었습니다.', course.id, snackPosition: SnackPosition.BOTTOM);
                             }),
                             DataCell(Text(course.title[KO]!), onTap: () {
                               courseDialog(lessonCourse: course);
                             }),
-                            DataCell(Text(course.lessons.length.toString())),
+                            DataCell(Text(lessonLength.toString())),
                             DataCell(Text(course.tag != null ? course.tag.toString() : ''), onTap: () {
                               Get.dialog(
                                 AlertDialog(
@@ -418,8 +433,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                                       TextButton(
                                           onPressed: () {
                                             setState(() {
-                                              Database().deleteDoc(
-                                                  collection: LESSON_COURSES, doc: course);
+                                              Database().deleteDoc(collection: LESSON_COURSES, doc: course);
                                               getDataFromDb();
                                               Get.back();
                                             });

@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 class ReadingTitle {
   late String id;
   late int orderId;
+  String? image;
   late Map<String, dynamic> title;
   late int level;
   late String category;
@@ -26,6 +27,7 @@ class ReadingTitle {
 
   static const String ID = 'id';
   static const String ORDERID = 'orderId';
+  static const String IMAGE = 'image';
   static const String TITLE = 'title';
   static const String LEVEL = 'level';
   static const String CATEGORY = 'category';
@@ -36,6 +38,7 @@ class ReadingTitle {
   ReadingTitle.fromJson(Map<String, dynamic> json) {
     id = json[ID];
     orderId = json[ORDERID];
+    image = json[IMAGE] ?? null;
     title = json[TITLE];
     level = json[LEVEL];
     category = json[CATEGORY];
@@ -47,6 +50,7 @@ class ReadingTitle {
   Map<String, dynamic> toJson() => {
         ID: id,
         ORDERID: orderId,
+        IMAGE: image ?? null,
         TITLE: title,
         LEVEL: level,
         CATEGORY: category,

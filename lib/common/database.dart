@@ -134,8 +134,8 @@ class Database {
 
     // 기존에 저장된 ids
     List<String> beforeIds = [];
-    for (dynamic snapshot in controller.snapshots.data[snapshotIndex]) {
-      beforeIds.add(snapshot['id']);
+    for (dynamic snapshot in controller.snapshots[collection]!) {
+      beforeIds.add(snapshot.id);
     }
 
     for (dynamic doc in docs[snapshotIndex]) {
@@ -155,6 +155,7 @@ class Database {
     }
 
     await batch.commit().then((value) {
+      controller.snapshots[collection] = [...docs[snapshotIndex]];
       Get.snackbar('$collection are saved', '', snackPosition: SnackPosition.BOTTOM);
       print('$collection are saved');
     }).catchError((e) {

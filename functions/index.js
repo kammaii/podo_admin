@@ -2,6 +2,8 @@ const functions = require("firebase-functions");
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
 
+// export GOOGLE_APPLICATION_CREDENTIALS="G:\keys\podo-49335-firebase-adminsdk-qqve9-4227c667f7.json"
+
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
   //databaseURL: "https://podo-705c6.firebaseio.com"
@@ -40,7 +42,7 @@ function onWritingReply(change, context) {
   let afterData = change.after.data();
   let status = afterData.status;
   let guid = afterData.guid;
-  let userWriting = afterData.userWriting;
+  let userWriting = afterData.userWriting.toString();
   let fcmToken = afterData.fcmToken;
 
   if(fcmToken != null) {
@@ -56,7 +58,7 @@ function onWritingReply(change, context) {
       const payload = {
         notification: {
           tag: "writing",
-          title: title.toString(),
+          title: title,
           body: body
         }
       };
@@ -65,6 +67,12 @@ function onWritingReply(change, context) {
 
   return true;
 }
+
+//Notification sent failed: FirebaseMessagingError: Messaging payload contains an invalid value for the "notification.body" property. Values must be strings.
+
+//Notification sent failed: FirebaseMessagingError: An error occurred when trying to authenticate to the FCM servers.
+//Make sure the credential used to authenticate this SDK has the proper permissions.
+//See https://firebase.google.com/docs/admin/setup for setup instructions. Raw server response: "<HTML>
 
 
 exports.onWritingReply = functions.firestore.document('Writings/{writingId}').onWrite(onWritingReply);

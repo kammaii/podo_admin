@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 class LessonCourse {
   late String id;
   late int orderId;
+  String? image;
   late Map<String,dynamic> title;
   late Map<String,dynamic> description;
   late bool isBeginnerMode;
@@ -25,6 +26,7 @@ class LessonCourse {
 
   static const String ID = 'id';
   static const String ORDERID = 'orderId';
+  static const String IMAGE = 'image';
   static const String TITLE = 'title';
   static const String DESCRIPTION = 'description';
   static const String ISBEGINNERMODE = 'isBeginnerMode';
@@ -35,6 +37,7 @@ class LessonCourse {
   LessonCourse.fromJson(Map<String, dynamic> json) {
     id = json[ID];
     orderId = json[ORDERID];
+    image =json[IMAGE] ?? null;
     title = json[TITLE];
     description = json[DESCRIPTION];
     isBeginnerMode = json[ISBEGINNERMODE];
@@ -54,6 +57,7 @@ class LessonCourse {
       ISRELEASED: isReleased
     };
     map[TAG] = tag ?? null;
+    map[IMAGE] = image ?? null;
     return map;
   }
 }

@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:data_table_2/data_table_2.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -82,6 +85,23 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
     );
   }
 
+  Future uploadImage(ReadingTitle readingTitle) async {
+    final pickedFile = await FilePicker.platform.pickFiles(type: FileType.image);
+
+    if (pickedFile != null) {
+      Uint8List? imageBytes = pickedFile.files.single.bytes;
+      if (imageBytes != null) {
+        String base64Image = base64Encode(imageBytes);
+        readingTitle.image = base64Image;
+        controller.update();
+      } else {
+        print('Failed to read image file.');
+      }
+    } else {
+      print('No image selected.');
+    }
+  }
+
   void openReadingTitleDialog() {
     Get.dialog(
       AlertDialog(
@@ -98,17 +118,61 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('레벨', textScaleFactor: 1.5),
-                      DropdownButton(
-                        value: controller.readingLevel[readingTitle.level],
-                        icon: const Icon(Icons.arrow_drop_down_outlined),
-                        items: controller.readingLevel.map<DropdownMenuItem<String>>((value) {
-                          return DropdownMenuItem(value: value, child: Text(value));
-                        }).toList(),
-                        onChanged: (value) {
-                          readingTitle.level = controller.readingLevel.indexOf(value.toString());
-                          controller.update();
-                        },
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            children: [
+                              const Text('레벨', textScaleFactor: 1.5),
+                              DropdownButton(
+                                value: controller.readingLevel[readingTitle.level],
+                                icon: const Icon(Icons.arrow_drop_down_outlined),
+                                items: controller.readingLevel.map<DropdownMenuItem<String>>((value) {
+                                  return DropdownMenuItem(value: value, child: Text(value));
+                                }).toList(),
+                                onChanged: (value) {
+                                  readingTitle.level = controller.readingLevel.indexOf(value.toString());
+                                  controller.update();
+                                },
+                              ),
+                            ],
+                          ),
+                          Column(
+                            children: [
+                              readingTitle.image != null
+                                  ? Stack(
+                                      children: [
+                                        Image.memory(base64Decode(readingTitle.image!), height: 100, width: 100),
+                                        Positioned(
+                                          top: 0,
+                                          right: 0,
+                                          child: IconButton(
+                                            alignment: Alignment.topRight,
+                                            padding: const EdgeInsets.all(0),
+                                            icon: const Icon(Icons.remove_circle_outline_outlined),
+                                            color: Colors.red,
+                                            onPressed: () {
+                                              readingTitle.image = null;
+                                              controller.update();
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : const Icon(Icons.error),
+                              const SizedBox(height: 10),
+                              ElevatedButton(
+                                onPressed: () {
+                                  uploadImage(readingTitle);
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                  child: Text('이미지 업로드'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 20),
                       const Text('읽기 타이틀', textScaleFactor: 1.5),

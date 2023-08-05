@@ -19,7 +19,10 @@ class LessonStateManager extends GetxController {
   late Future<List<dynamic>> futureList;
   late List<LessonCourse> lessonCourses;
   late List<Lesson> lessons;
-  late AsyncSnapshot snapshots;
+  final LESSON_CARDS = 'LessonCards';
+  final LESSON_SUMMARIES = 'LessonSummaries';
+  final WRITING_QUESTIONS = 'WritingQuestions';
+  late Map<String, List<dynamic>> snapshots;
 
   @override
   void onInit() {

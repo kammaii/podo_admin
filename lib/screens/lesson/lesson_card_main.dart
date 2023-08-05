@@ -44,6 +44,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
   @override
   void initState() {
     super.initState();
+    _controller.snapshots = {LESSON_CARDS: [], LESSON_SUMMARIES: [], WRITING_QUESTIONS: []};
     _controller.cards = [];
     _controller.lessonSummaries = [];
     _controller.writingQuestions = [];
@@ -301,10 +302,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
   }
 
   Widget getExampleList({required int summaryIndex}) {
-    // if (_controller.lessonSummaries[summaryIndex].examples == null) {
-    //   _controller.lessonSummaries[summaryIndex].examples = [''];
-    // }
-    List<dynamic> exampleList = _controller.lessonSummaries[summaryIndex].examples ?? [];
+    List<dynamic> exampleList = _controller.lessonSummaries[summaryIndex].examples;
     if(exampleList.isNotEmpty) {
       return ListView.builder(
         shrinkWrap: true,
@@ -423,7 +421,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                             const SizedBox(height: 20),
                             TextButton(
                                 onPressed: () {
-                                  _controller.lessonSummaries[index].examples!.add('');
+                                  _controller.lessonSummaries[index].examples.add(' ');
                                   controller.update();
                                 },
                                 child: const Text('예문추가')),
@@ -682,16 +680,21 @@ class _LessonCardMainState extends State<LessonCardMain> {
                 future: _controller.futureList,
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
                   if (snapshot.hasData && snapshot.connectionState != ConnectionState.waiting) {
-                    _controller.snapshots = snapshot;
                     if (_controller.cards.isEmpty) {
                       for (dynamic snapshot in snapshot.data[0]) {
+                        LessonCard card = LessonCard.fromJson(snapshot);
+                        _controller.snapshots[LESSON_CARDS]!.add(card);
                         _controller.cards.add(LessonCard.fromJson(snapshot));
                       }
                       for (dynamic snapshot in snapshot.data[1]) {
-                        _controller.lessonSummaries.add(LessonSummary.fromJson(snapshot));
+                        LessonSummary summary = LessonSummary.fromJson(snapshot);
+                        _controller.snapshots[LESSON_SUMMARIES]!.add(summary);
+                        _controller.lessonSummaries.add(summary);
                       }
                       for (dynamic snapshot in snapshot.data[2]) {
-                        _controller.writingQuestions.add(WritingQuestion.fromJson(snapshot));
+                        WritingQuestion question = WritingQuestion.fromJson(snapshot);
+                        _controller.snapshots[WRITING_QUESTIONS]!.add(question);
+                        _controller.writingQuestions.add(question);
                       }
                     }
                     setCards();
