@@ -419,7 +419,7 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
                             TextButton(
                                 onPressed: () async {
                                   Get.back();
-                                  await Database().deleteDoc(collection: READING_TITLES, doc: readingTitle);
+                                  await Database().deleteListAndReorderBatch(collection: READING_TITLES, docId: readingTitle.id, list: readingTitles);
                                   controller.getTotalLength();
                                   setState(() {
                                     getDataFromDb();

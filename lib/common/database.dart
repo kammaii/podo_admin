@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/screens/feedback/feedback.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
+import 'package:podo_admin/screens/reading/reading_state_manager.dart';
+import 'package:podo_admin/screens/reading/reading_title.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 
 class Database {
@@ -219,6 +221,24 @@ class Database {
     return await ref.delete().then((value) {
       print('${doc.id} is Deleted');
       Get.snackbar('Document is deleted', 'id: ${doc.id}', snackPosition: SnackPosition.BOTTOM);
+    }).catchError((e) => print(e));
+  }
+
+  Future<void> deleteListAndReorderBatch({required String collection, required String docId, required List<dynamic> list}) async {
+    final batch = firestore.batch();
+    DocumentReference ref = firestore.collection(collection).doc(docId);
+    batch.delete(ref);
+    List<dynamic> docs = [...list];
+    docs.removeWhere((element) => element.id == docId);
+    print('Deleted: $docId');
+    for (int i = 0; i < docs.length; i++) {
+      ref = firestore.collection(collection).doc(docs[i].id);
+      batch.update(ref, {'orderId': docs.length - (i+1)});
+      print('Reordered: ${docs[i].orderId}');
+    }
+    await batch.commit().then((value) {
+      print('Batch completed');
+      Get.snackbar('Document is deleted', '', snackPosition: SnackPosition.BOTTOM);
     }).catchError((e) => print(e));
   }
 }

@@ -50,14 +50,12 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
             collection: LESSON_COURSES,
             field: IS_BEGINNER_MODE,
             equalTo: true,
-            orderBy: ORDER_ID,
-            descending: false)
+            orderBy: ORDER_ID)
         : controller.futureList = Database().getDocs(
             collection: LESSON_COURSES,
             field: IS_BEGINNER_MODE,
             equalTo: false,
-            orderBy: ORDER_ID,
-            descending: false);
+            orderBy: ORDER_ID);
   }
 
   updateDB({required String collection, required String docId, required Map<String, dynamic> value}) {
@@ -303,7 +301,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                     } else {
                       return DataTable2(
                         columns: const [
-                          DataColumn2(label: Text('순서'), size: ColumnSize.S),
+                          DataColumn2(label: Text('순서ID'), size: ColumnSize.S),
                           DataColumn2(label: Text('아이디'), size: ColumnSize.S),
                           DataColumn2(label: Text('코스'), size: ColumnSize.S),
                           DataColumn2(label: Text('레슨개수'), size: ColumnSize.S),
@@ -322,7 +320,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                             }
                           }
                           return DataRow(cells: [
-                            DataCell(Text(index.toString())),
+                            DataCell(Text(course.orderId.toString())),
                             DataCell(Text(course.id.substring(0, 8)), onTap: () {
                               Clipboard.setData(ClipboardData(text: course.id));
                               Get.snackbar('아이디가 클립보드에 저장되었습니다.', course.id, snackPosition: SnackPosition.BOTTOM);
@@ -433,7 +431,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                                       TextButton(
                                           onPressed: () {
                                             setState(() {
-                                              Database().deleteDoc(collection: LESSON_COURSES, doc: course);
+                                              Database().deleteListAndReorderBatch(collection: LESSON_COURSES, docId: course.id, list: courses);
                                               getDataFromDb();
                                               Get.back();
                                             });
