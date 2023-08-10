@@ -6,6 +6,7 @@ import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/languages.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/common/my_textfield.dart';
+import 'package:podo_admin/screens/lesson/inner_card_textfield.dart';
 import 'package:podo_admin/screens/lesson/lesson.dart';
 import 'package:podo_admin/screens/lesson/lesson_card_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_course.dart';
@@ -71,10 +72,7 @@ class _LessonListMainState extends State<LessonListMain> {
     Get.dialog(AlertDialog(
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text('레슨타이틀'),
-          IconButton(onPressed: () => Get.back(), icon: const Icon(Icons.close))
-        ],
+        children: [const Text('레슨타이틀'), IconButton(onPressed: () => Get.back(), icon: const Icon(Icons.close))],
       ),
       content: GetBuilder<LessonStateManager>(
         builder: (_) {
@@ -116,19 +114,15 @@ class _LessonListMainState extends State<LessonListMain> {
                               onPressed: (int index) {
                                 typeToggle[0] = index == 0;
                                 typeToggle[1] = index == 1;
-                                index == 0
-                                    ? lesson.type = TYPE_LESSON
-                                    : lesson.type = TYPE_REVIEW;
+                                index == 0 ? lesson.type = TYPE_LESSON : lesson.type = TYPE_REVIEW;
                                 controller.update();
                               },
                               borderRadius: const BorderRadius.all(Radius.circular(10)),
                               children: [
                                 Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                                    child: Text(TYPE_LESSON)),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10), child: Text(TYPE_LESSON)),
                                 Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                                    child: Text(TYPE_REVIEW)),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10), child: Text(TYPE_REVIEW)),
                               ],
                             ),
                           ],
@@ -181,7 +175,7 @@ class _LessonListMainState extends State<LessonListMain> {
                         Center(
                           child: ElevatedButton(
                             onPressed: () {
-                              if(lesson.title.isNotEmpty) {
+                              if (lesson.title.isNotEmpty) {
                                 if (isEditMode) {
                                   course.lessons[index!] = lesson.toJson();
                                 } else {
@@ -216,6 +210,45 @@ class _LessonListMainState extends State<LessonListMain> {
       }
       Database().updateField(collection: LESSON_COURSES, docId: course.id, map: {LESSONS: course.lessons});
     });
+  }
+
+  Widget _orderArrow(int index) {
+    return Row(
+      children: [
+        IconButton(
+            onPressed: () {
+              if (index != 0) {
+                int newIndex = index - 1;
+                final lesson1 = course.lessons[index];
+                final lesson2 = course.lessons[newIndex];
+                course.lessons[index] = lesson2;
+                course.lessons[newIndex] = lesson1;
+                updateLessons(shouldBack: false);
+              } else {
+                Get.dialog(const AlertDialog(
+                  title: Text('첫번째 레슨입니다.'),
+                ));
+              }
+            },
+            icon: const Icon(Icons.arrow_drop_up_outlined)),
+        IconButton(
+            onPressed: () {
+              if (index != course.lessons.length + 1) {
+                int newIndex = index + 1;
+                final lesson1 = course.lessons[index];
+                final lesson2 = course.lessons[newIndex];
+                course.lessons[index] = lesson2;
+                course.lessons[newIndex] = lesson1;
+                updateLessons(shouldBack: false);
+              } else {
+                Get.dialog(const AlertDialog(
+                  title: Text('마지막 레슨입니다.'),
+                ));
+              }
+            },
+            icon: const Icon(Icons.arrow_drop_down_outlined)),
+      ],
+    );
   }
 
   @override
@@ -285,8 +318,7 @@ class _LessonListMainState extends State<LessonListMain> {
                         DataCell(Text(index.toString())),
                         DataCell(Text(lesson.id.substring(0, 8)), onTap: () {
                           Clipboard.setData(ClipboardData(text: lesson.id));
-                          Get.snackbar('아이디가 클립보드에 저장되었습니다.', lesson.id,
-                              snackPosition: SnackPosition.BOTTOM);
+                          Get.snackbar('아이디가 클립보드에 저장되었습니다.', lesson.id, snackPosition: SnackPosition.BOTTOM);
                         }),
                         DataCell(Text(lesson.type)),
                         DataCell(Text(lesson.title[KO]), onTap: () {
@@ -333,42 +365,7 @@ class _LessonListMainState extends State<LessonListMain> {
                             ),
                           );
                         }),
-                        DataCell(Row(
-                          children: [
-                            IconButton(
-                                onPressed: () {
-                                  if (index != 0) {
-                                    int newIndex = index - 1;
-                                    final lesson1 = course.lessons[index];
-                                    final lesson2 = course.lessons[newIndex];
-                                    course.lessons[index] = lesson2;
-                                    course.lessons[newIndex] = lesson1;
-                                    updateLessons(shouldBack: false);
-                                  } else {
-                                    Get.dialog(const AlertDialog(
-                                      title: Text('첫번째 레슨입니다.'),
-                                    ));
-                                  }
-                                },
-                                icon: const Icon(Icons.arrow_drop_up_outlined)),
-                            IconButton(
-                                onPressed: () {
-                                  if (index != course.lessons.length + 1) {
-                                    int newIndex = index + 1;
-                                    final lesson1 = course.lessons[index];
-                                    final lesson2 = course.lessons[newIndex];
-                                    course.lessons[index] = lesson2;
-                                    course.lessons[newIndex] = lesson1;
-                                    updateLessons(shouldBack: false);
-                                  } else {
-                                    Get.dialog(const AlertDialog(
-                                      title: Text('마지막 레슨입니다.'),
-                                    ));
-                                  }
-                                },
-                                icon: const Icon(Icons.arrow_drop_down_outlined)),
-                          ],
-                        )),
+                        DataCell(_orderArrow(index)),
                         DataCell(
                           IconButton(
                             icon: const Icon(
@@ -433,6 +430,8 @@ class _LessonListMainState extends State<LessonListMain> {
                               ),
                             );
                           });
+                        } else if (idx == 6) {
+                          return DataCell(_orderArrow(index));
                         } else if (idx == 8) {
                           return DataCell(
                             IconButton(

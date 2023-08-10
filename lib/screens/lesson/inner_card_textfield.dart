@@ -41,13 +41,24 @@ class InnerCardTextField {
     );
   }
 
-  Widget getAudio(int index, String lab) {
+  Widget getAudio(int index, {String lab = 'audio'}) {
     LessonCard card = _controller.cards[index];
     cardValue = card.content[lab];
     if(cardValue == null && card.type == MyStrings.repeat) {
       cardValue = card.id;
       card.content[lab] = card.id;
     }
+    label = lab;
+    f = (text) {
+      _controller.cards[index].content[lab] = text;
+      _controller.update();
+    };
+    return getTextField();
+  }
+
+  Widget getVideo(int index, {String lab = 'video'}) {
+    LessonCard card = _controller.cards[index];
+    cardValue = card.content[lab];
     label = lab;
     f = (text) {
       _controller.cards[index].content[lab] = text;

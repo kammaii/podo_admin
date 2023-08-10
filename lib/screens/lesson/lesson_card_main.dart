@@ -38,7 +38,6 @@ class _LessonCardMainState extends State<LessonCardMain> {
   final ORDER_ID = 'orderId';
   final KO = 'ko';
   final FO = 'fo';
-  final AUDIO = 'audio';
   final PRONUN = 'pronun';
 
   @override
@@ -77,12 +76,17 @@ class _LessonCardMainState extends State<LessonCardMain> {
 
           case MyStrings.mention:
             innerWidget = Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 InnerCardTextField().getFos(index),
                 const Divider(height: 30),
-                InnerCardTextField().getKo(index, KO),
+                const Text('optional', style: TextStyle(color: Colors.grey)),
                 const SizedBox(height: 5),
-                InnerCardTextField().getAudio(index, AUDIO),
+                InnerCardTextField().getVideo(index),
+                const SizedBox(height: 5),
+                InnerCardTextField().getAudio(index),
+                const SizedBox(height: 5),
+                InnerCardTextField().getKo(index, KO),
               ],
             );
             break;
@@ -168,7 +172,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                 const Divider(height: 30),
                 InnerCardTextField().getFos(index),
                 const Divider(height: 30),
-                InnerCardTextField().getAudio(index, AUDIO),
+                InnerCardTextField().getAudio(index),
                 const SizedBox(height: 20),
                 TextButton(
                   onPressed: () {
@@ -178,20 +182,6 @@ class _LessonCardMainState extends State<LessonCardMain> {
                   },
                   child: const Text('복사하기'),
                 )
-              ],
-            );
-            break;
-
-          case MyStrings.speaking:
-            innerWidget = Column(
-              children: [
-                InnerCardTextField().getKo(index, KO),
-                const SizedBox(height: 5),
-                InnerCardTextField().getKo(index, PRONUN),
-                const Divider(height: 30),
-                InnerCardTextField().getFos(index),
-                const Divider(height: 30),
-                InnerCardTextField().getAudio(index, AUDIO),
               ],
             );
             break;
@@ -220,7 +210,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                   ],
                 ),
                 const Divider(height: 30),
-                InnerCardTextField().getAudio(index, AUDIO),
+                InnerCardTextField().getAudio(index),
               ],
             );
             break;
@@ -625,11 +615,6 @@ class _LessonCardMainState extends State<LessonCardMain> {
                     MyRadioBtn().getRadioButton(
                         context: context,
                         value: MyStrings.repeat,
-                        groupValue: _controller.cardType,
-                        f: _controller.changeCardTypeRadio()),
-                    MyRadioBtn().getRadioButton(
-                        context: context,
-                        value: MyStrings.speaking,
                         groupValue: _controller.cardType,
                         f: _controller.changeCardTypeRadio()),
                     MyRadioBtn().getRadioButton(
