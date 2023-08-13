@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:podo_admin/screens/cloud_message/cloud_message_main.dart';
 import 'package:podo_admin/screens/feedback/feedback_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_course_main.dart';
 import 'package:podo_admin/screens/loading_controller.dart';
+import 'package:podo_admin/screens/podo_message/podo_message_main.dart';
 import 'package:podo_admin/screens/reading/reading_title_main.dart';
 import 'package:podo_admin/screens/user/user_main.dart';
 import 'package:podo_admin/screens/writing/writing_main.dart';
@@ -18,7 +18,7 @@ class MainFrame extends StatefulWidget {
 class _MainFrameState extends State<MainFrame> {
   final List<Widget> _buildScreens = [
     WritingMain(),
-    CloudMessageMain(),
+    PodoMessageMain(),
     LessonCourseMain(),
     ReadingTitleMain(),
     FeedbackMain(),
@@ -52,7 +52,7 @@ class _MainFrameState extends State<MainFrame> {
                   NavigationRailDestination(
                     icon: Icon(Icons.cloud_outlined),
                     selectedIcon: Icon(Icons.cloud),
-                    label: Text('메시지'),
+                    label: Text('포도메시지'),
                   ),
                   NavigationRailDestination(
                     icon: Icon(Icons.play_lesson_outlined),
