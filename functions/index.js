@@ -1,27 +1,34 @@
 const functions = require("firebase-functions");
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
-const sgMail = require('@sendgrid/mail');
 
 
 // export GOOGLE_APPLICATION_CREDENTIALS="G:\keys\podo-49335-firebase-adminsdk-qqve9-4227c667f7.json"
 
 admin.initializeApp();
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+const gmailEmail = functions.config().gmail.email;
+const gmailPassword = functions.config().gmail.password;
+const mailTransport = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: gmailEmail,
+    pass: gmailPassword,
+  },
+});
 
 function onFeedbackSent(snap, context) {
   const feedbackData = snap.data();
   const userEmail = feedbackData.userEmail;
   const message = feedbackData.message;
   const mailOptions = {
-    from: 'akorean.help@gmail.com',
-    to: 'akorean.help@gmail.com', // 수신 이메일 주소
+    from: gmailEmail,
+    to: gmailEmail, // 수신 이메일 주소
     subject: '[podo] Feedback from the user',
     text: '${message}\n\n${userEmail}',
   };
 
-  return sgMail.send(mailOptions)
+  return mailTransport.sendEmail(mailOptions)
     .then(() => {
       console.log('이메일 전송 성공');
       return null;
@@ -36,14 +43,36 @@ function onFeedbackSent(snap, context) {
 function onPodoMsgActivated(change, context) {
    let beforeData = change.before.data();
    let afterData = change.after.data();
+   let shouldSendMessage = false;
+   let payload;
+
    if(!beforeData.isActive && afterData.isActive) {
-     const payload = {
+     shouldSendMessage = true;
+     payload = {
+       data: {
+        'tag': 'podo_message',
+       },
        notification: {
          title: 'podo',
          body: afterData.title['ko'],
        }
      };
+   }
 
+   if(!beforeData.hasBestReply && afterData.hasBestReply) {
+     shouldSendMessage = true;
+     payload = {
+       data: {
+        'tag': 'podo_message',
+       },
+       notification: {
+         title: 'podo',
+         body: 'The selection for the best reply has been completed! Please check it.',
+       }
+     };
+   }
+
+   if(shouldSendMessage) {
      return admin.messaging().sendToTopic('allUsers', payload)
        .then((response) => {
          console.log('알림 전송 성공:', response);
@@ -52,8 +81,9 @@ function onPodoMsgActivated(change, context) {
        .catch((error) => {
          console.log('알림 전송 실패:', error);
        });
+   } else {
+     return null;
    }
-   return null;
 }
 
 function onWritingReplied(change, context) {
@@ -75,8 +105,10 @@ function onWritingReplied(change, context) {
     }
 
     const payload = {
+      data: {
+        'tag': 'writing',
+      },
       notification: {
-        tag: "writing",
         title: title,
         body: body
       }

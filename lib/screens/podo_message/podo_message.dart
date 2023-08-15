@@ -9,11 +9,13 @@ class PodoMessage {
   DateTime? dateStart;
   DateTime? dateEnd;
   late bool isActive;
+  late bool hasBestReply;
 
   PodoMessage() {
     id = const Uuid().v4();
     title = {};
     isActive = false;
+    hasBestReply = false;
   }
 
   static const String ID = 'id';
@@ -23,6 +25,7 @@ class PodoMessage {
   static const String DATESTART = 'dateStart';
   static const String DATEEND = 'dateEnd';
   static const String ISACTIVE = 'isActive';
+  static const String HASREPLY = 'hasBestReply';
 
 
   PodoMessage.fromJson(Map<String, dynamic> json) {
@@ -42,6 +45,7 @@ class PodoMessage {
       dateEnd = stamp.toDate();
     }
     isActive = json[ISACTIVE];
+    hasBestReply = json[HASREPLY];
   }
 
   Map<String, dynamic> toJson() {
@@ -51,6 +55,7 @@ class PodoMessage {
       DATESAVED: dateSaved,
       CONTENT: content,
       ISACTIVE: isActive,
+      HASREPLY: hasBestReply,
     };
     if(dateStart != null) {
       map[DATESTART] = Timestamp.fromDate(dateStart!);

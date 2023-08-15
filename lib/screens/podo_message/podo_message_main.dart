@@ -45,7 +45,6 @@ class PodoMessageMain extends StatelessWidget {
                 DataColumn2(label: Text('시작'), size: ColumnSize.S),
                 DataColumn2(label: Text('종료'), size: ColumnSize.S),
                 DataColumn2(label: Text('상태'), size: ColumnSize.S),
-                DataColumn2(label: Text('선정/미선정'), size: ColumnSize.S),
                 DataColumn2(label: Text('게시'), size: ColumnSize.S),
                 DataColumn2(label: Text('삭제'), size: ColumnSize.S),
                 DataColumn2(label: Text(''), size: ColumnSize.S),
@@ -57,10 +56,12 @@ class PodoMessageMain extends StatelessWidget {
                   if(now.isAfter(message.dateStart!) && now.isBefore(message.dateEnd!)) {
                     status = '진행중';
                   } else if(now.isAfter(message.dateEnd!)) {
-                    status = '종료';
+                    status = '답변선정대기중';
                   }
                 }
-
+                if(message.hasBestReply) {
+                  status = '종료';
+                }
                 return DataRow(cells: [
                   DataCell(Text((controller.messages.length - index).toString())),
                   DataCell(Text(message.title['ko'] ?? ''), onTap: () {
@@ -74,14 +75,6 @@ class PodoMessageMain extends StatelessWidget {
                       ? DataCell(Text(MyDateFormat().getDateOnlyFormat(message.dateEnd!)))
                       : const DataCell(Text('-')),
                   DataCell(Text(status)),
-                  message.id == controller.messageIdForReplyCount
-                      ? DataCell(Text('${controller.replyStatusCount[0]} / ${controller.replyStatusCount[1]}'))
-                      : DataCell(ElevatedButton(
-                          child: const Text('확인'),
-                          onPressed: () {
-                            controller.getReplyCount(messageId: message.id);
-                          },
-                        )),
                   DataCell(Checkbox(
                     value: message.isActive,
                     onChanged: (bool? value) {

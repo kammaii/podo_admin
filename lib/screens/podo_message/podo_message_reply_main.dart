@@ -1,6 +1,7 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/screens/podo_message/podo_message_state_manager.dart';
 import 'package:podo_admin/screens/podo_message/podo_message_reply.dart';
@@ -18,14 +19,16 @@ class _CloudMessageReplyMainState extends State<CloudMessageReplyMain> {
   @override
   void dispose() {
     super.dispose();
-    controller.getReplyCount();
     controller.initRadio();
   }
 
   @override
   Widget build(BuildContext context) {
     List<bool> selector = [true, false];
-    const List<Widget> selectorWidget = [SizedBox(width: 60, child: Center(child: Text('미선정'))), SizedBox(width: 60, child: Center(child: Text('선정')))];
+    const List<Widget> selectorWidget = [
+      SizedBox(width: 60, child: Center(child: Text('미선정'))),
+      SizedBox(width: 60, child: Center(child: Text('선정')))
+    ];
     controller.getReplies(isSelected: false);
 
     Widget getRadioBtn(String title) {
@@ -36,8 +39,6 @@ class _CloudMessageReplyMainState extends State<CloudMessageReplyMain> {
         f: controller.changeStatusRadio(),
       );
     }
-
-
 
     return Scaffold(
         appBar: AppBar(
@@ -57,7 +58,7 @@ class _CloudMessageReplyMainState extends State<CloudMessageReplyMain> {
             Expanded(
               child: GetBuilder<PodoMessageStateManager>(
                 builder: (_) {
-                  if(controller.replies.isNotEmpty) {
+                  if (controller.replies.isNotEmpty) {
                     return DataTable2(
                       columns: const [
                         DataColumn2(label: Text('순서'), size: ColumnSize.S),
@@ -95,6 +96,37 @@ class _CloudMessageReplyMainState extends State<CloudMessageReplyMain> {
                     return const Center(child: Text('검색된 회신이 없습니다.'));
                   }
                 },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(30),
+              child: ElevatedButton(
+                onPressed: () {
+                  Get.dialog(AlertDialog(
+                    title: const Text('Best Reply를 확정 하겠습니까?'),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            Get.back();
+                          },
+                          child: const Text('아니요')),
+                      TextButton(
+                          onPressed: () {
+                            controller.setBestReply();
+                            Get.back();
+                            Get.back();
+                          },
+                          child: const Text('네')),
+                    ],
+                  ));
+                },
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: Text(
+                    '선정 완료',
+                    style: TextStyle(fontSize: 20),
+                  ),
+                ),
               ),
             ),
           ],
