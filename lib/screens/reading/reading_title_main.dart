@@ -139,6 +139,22 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
                           ),
                           Column(
                             children: [
+                              const Text('카테고리', textScaleFactor: 1.5),
+                              DropdownButton(
+                                value: readingTitle.category,
+                                icon: const Icon(Icons.arrow_drop_down_outlined),
+                                items: controller.categories.map<DropdownMenuItem<String>>((value) {
+                                  return DropdownMenuItem(value: value, child: Text(value));
+                                }).toList(),
+                                onChanged: (value) {
+                                  readingTitle.category = value.toString();
+                                  controller.update();
+                                },
+                              ),
+                            ],
+                          ),
+                          Column(
+                            children: [
                               readingTitle.image != null
                                   ? Stack(
                                       children: [

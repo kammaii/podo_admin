@@ -38,22 +38,37 @@ class _ReadingDetailState extends State<ReadingDetail> {
 
   void loadReadings(String readingTitleId) async {
     readings = [];
-    final snapshots =
-        await Database().getDocs(collection: 'ReadingTitles/$readingTitleId/Readings', orderBy: 'orderId', descending: false);
-    setState(() {
-      if (snapshots.isNotEmpty) {
+    final snapshots = await Database()
+        .getDocs(collection: 'ReadingTitles/$readingTitleId/Readings', orderBy: 'orderId', descending: false);
+    if (snapshots.isNotEmpty) {
+      setState(() {
         for (dynamic snapshot in snapshots) {
           readings.add(Reading.fromJson(snapshot));
         }
-      }
-    });
+      });
+    } else {
+      int length = 0;
+      Get.dialog(AlertDialog(
+        title: const Text('읽기 카드 개수를 입력하세요.'),
+        content: MyTextField().getTextField(fn: (value) {
+          length = int.parse(value);
+        }),
+        actions: [
+          TextButton(
+              onPressed: () {
+                setState(() {
+                  Get.back();
+                  readings = List.generate(length, (index) => Reading(index));
+                });
+              },
+              child: const Text('카드 만들기'))
+        ],
+      ));
+    }
   }
 
   Widget getCards() {
     List<Widget> cards = [];
-    if (readings.isEmpty) {
-      readings.add(Reading(0));
-    }
     for (int i = 0; i < readings.length; i++) {
       cards.add(readingCard(i));
     }
@@ -135,25 +150,32 @@ class _ReadingDetailState extends State<ReadingDetail> {
                             onPressed: () {
                               if (reading.words['ko'] != null && reading.words['ko'].isNotEmpty) {
                                 Get.dialog(AlertDialog(
-                                  title: const Text('자동번역을 사용하겠습니까?'),
+                                  title: const Text('새로 입력을 하시겠습니까?'),
                                   actions: [
                                     TextButton(
                                         onPressed: () {
                                           Get.back();
-                                          Get.dialog(
-                                            AlertDialog(
-                                                title: const Text('단어입력'),
-                                                content: FutureBuilder(
-                                                  future: getTranslatedWord(reading),
-                                                  builder: (BuildContext context, AsyncSnapshot snapshot) {
-                                                    if (snapshot.connectionState != ConnectionState.waiting) {
-                                                      return getWordList(reading);
-                                                    } else {
-                                                      return const Center(child: CircularProgressIndicator());
-                                                    }
-                                                  },
-                                                )),
-                                          );
+                                          int wordsLength = reading.words['ko'].length;
+                                          for (int i = 1; i < languages.length; i++) {
+                                            reading.words[languages[i]] = List.filled(wordsLength, '');
+                                          }
+                                          Get.dialog(AlertDialog(
+                                            title: const Text('단어입력'),
+                                            content: getWordList(reading),
+                                          )
+                                              // AlertDialog(
+                                              //     title: const Text('단어입력'),
+                                              //     content: FutureBuilder(
+                                              //       future: getTranslatedWord(reading),
+                                              //       builder: (BuildContext context, AsyncSnapshot snapshot) {
+                                              //         if (snapshot.connectionState != ConnectionState.waiting) {
+                                              //           return getWordList(reading);
+                                              //         } else {
+                                              //           return const Center(child: CircularProgressIndicator());
+                                              //         }
+                                              //       },
+                                              //     )),
+                                              );
                                         },
                                         child: const Text('네')),
                                     TextButton(
@@ -263,7 +285,6 @@ class _ReadingDetailState extends State<ReadingDetail> {
       ],
     );
   }
-
 
   @override
   Widget build(BuildContext context) {

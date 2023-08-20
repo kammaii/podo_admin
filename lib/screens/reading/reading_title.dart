@@ -18,7 +18,7 @@ class ReadingTitle {
     id = const Uuid().v4();
     orderId = controller.totalReadingTitleLength;
     title = {};
-    level = 0;
+    level = 1;
     category = controller.selectedCategory;
     tag = '';
     isReleased = false;
