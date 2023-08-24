@@ -15,15 +15,15 @@ const mailTransport = nodemailer.createTransport({
   },
 });
 
-function onFeedbackSent(snap, context) {
-  const feedbackData = snap.data();
-  const userEmail = feedbackData.email;
-  const message = feedbackData.message;
+function onFeedbackSent() {
+  //const feedbackData = snap.data();
+  //const userEmail = feedbackData.userEmail;
+  //const message = feedbackData.message;
   const mailOptions = {
-    from: userEmail,
+    from: 'userEmail@gmail.com',
     to: 'akorean.help@gmail.com', // 수신 이메일 주소
     subject: '[podo] Feedback from the user',
-    text: message + "\n\n" + userEmail,
+    text: 'message',
   };
 
   return mailTransport.sendMail(mailOptions)
@@ -36,6 +36,8 @@ function onFeedbackSent(snap, context) {
       return null;
     });
 }
+
+onFeedbackSent();
 
 
 function onPodoMsgActivated(change, context) {

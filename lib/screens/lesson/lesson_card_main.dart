@@ -29,6 +29,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
   final double cardWidth = 350;
   late List<Map<String, TextEditingController>> writingControllers;
   int explainFoIndex = 0;
+  int detailFoIndex = 0;
   final htmlEditorController = HtmlEditorController();
   Lesson lesson = Get.arguments;
   final LESSONS = 'Lessons';
@@ -56,6 +57,66 @@ class _LessonCardMainState extends State<LessonCardMain> {
     ]);
   }
 
+  Widget getDetailContent(LessonCard card) {
+    String language = Languages().getFos[detailFoIndex];
+    card.detailContent ??= {};
+    String detailContent = card.detailContent?[language] ?? '';
+
+    if ((_controller.isEditMode.containsKey(card.id) && _controller.isEditMode[card.id]!)) {
+      htmlEditorController.setText(detailContent);
+      return Row(
+        children: [
+          IconButton(
+              onPressed: () {
+                setState(() {
+                  detailFoIndex--;
+                });
+              },
+              icon: const Icon(Icons.arrow_back_ios_rounded),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints()),
+          Expanded(
+            child: HtmlEditor(
+              controller: htmlEditorController,
+              htmlEditorOptions: HtmlEditorOptions(hint: MyStrings.explain, initialText: detailContent),
+              htmlToolbarOptions: HtmlToolbarOptions(
+                toolbarType: ToolbarType.nativeGrid,
+                defaultToolbarButtons: [
+                  const StyleButtons(),
+                  const ListButtons(listStyles: false),
+                  const InsertButtons(),
+                  const OtherButtons(
+                      fullscreen: false, undo: false, redo: false, copy: false, paste: false, help: false),
+                ],
+                customToolbarButtons: [
+                  MyHtmlColor().colorButton(controller: htmlEditorController, color: MyStrings.red),
+                  MyHtmlColor().colorButton(controller: htmlEditorController, color: MyStrings.blue),
+                  MyHtmlColor().colorButton(controller: htmlEditorController, color: MyStrings.black),
+                ],
+              ),
+              callbacks: Callbacks(onChangeContent: (String? content) {
+                if (language == Languages().getFos[detailFoIndex]) {
+                  card.detailContent![language] = content!;
+                }
+              }),
+            ),
+          ),
+          IconButton(
+              onPressed: () {
+                setState(() {
+                  detailFoIndex++;
+                });
+              },
+              icon: const Icon(Icons.arrow_forward_ios_rounded),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints()),
+        ],
+      );
+    } else {
+      return Text(detailContent);
+    }
+  }
+
   void setCards() {
     cardWidgets = [];
     cardWidgets = List<Widget>.generate(
@@ -75,10 +136,35 @@ class _LessonCardMainState extends State<LessonCardMain> {
             break;
 
           case MyStrings.mention:
+            if (detailFoIndex >= Languages().getFos.length) {
+              detailFoIndex = 0;
+            } else if (detailFoIndex < 0) {
+              detailFoIndex = Languages().getFos.length - 1;
+            }
             innerWidget = Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 InnerCardTextField().getFos(index),
+                const Divider(height: 30),
+                const Text('detail title', style: TextStyle(color: Colors.grey)),
+                const SizedBox(height: 5),
+                InnerCardTextField().getDetailTitles(index),
+                Row(
+                  children: [
+                    Text('detail content (${Languages().getFos[detailFoIndex]})', style: const TextStyle(color: Colors.grey)),
+                    const SizedBox(width: 10),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _controller.setEditMode(id: card.id);
+                        });
+                      },
+                      child: const Text('수정'),
+                    )
+                  ],
+                ),
+                const SizedBox(height: 5),
+                getDetailContent(card),
                 const Divider(height: 30),
                 const Text('optional', style: TextStyle(color: Colors.grey)),
                 const SizedBox(height: 5),
@@ -256,11 +342,11 @@ class _LessonCardMainState extends State<LessonCardMain> {
                 : const SizedBox.shrink(),
             card.type == MyStrings.quiz
                 ? const Text('** ko와 fo중 하나만 입력 / 정답은 ex1에 입력 **',
-                style: TextStyle(
-                  color: Colors.red,
-                  backgroundColor: Colors.yellow,
-                  fontWeight: FontWeight.bold,
-                ))
+                    style: TextStyle(
+                      color: Colors.red,
+                      backgroundColor: Colors.yellow,
+                      fontWeight: FontWeight.bold,
+                    ))
                 : const SizedBox.shrink(),
             Expanded(
               child: Padding(
@@ -293,7 +379,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
 
   Widget getExampleList({required int summaryIndex}) {
     List<dynamic> exampleList = _controller.lessonSummaries[summaryIndex].examples;
-    if(exampleList.isNotEmpty) {
+    if (exampleList.isNotEmpty) {
       return ListView.builder(
         shrinkWrap: true,
         itemCount: exampleList.length,
@@ -323,7 +409,6 @@ class _LessonCardMainState extends State<LessonCardMain> {
     } else {
       return const SizedBox.shrink();
     }
-
   }
 
   Widget getSummaryDialog() {

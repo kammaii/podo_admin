@@ -1,10 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import 'package:podo_admin/screens/feedback/feedback.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
-import 'package:podo_admin/screens/reading/reading_state_manager.dart';
-import 'package:podo_admin/screens/reading/reading_title.dart';
-import 'package:podo_admin/screens/value/my_strings.dart';
 
 class Database {
   static final Database _instance = Database.init();
@@ -86,25 +82,10 @@ class Database {
     return titles;
   }
 
-  updateCorrection({required String writingId, String? correction, required int status}) {
+  updateCorrection({required String writingId, required String correction, required int status}) {
     DocumentReference ref = firestore.collection('Writings').doc(writingId);
-    String correctionText = '';
-    switch (status) {
-      case 1:
-        correctionText = correction!;
-        break;
-
-      case 2:
-        correctionText = MyStrings.perfect;
-        break;
-
-      case 3:
-        correctionText = MyStrings.unCorrectable;
-        break;
-    }
-
     return ref
-        .update({'correction': correctionText, 'dateReply': Timestamp.now(), 'status': status})
+        .update({'correction': correction, 'dateReply': Timestamp.now(), 'status': status})
         .then((value) => print('Correction updated'))
         .catchError((e) => print('ERROR : $e'));
   }

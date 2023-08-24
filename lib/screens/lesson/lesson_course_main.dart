@@ -195,24 +195,12 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                           ),
                           const SizedBox(width: 50),
                           Expanded(
-                            child: Column(
-                              children: [
-                                MyTextField().getTextField(
-                                  controller: controllersCourse[KO],
-                                  label: '코스입력(한국어)',
-                                  fn: (String? value) {
-                                    lessonCourse!.title[KO] = value!;
-                                  },
-                                ),
-                                const SizedBox(height: 20),
-                                MyTextField().getTextField(
-                                  controller: controllersCourse[FO],
-                                  label: '코스입력(외국어)',
-                                  fn: (String? value) {
-                                    lessonCourse!.title[controller.selectedLanguage] = value!;
-                                  },
-                                ),
-                              ],
+                            child: MyTextField().getTextField(
+                              controller: controllersCourse[FO],
+                              label: '타이틀(${controller.selectedLanguage})',
+                              fn: (String? value) {
+                                lessonCourse!.title[controller.selectedLanguage] = value!;
+                              },
                             ),
                           ),
                         ],
@@ -325,7 +313,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                               Clipboard.setData(ClipboardData(text: course.id));
                               Get.snackbar('아이디가 클립보드에 저장되었습니다.', course.id, snackPosition: SnackPosition.BOTTOM);
                             }),
-                            DataCell(Text(course.title[KO]!), onTap: () {
+                            DataCell(Text(course.title['en']!), onTap: () {
                               courseDialog(lessonCourse: course);
                             }),
                             DataCell(Text(lessonLength.toString())),

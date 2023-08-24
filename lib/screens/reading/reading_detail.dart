@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/languages.dart';
@@ -89,7 +90,12 @@ class _ReadingDetailState extends State<ReadingDetail> {
       children: [
         Row(
           children: [
-            Text(reading.id),
+            GestureDetector(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: reading.id));
+                  Get.snackbar('아이디가 클립보드에 저장되었습니다.', reading.id, snackPosition: SnackPosition.BOTTOM);
+                },
+                child: Text(reading.id)),
             const SizedBox(width: 20),
             IconButton(
                 onPressed: () {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:podo_admin/screens/feedback/feedback_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_course_main.dart';
 import 'package:podo_admin/screens/loading_controller.dart';
 import 'package:podo_admin/screens/podo_message/podo_message_main.dart';
@@ -21,7 +20,6 @@ class _MainFrameState extends State<MainFrame> {
     PodoMessageMain(),
     LessonCourseMain(),
     ReadingTitleMain(),
-    FeedbackMain(),
     UserMain(),
   ];
 
@@ -63,11 +61,6 @@ class _MainFrameState extends State<MainFrame> {
                     icon: Icon(Icons.menu_book_outlined),
                     selectedIcon: Icon(Icons.menu_book),
                     label: Text('읽기'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.feedback_outlined),
-                    selectedIcon: Icon(Icons.feedback),
-                    label: Text('피드백'),
                   ),
                   NavigationRailDestination(
                     icon: Icon(Icons.people_outline),

@@ -27,7 +27,6 @@ class WritingStateManager extends GetxController {
       } else if (writingIndex >= writings.length) {
         writingIndex = 0;
       }
-      update();
     } else {
       Get.back();
     }

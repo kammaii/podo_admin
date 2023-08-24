@@ -56,6 +56,26 @@ class InnerCardTextField {
     return getTextField();
   }
 
+  Widget getDetailTitles(int index) {
+    List<Widget> widgets = [];
+    for(String language in Languages().getFos) {
+      cardValue = _controller.cards[index].detailTitle?[language];
+      label = language;
+      f = (text) {
+        _controller.cards[index].detailTitle ??= {};
+        _controller.cards[index].detailTitle![language] = text;
+        _controller.update();
+      };
+      widgets.add(Padding(
+        padding: const EdgeInsets.only(bottom: 5),
+        child: getTextField(),
+      ));
+    }
+    return Column(
+      children: widgets,
+    );
+  }
+
   Widget getVideo(int index, {String lab = 'video'}) {
     LessonCard card = _controller.cards[index];
     cardValue = card.content[lab];

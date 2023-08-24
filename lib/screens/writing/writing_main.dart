@@ -74,6 +74,7 @@ class WritingMain extends StatelessWidget {
                     print('FUTURE');
                     if (snapshot.hasData == true) {
                       List<Writing> writings = [];
+                      print(snapshot.data);
                       for (dynamic snapshot in snapshot.data) {
                         writings.add(Writing.fromJson(snapshot));
                       }
