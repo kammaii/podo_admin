@@ -24,6 +24,8 @@ class _LessonListMainState extends State<LessonListMain> {
   LessonStateManager controller = Get.find<LessonStateManager>();
   LessonCourse course = Get.arguments;
   List<bool> typeToggle = [true, false];
+  List<bool> optionsToggle = [true, false];
+
   final KO = 'ko';
   final FO = 'fo';
   final ID = 'id';
@@ -31,7 +33,7 @@ class _LessonListMainState extends State<LessonListMain> {
   final LESSONS = 'lessons';
   final LESSON_COLLECTION = 'Lessons';
   final TYPE_LESSON = 'Lesson';
-  final TYPE_REVIEW = 'Review';
+  final TYPE_PRACTICE = 'Practice';
 
   initDialog() {
     controllersTitle = {};
@@ -42,6 +44,7 @@ class _LessonListMainState extends State<LessonListMain> {
     };
     controller.selectedLanguage = Languages().getFos[0];
     typeToggle = [true, false];
+    optionsToggle = [true, false];
   }
 
   Widget getLanguageRadio(String lang) {
@@ -67,7 +70,9 @@ class _LessonListMainState extends State<LessonListMain> {
     }
     initDialog();
     typeToggle[0] = lesson.type == TYPE_LESSON;
-    typeToggle[1] = lesson.type == TYPE_REVIEW;
+    typeToggle[1] = lesson.type == TYPE_PRACTICE;
+    optionsToggle[0] = lesson.hasOptions == true;
+    optionsToggle[1] = lesson.hasOptions == false;
 
     Get.dialog(AlertDialog(
       title: Row(
@@ -114,7 +119,13 @@ class _LessonListMainState extends State<LessonListMain> {
                               onPressed: (int index) {
                                 typeToggle[0] = index == 0;
                                 typeToggle[1] = index == 1;
-                                index == 0 ? lesson.type = TYPE_LESSON : lesson.type = TYPE_REVIEW;
+                                if(index == 1) {
+                                  lesson.type = TYPE_PRACTICE;
+                                  optionsToggle[0] = false;
+                                  optionsToggle[1] = true;
+                                } else {
+                                  lesson.type = TYPE_LESSON;
+                                }
                                 controller.update();
                               },
                               borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -122,7 +133,26 @@ class _LessonListMainState extends State<LessonListMain> {
                                 Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 10), child: Text(TYPE_LESSON)),
                                 Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10), child: Text(TYPE_REVIEW)),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10), child: Text(TYPE_PRACTICE)),
+                              ],
+                            ),
+                            const SizedBox(width: 20),
+                            const Text('요약/쓰기 유무', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            const SizedBox(width: 20),
+                            ToggleButtons(
+                              isSelected: optionsToggle,
+                              onPressed: (int index) {
+                                optionsToggle[0] = index == 0;
+                                optionsToggle[1] = index == 1;
+                                index == 0 ? lesson.hasOptions = true : lesson.hasOptions = false;
+                                controller.update();
+                              },
+                              borderRadius: const BorderRadius.all(Radius.circular(10)),
+                              children: const [
+                                Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 10), child: Text('있음')),
+                                Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 10), child: Text('없음')),
                               ],
                             ),
                           ],

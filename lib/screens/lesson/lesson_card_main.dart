@@ -129,8 +129,6 @@ class _LessonCardMainState extends State<LessonCardMain> {
             innerWidget = Column(
               children: [
                 InnerCardTextField().getKo(index, KO),
-                const Divider(height: 30),
-                InnerCardTextField().getFos(index),
               ],
             );
             break;
