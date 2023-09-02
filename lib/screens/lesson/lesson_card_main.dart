@@ -168,6 +168,14 @@ class _LessonCardMainState extends State<LessonCardMain> {
                 const SizedBox(height: 5),
                 InnerCardTextField().getVideo(index),
                 const SizedBox(height: 5),
+                Row(
+                  children: [
+                    Expanded(child: InnerCardTextField().getClip(index, lab: 'clipStart')),
+                    const SizedBox(width: 5),
+                    Expanded(child: InnerCardTextField().getClip(index, lab: 'clipEnd')),
+                  ],
+                ),
+                const SizedBox(height: 5),
                 InnerCardTextField().getAudio(index),
                 const SizedBox(height: 5),
                 InnerCardTextField().getKo(index, KO),

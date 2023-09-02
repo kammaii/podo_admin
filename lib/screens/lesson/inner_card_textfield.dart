@@ -87,6 +87,17 @@ class InnerCardTextField {
     return getTextField();
   }
 
+  Widget getClip(int index, {required String lab}) {
+    LessonCard card = _controller.cards[index];
+    cardValue = card.content[lab];
+    label = lab;
+    f = (text) {
+      _controller.cards[index].content[lab] = text;
+      _controller.update();
+    };
+    return getTextField();
+  }
+
   Widget getSummaryKo(int index) {
     cardValue = _controller.lessonSummaries[index].content['ko'];
     label = '타이틀(한국어)';
