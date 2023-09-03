@@ -266,13 +266,26 @@ class _LessonCardMainState extends State<LessonCardMain> {
                 const Divider(height: 30),
                 InnerCardTextField().getAudio(index),
                 const SizedBox(height: 20),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      _controller.copyRepeat(card);
-                    });
-                  },
-                  child: const Text('복사하기'),
+                Row(
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _controller.copyRepeat(card);
+                        });
+                      },
+                      child: const Text('복사하기'),
+                    ),
+                    const SizedBox(width: 10),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _controller.makeQuiz(card);
+                        });
+                      },
+                      child: const Text('퀴즈만들기'),
+                    ),
+                  ],
                 )
               ],
             );

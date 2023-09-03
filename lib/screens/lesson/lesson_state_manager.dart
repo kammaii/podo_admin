@@ -22,6 +22,9 @@ class LessonStateManager extends GetxController {
   final LESSON_SUMMARIES = 'LessonSummaries';
   final WRITING_QUESTIONS = 'WritingQuestions';
   late Map<String, List<dynamic>> snapshots;
+  final KO = 'ko';
+  final AUDIO = 'audio';
+  final PRONUN = 'pronun';
 
   @override
   void onInit() {
@@ -55,6 +58,24 @@ class LessonStateManager extends GetxController {
     card.type = MyStrings.repeat;
     card.content = Map.from(repeat.content);
     card.content[MyStrings.audio] = repeat.id;
+    cards.add(card);
+    setEditMode(id: card.id);
+  }
+
+  void makeQuiz(LessonCard repeat) {
+    LessonCard card = LessonCard();
+    card.orderId = cards.length;
+    card.type = MyStrings.quiz;
+    card.content = Map.from(repeat.content);
+    if(card.content.containsKey(KO)) {
+      card.content.remove(KO);
+    }
+    if(card.content.containsKey(AUDIO)) {
+      card.content.remove(AUDIO);
+    }
+    if(card.content.containsKey(PRONUN)) {
+      card.content.remove(PRONUN);
+    }
     cards.add(card);
     setEditMode(id: card.id);
   }
