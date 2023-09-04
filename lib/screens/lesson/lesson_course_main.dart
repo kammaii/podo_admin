@@ -339,7 +339,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                                 ),
                               );
                             }),
-                            DataCell(Text(course.isReleased ? '게시중' : '입력중'), onTap: () {
+                            DataCell(Icon(Icons.circle, color: course.isReleased ? Colors.green : Colors.red), onTap: () {
                               Get.dialog(AlertDialog(
                                 content: const Text('상태를 변경하겠습니까?'),
                                 actions: [

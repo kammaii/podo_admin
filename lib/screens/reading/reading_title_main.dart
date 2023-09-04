@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:data_table_2/data_table_2.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -342,7 +343,8 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
                       ),
                     );
                   }),
-                  DataCell(Text(readingTitle.isReleased ? '게시중' : '입력중'), onTap: () {
+                  DataCell(Icon(Icons.circle, color: readingTitle.isReleased ? Colors.green : Colors.red),
+                      onTap: () {
                     Get.dialog(AlertDialog(
                       content: const Text('상태를 변경하겠습니까?'),
                       actions: [
@@ -363,7 +365,9 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
                       ],
                     ));
                   }),
-                  DataCell(Text(readingTitle.isFree ? 'O' : 'X'), onTap: () {
+                  DataCell(
+                      Icon(readingTitle.isFree ? CupertinoIcons.check_mark_circled : CupertinoIcons.xmark_circle,
+                          color: readingTitle.isFree ? Colors.green : Colors.red), onTap: () {
                     Get.dialog(AlertDialog(
                       content: const Text('상태를 변경하겠습니까?'),
                       actions: [
@@ -435,7 +439,8 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
                             TextButton(
                                 onPressed: () async {
                                   Get.back();
-                                  await Database().deleteListAndReorderBatch(collection: READING_TITLES, docId: readingTitle.id, list: readingTitles);
+                                  await Database().deleteListAndReorderBatch(
+                                      collection: READING_TITLES, docId: readingTitle.id, list: readingTitles);
                                   controller.getTotalLength();
                                   setState(() {
                                     getDataFromDb();

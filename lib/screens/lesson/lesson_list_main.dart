@@ -354,7 +354,7 @@ class _LessonListMainState extends State<LessonListMain> {
                         DataCell(Text(lesson.title[KO]), onTap: () {
                           lessonDialog(index: index);
                         }),
-                        DataCell(Text(lesson.isReleased ? '게시중' : '입력중'), onTap: () {
+                        DataCell(Icon(Icons.circle, color: lesson.isReleased ? Colors.green : Colors.red), onTap: () {
                           Get.dialog(AlertDialog(
                             content: const Text('상태를 변경하겠습니까?'),
                             actions: [
