@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/database.dart';
+import 'package:podo_admin/common/gpt_translator.dart';
 import 'package:podo_admin/common/languages.dart';
-import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/common/my_textfield.dart';
-import 'package:podo_admin/screens/lesson/inner_card_textfield.dart';
 import 'package:podo_admin/screens/lesson/lesson.dart';
 import 'package:podo_admin/screens/lesson/lesson_card_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_course.dart';
@@ -20,15 +19,11 @@ class LessonListMain extends StatefulWidget {
 }
 
 class _LessonListMainState extends State<LessonListMain> {
-  late Map<String, TextEditingController> controllersTitle;
   LessonStateManager controller = Get.find<LessonStateManager>();
   LessonCourse course = Get.arguments;
   List<bool> typeToggle = [true, false];
   List<bool> optionsToggle = [true, false];
-
   final KO = 'ko';
-  final FO = 'fo';
-  final ID = 'id';
   final LESSON_COURSES = 'LessonCourses';
   final LESSONS = 'lessons';
   final LESSON_COLLECTION = 'Lessons';
@@ -36,26 +31,37 @@ class _LessonListMainState extends State<LessonListMain> {
   final TYPE_PRACTICE = 'Practice';
 
   initDialog() {
-    controllersTitle = {};
-    controllersTitle = {
-      ID: TextEditingController(),
-      KO: TextEditingController(),
-      FO: TextEditingController(),
-    };
     controller.selectedLanguage = Languages().getFos[0];
     typeToggle = [true, false];
     optionsToggle = [true, false];
   }
 
-  Widget getLanguageRadio(String lang) {
-    return MyRadioBtn().getRadioButton(
-        context: context,
-        value: lang,
-        groupValue: controller.selectedLanguage,
-        f: (String? value) {
-          controller.selectedLanguage = value!;
-          controller.update();
-        });
+  Widget getLessonTitleField(Lesson lesson) {
+    List<Widget> widgets = [];
+    widgets.add(MyTextField().getTextField(
+        controller: TextEditingController(text: lesson.title[KO]),
+        label: KO,
+        fn: (String? value) {
+          lesson.title[KO] = value!;
+        })
+    );
+    if(course.isTopicMode) {
+      for (String fo in Languages().getFos) {
+        Widget widget = Padding(
+          padding: const EdgeInsets.symmetric(vertical: 5),
+          child: MyTextField().getTextField(
+              controller: TextEditingController(text: lesson.title[fo]),
+              label: fo,
+              fn: (String? value) {
+                lesson.title[fo] = value!;
+              }),
+        );
+        widgets.add(widget);
+      }
+    }
+    return Column(
+      children: widgets,
+    );
   }
 
   lessonDialog({int? index}) {
@@ -81,151 +87,124 @@ class _LessonListMainState extends State<LessonListMain> {
       ),
       content: GetBuilder<LessonStateManager>(
         builder: (_) {
-          String selectedLanguage = controller.selectedLanguage;
-          controllersTitle[ID]!.text = lesson.id ?? '';
-          controllersTitle[KO]!.text = lesson.title[KO] ?? '';
-          controllersTitle[FO]!.text = lesson.title[selectedLanguage] ?? '';
           return Padding(
             padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('언어선택', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 10),
-                Row(
+            child: SizedBox(
+              width: 1000,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    getLanguageRadio('en'),
-                    getLanguageRadio('es'),
-                    getLanguageRadio('fr'),
-                    getLanguageRadio('de'),
-                    getLanguageRadio('pt'),
-                    getLanguageRadio('id'),
-                    getLanguageRadio('ru'),
-                  ],
-                ),
-                const Divider(height: 80),
-                Expanded(
-                  child: SizedBox(
-                    width: 1000,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
                       children: [
-                        Row(
+                        const Text('타입', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 20),
+                        ToggleButtons(
+                          isSelected: typeToggle,
+                          onPressed: (int index) {
+                            typeToggle[0] = index == 0;
+                            typeToggle[1] = index == 1;
+                            if(index == 1) {
+                              lesson.type = TYPE_PRACTICE;
+                              optionsToggle[0] = false;
+                              optionsToggle[1] = true;
+                            } else {
+                              lesson.type = TYPE_LESSON;
+                            }
+                            controller.update();
+                          },
+                          borderRadius: const BorderRadius.all(Radius.circular(10)),
                           children: [
-                            const Text('타입', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                            const SizedBox(width: 20),
-                            ToggleButtons(
-                              isSelected: typeToggle,
-                              onPressed: (int index) {
-                                typeToggle[0] = index == 0;
-                                typeToggle[1] = index == 1;
-                                if(index == 1) {
-                                  lesson.type = TYPE_PRACTICE;
-                                  optionsToggle[0] = false;
-                                  optionsToggle[1] = true;
-                                } else {
-                                  lesson.type = TYPE_LESSON;
-                                }
-                                controller.update();
-                              },
-                              borderRadius: const BorderRadius.all(Radius.circular(10)),
-                              children: [
-                                Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10), child: Text(TYPE_LESSON)),
-                                Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10), child: Text(TYPE_PRACTICE)),
-                              ],
-                            ),
-                            const SizedBox(width: 20),
-                            const Text('요약/쓰기 유무', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                            const SizedBox(width: 20),
-                            ToggleButtons(
-                              isSelected: optionsToggle,
-                              onPressed: (int index) {
-                                optionsToggle[0] = index == 0;
-                                optionsToggle[1] = index == 1;
-                                index == 0 ? lesson.hasOptions = true : lesson.hasOptions = false;
-                                controller.update();
-                              },
-                              borderRadius: const BorderRadius.all(Radius.circular(10)),
-                              children: const [
-                                Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 10), child: Text('있음')),
-                                Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 10), child: Text('없음')),
-                              ],
-                            ),
+                            Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 10), child: Text(TYPE_LESSON)),
+                            Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 10), child: Text(TYPE_PRACTICE)),
                           ],
                         ),
-                        const SizedBox(height: 20),
-                        Row(
-                          children: [
-                            const Text('레슨아이디', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                            const SizedBox(width: 10),
-                            TextButton(
-                                onPressed: () {
-                                  controllersTitle[ID]!.text = '';
-                                  lesson.id = '';
-                                },
-                                child: const Text('기존레슨 연결')),
+                        const SizedBox(width: 20),
+                        const Text('요약/쓰기 유무', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 20),
+                        ToggleButtons(
+                          isSelected: optionsToggle,
+                          onPressed: (int index) {
+                            optionsToggle[0] = index == 0;
+                            optionsToggle[1] = index == 1;
+                            index == 0 ? lesson.hasOptions = true : lesson.hasOptions = false;
+                            controller.update();
+                          },
+                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                          children: const [
+                            Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 10), child: Text('있음')),
+                            Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 10), child: Text('없음')),
                           ],
-                        ),
-                        const SizedBox(height: 20),
-                        MyTextField().getTextField(
-                            controller: controllersTitle[ID],
-                            label: '레슨아이디',
-                            fn: (String? value) {
-                              lesson.id = value!;
-                            }),
-                        const SizedBox(height: 20),
-                        const Text('레슨타이틀', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 20),
-                        Row(
-                          children: [
-                            Expanded(
-                                child: MyTextField().getTextField(
-                                    controller: controllersTitle[KO],
-                                    label: '한국어',
-                                    fn: (String? value) {
-                                      lesson.title[KO] = value!;
-                                    })),
-                            const SizedBox(width: 20),
-                            course.isBeginnerMode
-                                ? Expanded(
-                                    child: MyTextField().getTextField(
-                                        controller: controllersTitle[FO],
-                                        label: '외국어',
-                                        fn: (String? value) {
-                                          lesson.title[controller.selectedLanguage] = value!;
-                                        }))
-                                : const SizedBox.shrink(),
-                          ],
-                        ),
-                        const SizedBox(height: 50),
-                        Center(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              if (lesson.title.isNotEmpty) {
-                                if (isEditMode) {
-                                  course.lessons[index!] = lesson.toJson();
-                                } else {
-                                  course.lessons.add(lesson.toJson());
-                                }
-                                updateLessons();
-                                Database().setEmptyDoc(collection: LESSON_COLLECTION, docId: lesson.id);
-                              }
-                            },
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                              child: Text('저장', style: TextStyle(fontSize: 20)),
-                            ),
-                          ),
                         ),
                       ],
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        const Text('레슨아이디', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 10),
+                        TextButton(
+                            onPressed: () {
+                              lesson.id = '';
+                              controller.update();
+                            },
+                            child: const Text('기존레슨 연결')),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    MyTextField().getTextField(
+                        controller: TextEditingController(text: lesson.id ?? ''),
+                        label: '레슨아이디',
+                        fn: (String? value) {
+                          lesson.id = value!;
+                        }),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        const Text('레슨타이틀', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 10),
+                        TextButton(onPressed: (){
+                          if(typeToggle[1]) {
+                            String? title = lesson.title[KO];
+                            for(String fo in Languages().getFos) {
+                              lesson.title[fo] = title;
+                            }
+                            controller.update();
+                          } else {
+                            GPTTranslator().getTranslations(lesson.title).then((value) => controller.update());
+                          }
+                        }, child: const Text('번역')),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    getLessonTitleField(lesson),
+                    const SizedBox(height: 50),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (lesson.title.isNotEmpty) {
+                            if (isEditMode) {
+                              course.lessons[index!] = lesson.toJson();
+                            } else {
+                              course.lessons.add(lesson.toJson());
+                            }
+                            updateLessons();
+                            Database().setEmptyDoc(collection: LESSON_COLLECTION, docId: lesson.id);
+                          }
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          child: Text('저장', style: TextStyle(fontSize: 20)),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           );
         },
@@ -284,7 +263,7 @@ class _LessonListMainState extends State<LessonListMain> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('레슨리스트 (${course.title[KO]} : ${course.id.substring(0, 8)})')),
+      appBar: AppBar(title: Text('레슨리스트 (${course.title['en']} : ${course.id.substring(0, 8)})')),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Column(children: [

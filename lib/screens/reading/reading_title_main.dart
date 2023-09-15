@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/database.dart';
+import 'package:podo_admin/common/gpt_translator.dart';
 import 'package:podo_admin/common/languages.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/common/my_textfield.dart';
@@ -116,115 +117,125 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
 
                 return SizedBox(
                   width: 500,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            children: [
-                              const Text('레벨', textScaleFactor: 1.5),
-                              DropdownButton(
-                                value: controller.readingLevel[readingTitle.level],
-                                icon: const Icon(Icons.arrow_drop_down_outlined),
-                                items: controller.readingLevel.map<DropdownMenuItem<String>>((value) {
-                                  return DropdownMenuItem(value: value, child: Text(value));
-                                }).toList(),
-                                onChanged: (value) {
-                                  readingTitle.level = controller.readingLevel.indexOf(value.toString());
-                                  controller.update();
-                                },
-                              ),
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              const Text('카테고리', textScaleFactor: 1.5),
-                              DropdownButton(
-                                value: readingTitle.category,
-                                icon: const Icon(Icons.arrow_drop_down_outlined),
-                                items: controller.categories.map<DropdownMenuItem<String>>((value) {
-                                  return DropdownMenuItem(value: value, child: Text(value));
-                                }).toList(),
-                                onChanged: (value) {
-                                  readingTitle.category = value.toString();
-                                  controller.update();
-                                },
-                              ),
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              readingTitle.image != null
-                                  ? Stack(
-                                      children: [
-                                        Image.memory(base64Decode(readingTitle.image!), height: 100, width: 100),
-                                        Positioned(
-                                          top: 0,
-                                          right: 0,
-                                          child: IconButton(
-                                            alignment: Alignment.topRight,
-                                            padding: const EdgeInsets.all(0),
-                                            icon: const Icon(Icons.remove_circle_outline_outlined),
-                                            color: Colors.red,
-                                            onPressed: () {
-                                              readingTitle.image = null;
-                                              controller.update();
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  : const Icon(Icons.error),
-                              const SizedBox(height: 10),
-                              ElevatedButton(
-                                onPressed: () {
-                                  uploadImage(readingTitle);
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                  child: Text('이미지 업로드'),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              children: [
+                                const Text('레벨', textScaleFactor: 1.5),
+                                DropdownButton(
+                                  value: controller.readingLevel[readingTitle.level],
+                                  icon: const Icon(Icons.arrow_drop_down_outlined),
+                                  items: controller.readingLevel.map<DropdownMenuItem<String>>((value) {
+                                    return DropdownMenuItem(value: value, child: Text(value));
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    readingTitle.level = controller.readingLevel.indexOf(value.toString());
+                                    controller.update();
+                                  },
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      const Text('읽기 타이틀', textScaleFactor: 1.5),
-                      getTitleLine('ko'),
-                      const SizedBox(height: 10),
-                      getTitleLine(Languages().getFos[0]),
-                      const SizedBox(height: 10),
-                      getTitleLine(Languages().getFos[1]),
-                      const SizedBox(height: 10),
-                      getTitleLine(Languages().getFos[2]),
-                      const SizedBox(height: 10),
-                      getTitleLine(Languages().getFos[3]),
-                      const SizedBox(height: 10),
-                      getTitleLine(Languages().getFos[4]),
-                      const SizedBox(height: 10),
-                      getTitleLine(Languages().getFos[5]),
-                      const SizedBox(height: 10),
-                      getTitleLine(Languages().getFos[6]),
-                      const SizedBox(height: 30),
-                      Center(
-                        child: ElevatedButton(
-                            onPressed: () async {
-                              Get.back();
-                              await Database().setDoc(collection: 'ReadingTitles', doc: selectedReadingTitle);
-                              controller.getTotalLength();
-                              setState(() {
-                                getDataFromDb();
-                              });
-                            },
-                            child: const Padding(
-                              padding: EdgeInsets.all(10),
-                              child: Text('저장'),
-                            )),
-                      )
-                    ],
+                              ],
+                            ),
+                            Column(
+                              children: [
+                                const Text('카테고리', textScaleFactor: 1.5),
+                                DropdownButton(
+                                  value: readingTitle.category,
+                                  icon: const Icon(Icons.arrow_drop_down_outlined),
+                                  items: controller.categories.map<DropdownMenuItem<String>>((value) {
+                                    return DropdownMenuItem(value: value, child: Text(value));
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    readingTitle.category = value.toString();
+                                    controller.update();
+                                  },
+                                ),
+                              ],
+                            ),
+                            Column(
+                              children: [
+                                readingTitle.image != null
+                                    ? Stack(
+                                        children: [
+                                          Image.memory(base64Decode(readingTitle.image!), height: 100, width: 100),
+                                          Positioned(
+                                            top: 0,
+                                            right: 0,
+                                            child: IconButton(
+                                              alignment: Alignment.topRight,
+                                              padding: const EdgeInsets.all(0),
+                                              icon: const Icon(Icons.remove_circle_outline_outlined),
+                                              color: Colors.red,
+                                              onPressed: () {
+                                                readingTitle.image = null;
+                                                controller.update();
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : const Icon(Icons.error),
+                                const SizedBox(height: 10),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    uploadImage(readingTitle);
+                                  },
+                                  child: const Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                    child: Text('이미지 업로드'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            const Text('읽기 타이틀', textScaleFactor: 1.5),
+                            const SizedBox(width: 10),
+                            TextButton(onPressed: (){
+                              GPTTranslator().getTranslations(readingTitle.title).then((value) => controller.update());
+                            }, child: const Text('번역')),
+                          ],
+                        ),
+                        getTitleLine('ko'),
+                        const SizedBox(height: 10),
+                        getTitleLine(Languages().getFos[0]),
+                        const SizedBox(height: 10),
+                        getTitleLine(Languages().getFos[1]),
+                        const SizedBox(height: 10),
+                        getTitleLine(Languages().getFos[2]),
+                        const SizedBox(height: 10),
+                        getTitleLine(Languages().getFos[3]),
+                        const SizedBox(height: 10),
+                        getTitleLine(Languages().getFos[4]),
+                        const SizedBox(height: 10),
+                        getTitleLine(Languages().getFos[5]),
+                        const SizedBox(height: 10),
+                        getTitleLine(Languages().getFos[6]),
+                        const SizedBox(height: 30),
+                        Center(
+                          child: ElevatedButton(
+                              onPressed: () async {
+                                Get.back();
+                                await Database().setDoc(collection: 'ReadingTitles', doc: selectedReadingTitle);
+                                controller.getTotalLength();
+                                setState(() {
+                                  getDataFromDb();
+                                });
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.all(10),
+                                child: Text('저장'),
+                              )),
+                        )
+                      ],
+                    ),
                   ),
                 );
               },

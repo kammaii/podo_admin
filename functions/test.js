@@ -1,6 +1,8 @@
 const functions = require("firebase-functions");
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
+const OpenAI = require("openai");
+const {onRequest} = require('firebase-functions/v2/https');
 
 
 // export GOOGLE_APPLICATION_CREDENTIALS="G:\keys\podo-49335-firebase-adminsdk-qqve9-4227c667f7.json"
@@ -14,6 +16,39 @@ const mailTransport = nodemailer.createTransport({
     pass: 'eseymladnsdaokxl',
   },
 });
+
+
+const openai = new OpenAI({
+    apiKey: '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',
+});
+
+var languages = ['Spanish', 'French', 'German', 'Portuguese', 'Indonesian', 'Russian'];
+
+async function translationRequest(en) {
+    let result = [];
+    for(let i=0; i<languages.length; i++) {
+        let lang = languages[i];
+        console.log(lang);
+        let response = await openai.chat.completions.create({
+            messages: [{ role: "user", content: "Translate '" + en + "' into " + lang + ". Just answer with the translated result only. Don't repeat the English sentence I wrote in your response."}],
+            model: "gpt-3.5-turbo",
+        });
+        result.push(response.choices[0].message.content);
+    }
+    console.log(result);
+}
+
+function chatGPTFunction(request, response) {
+    let en = "Basic Expressions";
+    translationRequest(en);
+//    var result = translationRequest(en).then(() => {
+//        response.send(result);
+//    });
+}
+
+chatGPTFunction();
+
+
 
 function onFeedbackSent() {
   //const feedbackData = snap.data();
@@ -36,8 +71,6 @@ function onFeedbackSent() {
       return null;
     });
 }
-
-onFeedbackSent();
 
 
 function onPodoMsgActivated(change, context) {
@@ -128,3 +161,4 @@ function onWritingReplied(change, context) {
 exports.onWritingReply = functions.firestore.document('Writings/{writingId}').onUpdate(onWritingReplied);
 exports.onPodoMsgActive = functions.firestore.document('PodoMessages/{podoMessageId}').onUpdate(onPodoMsgActivated);
 exports.onFeedbackSent = functions.firestore.document('Feedbacks/{feedbackId}').onCreate(onFeedbackSent);
+exports.onChatGPT = onRequest({}, chatGPTFunction);

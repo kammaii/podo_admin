@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/database.dart';
+import 'package:podo_admin/common/gpt_translator.dart';
 import 'package:podo_admin/common/languages.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/common/my_textfield.dart';
@@ -22,19 +23,18 @@ class LessonCourseMain extends StatefulWidget {
 
 class _LessonCourseMainState extends State<LessonCourseMain> {
   late LessonStateManager controller;
-  String selectedLevel = '초급';
-  late bool isBeginner;
+  String selectedMode = 'Topic';
+  late bool isTopicMode;
   final LESSON_COURSES = 'LessonCourses';
   final LESSONS = 'Lessons';
   final IS_RELEASED = 'isReleased';
   final TAG = 'tag';
-  final IS_BEGINNER_MODE = 'isBeginnerMode';
+  final IS_TOPIC_MODE = 'isTopicMode';
   final ORDER_ID = 'orderId';
   final DATE = 'date';
   final KO = 'ko';
   final FO = 'fo';
   final DESC = 'desc';
-  late Map<String, TextEditingController> controllersCourse;
   File? imageFile;
 
   @override
@@ -45,17 +45,11 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
   }
 
   getDataFromDb() {
-    selectedLevel == '초급'
-        ? controller.futureList = Database().getDocs(
-            collection: LESSON_COURSES,
-            field: IS_BEGINNER_MODE,
-            equalTo: true,
-            orderBy: ORDER_ID)
-        : controller.futureList = Database().getDocs(
-            collection: LESSON_COURSES,
-            field: IS_BEGINNER_MODE,
-            equalTo: false,
-            orderBy: ORDER_ID);
+    selectedMode == 'Topic'
+        ? controller.futureList =
+            Database().getDocs(collection: LESSON_COURSES, field: IS_TOPIC_MODE, equalTo: true, orderBy: ORDER_ID)
+        : controller.futureList = Database()
+            .getDocs(collection: LESSON_COURSES, field: IS_TOPIC_MODE, equalTo: false, orderBy: ORDER_ID);
   }
 
   updateDB({required String collection, required String docId, required Map<String, dynamic> value}) {
@@ -68,12 +62,6 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
     setState(() {
       getDataFromDb();
     });
-  }
-
-  initDialog() {
-    controller.selectedLanguage = Languages().getFos[0];
-    controllersCourse = {};
-    controllersCourse = {KO: TextEditingController(), FO: TextEditingController(), DESC: TextEditingController()};
   }
 
   Widget getLanguageRadio(String lang) {
@@ -91,9 +79,9 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
     return MyRadioBtn().getRadioButton(
       context: context,
       value: value,
-      groupValue: selectedLevel,
+      groupValue: selectedMode,
       f: (String? value) {
-        selectedLevel = value!;
+        selectedMode = value!;
         updateState();
       },
     );
@@ -116,11 +104,33 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
     }
   }
 
+  Widget getTextFields(LessonCourse lessonCourse, bool isTitle) {
+    List<Widget> widgets = [];
+    for (String fo in Languages().getFos) {
+      Widget widget = Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5),
+        child: MyTextField().getTextField(
+            controller: TextEditingController(text: isTitle ? lessonCourse.title[fo] : lessonCourse.description[fo]),
+            label: fo,
+            fn: (String? value) {
+              if(isTitle) {
+                lessonCourse.title[fo] = value!;
+              } else {
+                lessonCourse.description[fo] = value!;
+              }
+            }),
+      );
+      widgets.add(widget);
+    }
+    return Column(
+      children: widgets,
+    );
+  }
+
   courseDialog({LessonCourse? lessonCourse}) async {
     lessonCourse = lessonCourse ?? LessonCourse();
-    initDialog();
     String title;
-    isBeginner ? title = '레슨코스(초급) : ${lessonCourse.id}' : title = '레슨코스(중급) : ${lessonCourse.id}';
+    isTopicMode ? title = 'Topic Mode (${lessonCourse.id})' : title = 'Grammar Mode (${lessonCourse.id})';
 
     Get.dialog(AlertDialog(
       title: Row(
@@ -129,108 +139,86 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
       ),
       content: GetBuilder<LessonStateManager>(
         builder: (_) {
-          String selectedLanguage = controller.selectedLanguage;
-          controllersCourse[KO]!.text = lessonCourse!.title[KO] ?? '';
-          controllersCourse[FO]!.text = lessonCourse.title[selectedLanguage] ?? '';
-          controllersCourse[DESC]!.text = lessonCourse.description[selectedLanguage] ?? '';
           return Padding(
             padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('언어선택', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    getLanguageRadio('en'),
-                    getLanguageRadio('es'),
-                    getLanguageRadio('fr'),
-                    getLanguageRadio('de'),
-                    getLanguageRadio('pt'),
-                    getLanguageRadio('id'),
-                    getLanguageRadio('ru'),
-                  ],
-                ),
-                const Divider(height: 80),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Column(
                     children: [
-                      Row(
-                        children: [
-                          Column(
-                            children: [
-                              lessonCourse.image != null
-                                  ? Stack(
-                                    children: [
-                                      Image.memory(base64Decode(lessonCourse.image!), height: 100, width: 100),
-                                      Positioned(
-                                        top: 0,
-                                        right: 0,
-                                        child: IconButton(
-                                          alignment: Alignment.topRight,
-                                          padding: const EdgeInsets.all(0),
-                                          icon: const Icon(Icons.remove_circle_outline_outlined),
-                                          color: Colors.red,
-                                          onPressed: () {
-                                            lessonCourse!.image = null;
-                                            controller.update();
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                                  : const Icon(Icons.error),
-                              const SizedBox(height: 10),
-                              ElevatedButton(
-                                onPressed: () {
-                                  uploadImage(lessonCourse!);
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                  child: Text('이미지 업로드'),
+                      lessonCourse!.image != null
+                          ? Stack(
+                              children: [
+                                Image.memory(base64Decode(lessonCourse.image!), height: 100, width: 100),
+                                Positioned(
+                                  top: 0,
+                                  right: 0,
+                                  child: IconButton(
+                                    alignment: Alignment.topRight,
+                                    padding: const EdgeInsets.all(0),
+                                    icon: const Icon(Icons.remove_circle_outline_outlined),
+                                    color: Colors.red,
+                                    onPressed: () {
+                                      lessonCourse!.image = null;
+                                      controller.update();
+                                    },
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(width: 50),
-                          Expanded(
-                            child: MyTextField().getTextField(
-                              controller: controllersCourse[FO],
-                              label: '타이틀(${controller.selectedLanguage})',
-                              fn: (String? value) {
-                                lessonCourse!.title[controller.selectedLanguage] = value!;
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 50),
-                      MyTextField().getTextField(
-                        controller: controllersCourse[DESC],
-                        label: '설명',
-                        fn: (String? value) {
-                          lessonCourse!.description[controller.selectedLanguage] = value!;
-                        },
-                        minLine: 5,
-                      ),
-                      const SizedBox(height: 50),
+                              ],
+                            )
+                          : const Icon(Icons.error),
+                      const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () {
-                          isBeginner ? lessonCourse!.isBeginnerMode = true : lessonCourse!.isBeginnerMode = false;
-                          Database().setDoc(collection: LESSON_COURSES, doc: lessonCourse);
-                          Get.back();
-                          updateState();
+                          uploadImage(lessonCourse!);
                         },
                         child: const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          child: Text('저장', style: TextStyle(fontSize: 20)),
+                          child: Text('이미지 업로드'),
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 50),
+                  Row(
+                    children: [
+                      const Text('타이틀', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(width: 10),
+                      TextButton(onPressed: (){
+                        GPTTranslator().getTranslations(lessonCourse!.title).then((value) => controller.update());
+                      }, child: const Text('번역')),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  getTextFields(lessonCourse, true),
+                  const SizedBox(height: 50),
+                  Row(
+                    children: [
+                      const Text('설명', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(width: 10),
+                      TextButton(onPressed: (){
+                        GPTTranslator().getTranslations(lessonCourse!.description).then((value) => controller.update());
+                      }, child: const Text('번역')),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  getTextFields(lessonCourse, false),
+                  const SizedBox(height: 50),
+                  ElevatedButton(
+                    onPressed: () {
+                      isTopicMode ? lessonCourse!.isTopicMode = true : lessonCourse!.isTopicMode = false;
+                      Database().setDoc(collection: LESSON_COURSES, doc: lessonCourse);
+                      Get.back();
+                      updateState();
+                    },
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      child: Text('저장', style: TextStyle(fontSize: 20)),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -240,7 +228,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
 
   @override
   Widget build(BuildContext context) {
-    isBeginner = selectedLevel == '초급' ? true : false;
+    isTopicMode = selectedMode == 'Topic' ? true : false;
 
     return Scaffold(
       appBar: AppBar(
@@ -255,8 +243,8 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
               children: [
                 Row(
                   children: [
-                    getLevelRadioBtn('초급'),
-                    getLevelRadioBtn('중급'),
+                    getLevelRadioBtn('Topic'),
+                    getLevelRadioBtn('Grammar'),
                   ],
                 ),
                 ElevatedButton(
@@ -339,7 +327,8 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                                 ),
                               );
                             }),
-                            DataCell(Icon(Icons.circle, color: course.isReleased ? Colors.green : Colors.red), onTap: () {
+                            DataCell(Icon(Icons.circle, color: course.isReleased ? Colors.green : Colors.red),
+                                onTap: () {
                               Get.dialog(AlertDialog(
                                 content: const Text('상태를 변경하겠습니까?'),
                                 actions: [
@@ -419,7 +408,8 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                                       TextButton(
                                           onPressed: () {
                                             setState(() {
-                                              Database().deleteListAndReorderBatch(collection: LESSON_COURSES, docId: course.id, list: courses);
+                                              Database().deleteListAndReorderBatch(
+                                                  collection: LESSON_COURSES, docId: course.id, list: courses);
                                               getDataFromDb();
                                               Get.back();
                                             });

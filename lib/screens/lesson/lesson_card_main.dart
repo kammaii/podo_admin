@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:html_editor_enhanced/html_editor.dart';
 import 'package:podo_admin/common/database.dart';
+import 'package:podo_admin/common/gpt_translator.dart';
 import 'package:podo_admin/common/languages.dart';
 import 'package:podo_admin/common/my_html_color.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
@@ -14,6 +15,9 @@ import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:podo_admin/screens/lesson/lesson_summary.dart';
 import 'package:podo_admin/screens/writing/writing_question.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
 
 class LessonCardMain extends StatefulWidget {
   const LessonCardMain({Key? key}) : super(key: key);
@@ -144,12 +148,22 @@ class _LessonCardMainState extends State<LessonCardMain> {
               children: [
                 InnerCardTextField().getFos(index),
                 const Divider(height: 30),
-                const Text('detail title', style: TextStyle(color: Colors.grey)),
+                Row(
+                  children: [
+                    const Text('detail title', style: TextStyle(color: Colors.grey)),
+                    TextButton(onPressed: (){
+                      if(_controller.cards[index].detailTitle != null) {
+                          GPTTranslator().getTranslations(_controller.cards[index].detailTitle!).then((value) => setState((){}));
+                      }
+                    }, child: const Text('번역'))
+                  ],
+                ),
                 const SizedBox(height: 5),
                 InnerCardTextField().getDetailTitles(index),
                 Row(
                   children: [
-                    Text('detail content (${Languages().getFos[detailFoIndex]})', style: const TextStyle(color: Colors.grey)),
+                    Text('detail content (${Languages().getFos[detailFoIndex]})',
+                        style: const TextStyle(color: Colors.grey)),
                     const SizedBox(width: 10),
                     TextButton(
                       onPressed: () {
@@ -348,6 +362,13 @@ class _LessonCardMainState extends State<LessonCardMain> {
                         },
                         child: const Text('수정'),
                       )
+                    : const SizedBox.shrink(),
+                card.type != MyStrings.subject && card.type != MyStrings.explain && card.type != MyStrings.quiz
+                    ? TextButton(
+                        onPressed: () {
+                          GPTTranslator().getTranslations(_controller.cards[index].content).then((value) => setState((){}));
+                        },
+                        child: const Text('번역'))
                     : const SizedBox.shrink(),
               ],
             ),

@@ -1,6 +1,39 @@
 const functions = require("firebase-functions");
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
+const OpenAI = require("openai");
+const {onRequest} = require('firebase-functions/v2/https');
+
+
+const openai = new OpenAI({
+    apiKey: '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',
+});
+
+var languages = ['Spanish', 'French', 'German', 'Portuguese', 'Indonesian', 'Russian'];
+
+async function translationRequest(en) {
+    let result = [];
+    for(let i=0; i<languages.length; i++) {
+        let lang = languages[i];
+        let response = await openai.chat.completions.create({
+            messages: [{ role: "user", content: "Translate '" + en + "' into " + lang + ". Just answer with the translated result only without double quote and repeating the English sentence I wrote."}],
+            model: "gpt-3.5-turbo",
+        });
+        result.push(response.choices[0].message.content);
+    }
+    return result;
+}
+
+function chatGPTFunction(request, response) {
+    if(request.method == 'POST') {
+        var en = request.body;
+        var result = translationRequest(en).then((value) => {
+            response.set('Access-Control-Allow-Origin', '*');
+            response.status(200).send(value);
+        });
+    }
+}
+
 
 
 // export GOOGLE_APPLICATION_CREDENTIALS="G:\keys\podo-49335-firebase-adminsdk-qqve9-4227c667f7.json"
@@ -126,3 +159,4 @@ function onWritingReplied(change, context) {
 exports.onWritingReply = functions.firestore.document('Writings/{writingId}').onUpdate(onWritingReplied);
 exports.onPodoMsgActive = functions.firestore.document('PodoMessages/{podoMessageId}').onUpdate(onPodoMsgActivated);
 exports.onFeedbackSent = functions.firestore.document('Feedbacks/{feedbackId}').onCreate(onFeedbackSent);
+exports.onChatGPT = onRequest({}, chatGPTFunction);

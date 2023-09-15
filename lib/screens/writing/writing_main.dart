@@ -71,10 +71,8 @@ class WritingMain extends StatelessWidget {
                 child: FutureBuilder(
                   future: controller.futureWritings,
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
-                    print('FUTURE');
                     if (snapshot.hasData == true) {
                       List<Writing> writings = [];
-                      print(snapshot.data);
                       for (dynamic snapshot in snapshot.data) {
                         writings.add(Writing.fromJson(snapshot));
                       }

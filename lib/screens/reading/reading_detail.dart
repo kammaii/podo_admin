@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/database.dart';
+import 'package:podo_admin/common/gpt_translator.dart';
 import 'package:podo_admin/common/languages.dart';
 import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/screens/reading/reading.dart';
@@ -108,7 +109,11 @@ class _ReadingDetailState extends State<ReadingDetail> {
                     }
                   });
                 },
-                icon: const Icon(Icons.delete_rounded, color: Colors.red))
+                icon: const Icon(Icons.delete_rounded, color: Colors.red)),
+            const SizedBox(width: 10),
+            TextButton(onPressed: (){
+              GPTTranslator().getTranslations(reading.content).then((value) => setState((){}));
+            }, child: const Text('번역')),
           ],
         ),
         const SizedBox(height: 10),
