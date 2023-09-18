@@ -73,7 +73,6 @@ class _WritingDetailState extends State<WritingDetail> {
       (writing.correction.isEmpty)
           ? htmlController.setText(writing.userWriting)
           : htmlController.setText(writing.correction);
-      writing.status = 1;
       return Scaffold(
         appBar: AppBar(title: const Text('교정_상세')),
         body: RawKeyboardListener(

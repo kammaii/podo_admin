@@ -4,9 +4,8 @@ const nodemailer = require('nodemailer');
 const OpenAI = require("openai");
 const {onRequest} = require('firebase-functions/v2/https');
 
-
 const openai = new OpenAI({
-    apiKey: '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',
+    apiKey: functions.config().openai.key
 });
 
 var languages = ['Spanish', 'French', 'German', 'Portuguese', 'Indonesian', 'Russian'];
@@ -119,40 +118,43 @@ function onPodoMsgActivated(change, context) {
 
 function onWritingReplied(change, context) {
   console.log('!!!!! Writing has replied !!!!!');
+  let beforeData = change.before.data();
   let afterData = change.after.data();
   let status = afterData.status;
   let guid = afterData.guid;
   let userWriting = afterData.userWriting.toString();
   let fcmToken = afterData.fcmToken;
 
-  if(fcmToken != null) {
-    let title;
-    let body = userWriting;
+  if(beforeData.status == 0) {
+    if(fcmToken != null) {
+      let title;
+      let body = userWriting;
 
-    if(status == 1 || status == 2) {
-      title = "Your writing has been reviewed";
-    } else if(status == 3) {
-      title = "Your writing has been returned";
-    }
-
-    const payload = {
-      data: {
-        'tag': 'writing',
-      },
-      notification: {
-        title: title,
-        body: body
+      if(status == 1 || status == 2) {
+        title = "Your writing has been reviewed";
+      } else if(status == 3) {
+        title = "Your writing has been returned";
       }
-    };
 
-    return admin.messaging().sendToDevice(fcmToken, payload)
-      .then(function(response){
-        console.log('Notification sent successfully:',response);
-        return null;
-      })
-    .catch(function(error){
-      console.log('Notification sent failed:',error);
-    });
+      const payload = {
+        data: {
+          'tag': 'writing',
+        },
+        notification: {
+          title: title,
+          body: body
+        }
+      };
+
+      return admin.messaging().sendToDevice(fcmToken, payload)
+        .then(function(response){
+          console.log('Notification sent successfully:',response);
+          return null;
+        })
+      .catch(function(error){
+        console.log('Notification sent failed:',error);
+      });
+    }
   }
 }
 
