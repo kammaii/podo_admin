@@ -106,6 +106,7 @@ class _LessonListMainState extends State<LessonListMain> {
                             typeToggle[1] = index == 1;
                             if(index == 1) {
                               lesson.type = TYPE_PRACTICE;
+                              lesson.hasOptions = false;
                               optionsToggle[0] = false;
                               optionsToggle[1] = true;
                             } else {
@@ -313,6 +314,7 @@ class _LessonListMainState extends State<LessonListMain> {
                     DataColumn2(label: Text('순서'), size: ColumnSize.S),
                     DataColumn2(label: Text('아이디'), size: ColumnSize.S),
                     DataColumn2(label: Text('타입'), size: ColumnSize.S),
+                    DataColumn2(label: Text('요약/쓰기'), size: ColumnSize.S),
                     DataColumn2(label: Text('타이틀'), size: ColumnSize.L),
                     DataColumn2(label: Text('상태'), size: ColumnSize.S),
                     DataColumn2(label: Text('태그'), size: ColumnSize.S),
@@ -320,7 +322,8 @@ class _LessonListMainState extends State<LessonListMain> {
                     DataColumn2(label: Text('삭제'), size: ColumnSize.S),
                     DataColumn2(label: Text('레슨입력'), size: ColumnSize.S),
                   ],
-                  rows: List<DataRow>.generate(course.lessons.length, (index) {
+                  rows: List<DataRow>.generate(course.lessons.length, (i) {
+                    int index = course.lessons.length - 1 - i;
                     if (course.lessons[index] is Map) {
                       Lesson lesson = Lesson.fromJson(course.lessons[index]);
                       return DataRow(cells: [
@@ -330,6 +333,7 @@ class _LessonListMainState extends State<LessonListMain> {
                           Get.snackbar('아이디가 클립보드에 저장되었습니다.', lesson.id, snackPosition: SnackPosition.BOTTOM);
                         }),
                         DataCell(Text(lesson.type)),
+                        DataCell(Text(lesson.hasOptions ? 'O' : 'X')),
                         DataCell(Text(lesson.title[KO]), onTap: () {
                           lessonDialog(index: index);
                         }),

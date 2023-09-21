@@ -18,7 +18,6 @@ import 'package:podo_admin/screens/value/my_strings.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-
 class LessonCardMain extends StatefulWidget {
   const LessonCardMain({Key? key}) : super(key: key);
 
@@ -151,11 +150,15 @@ class _LessonCardMainState extends State<LessonCardMain> {
                 Row(
                   children: [
                     const Text('detail title', style: TextStyle(color: Colors.grey)),
-                    TextButton(onPressed: (){
-                      if(_controller.cards[index].detailTitle != null) {
-                          GPTTranslator().getTranslations(_controller.cards[index].detailTitle!).then((value) => setState((){}));
-                      }
-                    }, child: const Text('번역'))
+                    TextButton(
+                        onPressed: () {
+                          if (_controller.cards[index].detailTitle != null) {
+                            GPTTranslator()
+                                .getTranslations(_controller.cards[index].detailTitle!)
+                                .then((value) => setState(() {}));
+                          }
+                        },
+                        child: const Text('번역'))
                   ],
                 ),
                 const SizedBox(height: 5),
@@ -363,10 +366,12 @@ class _LessonCardMainState extends State<LessonCardMain> {
                         child: const Text('수정'),
                       )
                     : const SizedBox.shrink(),
-                card.type != MyStrings.subject && card.type != MyStrings.explain && card.type != MyStrings.quiz
+                card.type != MyStrings.subject && card.type != MyStrings.explain
                     ? TextButton(
                         onPressed: () {
-                          GPTTranslator().getTranslations(_controller.cards[index].content).then((value) => setState((){}));
+                          GPTTranslator()
+                              .getTranslations(_controller.cards[index].content)
+                              .then((value) => setState(() {}));
                         },
                         child: const Text('번역'))
                     : const SizedBox.shrink(),
@@ -532,6 +537,18 @@ class _LessonCardMainState extends State<LessonCardMain> {
                             const SizedBox(height: 30),
                             InnerCardTextField().getSummaryKo(index),
                             const Divider(height: 30),
+                            Row(
+                              children: [
+                                TextButton(
+                                    onPressed: () {
+                                      GPTTranslator()
+                                          .getTranslations(_controller.lessonSummaries[index].content)
+                                          .then((value) => _controller.update());
+                                    },
+                                    child: const Text('번역'))
+                              ],
+                            ),
+                            const SizedBox(height: 10),
                             InnerCardTextField().getSummaryFos(index),
                             const SizedBox(height: 20),
                             TextButton(
@@ -564,75 +581,81 @@ class _LessonCardMainState extends State<LessonCardMain> {
 
     return GetBuilder<LessonStateManager>(
       builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('언어선택', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  getLanguageRadio('en'),
-                  getLanguageRadio('es'),
-                  getLanguageRadio('fr'),
-                  getLanguageRadio('de'),
-                  getLanguageRadio('pt'),
-                  getLanguageRadio('id'),
-                  getLanguageRadio('ru'),
-                ],
-              ),
-              const Divider(height: 80),
-              Expanded(
-                  child: SizedBox(
-                width: 1000,
-                child: Column(
+        if(_controller.writingQuestions.isEmpty) {
+          _controller.writingQuestions.add(WritingQuestion());
+          _controller.writingQuestions.add(WritingQuestion());
+          writingControllers.add({KO: TextEditingController(), FO: TextEditingController()});
+          writingControllers.add({KO: TextEditingController(), FO: TextEditingController()});
+        }
+        return SizedBox(
+          width: 1500,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(children: [
-                      const Text('쓰기타이틀', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      const SizedBox(width: 20),
-                      TextButton(
-                        onPressed: () {
-                          _controller.writingQuestions.add(WritingQuestion());
-                          writingControllers.add({KO: TextEditingController(), FO: TextEditingController()});
-                          _controller.update();
-                        },
-                        child: const Text('추가'),
+                    Row(
+                      children: [
+                        const Text('쓰기타이틀', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 20),
+                        TextButton(
+                          onPressed: () {
+                            _controller.writingQuestions.add(WritingQuestion());
+                            writingControllers.add({KO: TextEditingController(), FO: TextEditingController()});
+                            _controller.update();
+                          },
+                          child: const Text('추가'),
+                        ),
+                      ],
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Database().runLessonBatch(lessonId: lesson.id, collection: WRITING_QUESTIONS);
+                        Get.back();
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        child: Text('저장', style: TextStyle(fontSize: 20)),
                       ),
-                    ]),
-                    const SizedBox(height: 20),
-                    Expanded(
-                      child: _controller.writingQuestions.isNotEmpty
-                          ? ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: _controller.writingQuestions.length,
-                              itemBuilder: (context, index) {
-                                final writingController = writingControllers[index];
-                                String selectedLanguage = _controller.selectedLanguage;
-                                writingController[KO]!.text = _controller.writingQuestions[index].title[KO] ?? '';
-                                writingController[FO]!.text =
-                                    _controller.writingQuestions[index].title[selectedLanguage] ?? '';
-
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
-                                  child: Row(
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                if (_controller.writingQuestions.isNotEmpty)
+                  Expanded(
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _controller.writingQuestions.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: SizedBox(
+                            width: 400,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  IconButton(
+                                      onPressed: () {
+                                        _controller.writingQuestions.removeAt(index);
+                                        for (int i = 0; i < _controller.writingQuestions.length; i++) {
+                                          _controller.writingQuestions[i].orderId = i;
+                                        }
+                                        writingControllers.removeAt(index);
+                                        _controller.update();
+                                      },
+                                      icon: const Icon(
+                                        Icons.remove_circle_outline_rounded,
+                                        size: 25,
+                                        color: Colors.red,
+                                      )),
+                                  Row(
                                     children: [
-                                      Expanded(
-                                          child: MyTextField().getTextField(
-                                              controller: writingController[KO],
-                                              label: '한국어',
-                                              fn: (String? value) {
-                                                _controller.writingQuestions[index].title[KO] = value!;
-                                              })),
-                                      const SizedBox(width: 20),
-                                      Expanded(
-                                          child: MyTextField().getTextField(
-                                              controller: writingController[FO],
-                                              label: '외국어',
-                                              fn: (String? value) {
-                                                _controller.writingQuestions[index].title[selectedLanguage] =
-                                                    value!;
-                                              })),
+                                      Text('${index.toString()}. '),
                                       const SizedBox(width: 20),
                                       DropdownButton(
                                           value:
@@ -647,60 +670,41 @@ class _LessonCardMainState extends State<LessonCardMain> {
                                                 _controller.writingLevel.indexOf(value.toString());
                                             _controller.update();
                                           }),
-                                      const SizedBox(width: 30),
-                                      IconButton(
-                                          onPressed: () {
-                                            _controller.writingQuestions.removeAt(index);
-                                            for (int i = 0; i < _controller.writingQuestions.length; i++) {
-                                              _controller.writingQuestions[i].orderId = i;
-                                            }
-                                            writingControllers.removeAt(index);
-                                            _controller.update();
-                                          },
-                                          icon: const Icon(
-                                            Icons.remove_circle_outline_rounded,
-                                            size: 30,
-                                            color: Colors.red,
-                                          )),
                                     ],
                                   ),
-                                );
-                              },
-                            )
-                          : const SizedBox.shrink(),
+                                  MyTextField().getTextField(
+                                      controller: TextEditingController(
+                                          text: _controller.writingQuestions[index].title[KO]),
+                                      label: KO,
+                                      fn: (String? value) {
+                                        _controller.writingQuestions[index].title[KO] = value!;
+                                      }),
+                                  const SizedBox(height: 20),
+                                  TextButton(
+                                      onPressed: () {
+                                        GPTTranslator()
+                                            .getTranslations(_controller.writingQuestions[index].title)
+                                            .then((value) => _controller.update());
+                                      },
+                                      child: const Text('번역')),
+                                  const SizedBox(height: 10),
+                                  Expanded(child: InnerCardTextField().getWritingQuestionFos(index)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                    const SizedBox(height: 50),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Database().runLessonBatch(lessonId: lesson.id, collection: WRITING_QUESTIONS);
-                          Get.back();
-                        },
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          child: Text('저장', style: TextStyle(fontSize: 20)),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              )),
-            ],
+                  )
+                else
+                  const SizedBox.shrink(),
+              ],
+            ),
           ),
         );
       },
     );
-  }
-
-  Widget getLanguageRadio(String lang) {
-    return MyRadioBtn().getRadioButton(
-        context: context,
-        value: lang,
-        groupValue: _controller.selectedLanguage,
-        f: (String? value) {
-          _controller.selectedLanguage = value!;
-          _controller.update();
-        });
   }
 
   @override
@@ -784,7 +788,6 @@ class _LessonCardMainState extends State<LessonCardMain> {
                 );
               },
             ),
-            const SizedBox(height: 20),
             Expanded(
               child: FutureBuilder(
                 future: _controller.futureList,
@@ -811,19 +814,31 @@ class _LessonCardMainState extends State<LessonCardMain> {
                     if (_controller.cards.isEmpty) {
                       return const Center(child: Text('카드가 없습니다.'));
                     } else {
-                      return Scrollbar(
-                        controller: scrollController,
-                        child: ReorderableListView(
-                          scrollController: scrollController,
-                          padding: const EdgeInsets.all(20),
-                          scrollDirection: Axis.horizontal,
-                          onReorder: (int oldIndex, int newIndex) {
-                            setState(() {
-                              _controller.reorderCardItem(oldIndex, newIndex);
-                            });
-                          },
-                          children: cardWidgets,
-                        ),
+                      return Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text('마지막카드No: ${_controller.cards.length-1}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          Expanded(
+                            child: Scrollbar(
+                              controller: scrollController,
+                              child: ReorderableListView(
+                                scrollController: scrollController,
+                                padding: const EdgeInsets.all(20),
+                                scrollDirection: Axis.horizontal,
+                                onReorder: (int oldIndex, int newIndex) {
+                                  setState(() {
+                                    _controller.reorderCardItem(oldIndex, newIndex);
+                                  });
+                                },
+                                children: cardWidgets,
+                              ),
+                            ),
+                          ),
+                        ],
                       );
                     }
                   } else {

@@ -47,9 +47,9 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
   getDataFromDb() {
     selectedMode == 'Topic'
         ? controller.futureList =
-            Database().getDocs(collection: LESSON_COURSES, field: IS_TOPIC_MODE, equalTo: true, orderBy: ORDER_ID)
+            Database().getDocs(collection: LESSON_COURSES, field: IS_TOPIC_MODE, equalTo: true, orderBy: ORDER_ID, descending: false)
         : controller.futureList = Database()
-            .getDocs(collection: LESSON_COURSES, field: IS_TOPIC_MODE, equalTo: false, orderBy: ORDER_ID);
+            .getDocs(collection: LESSON_COURSES, field: IS_TOPIC_MODE, equalTo: false, orderBy: ORDER_ID, descending: false);
   }
 
   updateDB({required String collection, required String docId, required Map<String, dynamic> value}) {

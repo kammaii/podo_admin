@@ -125,6 +125,25 @@ class InnerCardTextField {
     );
   }
 
+  Widget getWritingQuestionFos(int index) {
+    List<Widget> widgets = [];
+    for(String language in Languages().getFos) {
+      cardValue = _controller.writingQuestions[index].title[language];
+      label = language;
+      f = (text) {
+        _controller.writingQuestions[index].title[language] = text;
+      };
+      widgets.add(Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: getTextField(),
+      ));
+    }
+    return Column(
+      children: widgets,
+    );
+  }
+
+
   Widget getSummaryEx({required int summaryIndex, required int exampleIndex}) {
     cardValue = _controller.lessonSummaries[summaryIndex].examples![exampleIndex];
     label = '예문 $exampleIndex';
