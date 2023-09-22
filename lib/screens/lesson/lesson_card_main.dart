@@ -196,6 +196,15 @@ class _LessonCardMainState extends State<LessonCardMain> {
                 InnerCardTextField().getAudio(index),
                 const SizedBox(height: 5),
                 InnerCardTextField().getKo(index, KO),
+                const SizedBox(height: 5),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _controller.copyMention(card);
+                    });
+                  },
+                  child: const Text('복사하기'),
+                ),
               ],
             );
             break;

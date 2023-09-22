@@ -62,6 +62,16 @@ class LessonStateManager extends GetxController {
     setEditMode(id: card.id);
   }
 
+  void copyMention(LessonCard mention) {
+    LessonCard card = LessonCard();
+    card.orderId = cards.length;
+    card.type = MyStrings.mention;
+    card.content = Map.from(mention.content);
+    cards.add(card);
+    setEditMode(id: card.id);
+  }
+
+
   void makeQuiz(LessonCard repeat) {
     LessonCard card = LessonCard();
     card.orderId = cards.length;
