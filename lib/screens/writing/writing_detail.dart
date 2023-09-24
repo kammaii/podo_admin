@@ -54,6 +54,9 @@ class _WritingDetailState extends State<WritingDetail> {
   }
 
   runSave() async {
+    if(writing.status == 0) {
+      writing.status = 1;
+    }
     Get.back();
     Get.defaultDialog(title: '저장중', content: const Center(child: CircularProgressIndicator()));
     await Database()

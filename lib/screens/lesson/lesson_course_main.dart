@@ -46,10 +46,14 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
 
   getDataFromDb() {
     selectedMode == 'Topic'
-        ? controller.futureList =
-            Database().getDocs(collection: LESSON_COURSES, field: IS_TOPIC_MODE, equalTo: true, orderBy: ORDER_ID, descending: false)
-        : controller.futureList = Database()
-            .getDocs(collection: LESSON_COURSES, field: IS_TOPIC_MODE, equalTo: false, orderBy: ORDER_ID, descending: false);
+        ? controller.futureList = Database().getDocs(
+            collection: LESSON_COURSES, field: IS_TOPIC_MODE, equalTo: true, orderBy: ORDER_ID, descending: false)
+        : controller.futureList = Database().getDocs(
+            collection: LESSON_COURSES,
+            field: IS_TOPIC_MODE,
+            equalTo: false,
+            orderBy: ORDER_ID,
+            descending: false);
   }
 
   updateDB({required String collection, required String docId, required Map<String, dynamic> value}) {
@@ -110,10 +114,11 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
       Widget widget = Padding(
         padding: const EdgeInsets.symmetric(vertical: 5),
         child: MyTextField().getTextField(
-            controller: TextEditingController(text: isTitle ? lessonCourse.title[fo] : lessonCourse.description[fo]),
+            controller:
+                TextEditingController(text: isTitle ? lessonCourse.title[fo] : lessonCourse.description[fo]),
             label: fo,
             fn: (String? value) {
-              if(isTitle) {
+              if (isTitle) {
                 lessonCourse.title[fo] = value!;
               } else {
                 lessonCourse.description[fo] = value!;
@@ -185,9 +190,13 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                     children: [
                       const Text('타이틀', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(width: 10),
-                      TextButton(onPressed: (){
-                        GPTTranslator().getTranslations(lessonCourse!.title).then((value) => controller.update());
-                      }, child: const Text('번역')),
+                      TextButton(
+                          onPressed: () {
+                            GPTTranslator()
+                                .getTranslations(lessonCourse!.title)
+                                .then((value) => controller.update());
+                          },
+                          child: const Text('번역')),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -197,9 +206,13 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                     children: [
                       const Text('설명', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(width: 10),
-                      TextButton(onPressed: (){
-                        GPTTranslator().getTranslations(lessonCourse!.description).then((value) => controller.update());
-                      }, child: const Text('번역')),
+                      TextButton(
+                          onPressed: () {
+                            GPTTranslator()
+                                .getTranslations(lessonCourse!.description)
+                                .then((value) => controller.update());
+                          },
+                          child: const Text('번역')),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -406,12 +419,12 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                                     title: const Text('정말 삭제하겠습니까?'),
                                     actions: [
                                       TextButton(
-                                          onPressed: () {
+                                          onPressed: () async {
+                                            Get.back();
+                                            await Database().deleteListAndReorderBatch(
+                                                collection: LESSON_COURSES, index: index, list: courses);
                                             setState(() {
-                                              Database().deleteListAndReorderBatch(
-                                                  collection: LESSON_COURSES, docId: course.id, list: courses);
                                               getDataFromDb();
-                                              Get.back();
                                             });
                                           },
                                           child: const Text(

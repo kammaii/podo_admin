@@ -205,17 +205,18 @@ class Database {
     }).catchError((e) => print(e));
   }
 
-  Future<void> deleteListAndReorderBatch({required String collection, required String docId, required List<dynamic> list}) async {
+  Future<void> deleteListAndReorderBatch({required String collection, required int index, required List<dynamic> list}) async {
     final batch = firestore.batch();
+    String docId = list[index].id;
     DocumentReference ref = firestore.collection(collection).doc(docId);
     batch.delete(ref);
-    List<dynamic> docs = [...list];
-    docs.removeWhere((element) => element.id == docId);
+    list.removeWhere((element) => element.id == docId);
     print('Deleted: $docId');
-    for (int i = 0; i < docs.length; i++) {
-      ref = firestore.collection(collection).doc(docs[i].id);
-      batch.update(ref, {'orderId': docs.length - (i+1)});
-      print('Reordered: ${docs[i].orderId}');
+    for (int i = 0; i < list.length; i++) {
+      ref = firestore.collection(collection).doc(list[i].id);
+      list[i].orderId = i;
+      batch.update(ref, {'orderId': i});
+      print('Reordered: ${list[i].id} : ${list[i].orderId}');
     }
     await batch.commit().then((value) {
       print('Batch completed');

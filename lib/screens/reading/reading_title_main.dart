@@ -36,10 +36,10 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
 
   getDataFromDb() {
     if (controller.selectedCategory == controller.categories[4]) {
-      controller.futureList = Database().getDocs(collection: READING_TITLES, orderBy: 'orderId');
+      controller.futureList = Database().getDocs(collection: READING_TITLES, orderBy: 'orderId', descending: false);
     } else {
       controller.futureList = Database().getDocs(
-          collection: READING_TITLES, field: 'category', equalTo: controller.selectedCategory, orderBy: 'orderId');
+          collection: READING_TITLES, field: 'category', equalTo: controller.selectedCategory, orderBy: 'orderId', descending: false);
     }
   }
 
@@ -319,7 +319,8 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
                 DataColumn2(label: Text('삭제'), size: ColumnSize.S),
                 DataColumn2(label: Text(''), size: ColumnSize.S),
               ],
-              rows: List<DataRow>.generate(readingTitles.length, (index) {
+              rows: List<DataRow>.generate(readingTitles.length, (i) {
+                int index = readingTitles.length - 1 - i;
                 ReadingTitle readingTitle = readingTitles[index];
                 return DataRow(cells: [
                   DataCell(Text(readingTitle.orderId.toString())),
@@ -451,7 +452,7 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
                                 onPressed: () async {
                                   Get.back();
                                   await Database().deleteListAndReorderBatch(
-                                      collection: READING_TITLES, docId: readingTitle.id, list: readingTitles);
+                                      collection: READING_TITLES, index: index, list: readingTitles);
                                   controller.getTotalLength();
                                   setState(() {
                                     getDataFromDb();
