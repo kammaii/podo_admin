@@ -45,7 +45,7 @@ dependencies:
   cloud_functions: ^4.3.2
   firebase_storage: ^11.2.2
   translator: ^0.1.7
-  firebase_auth: ^4.6.3
+  firebase_auth: ^4.10.0
   file_picker: ^5.2.10
   dart_openai: ^1.9.91
   http: ^0.13.6

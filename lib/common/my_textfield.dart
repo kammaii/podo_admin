@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class MyTextField {
-  TextField getTextField({TextEditingController? controller, String? label, bool autoFocus = false, Function(String)? fn, int minLine = 1}) {
+  TextField getTextField({TextEditingController? controller, String? label, bool autoFocus = false, Function(String)? fn, int minLine = 1, int? maxLines}) {
     return TextField(
       controller: controller,
       decoration: InputDecoration(
@@ -11,7 +11,7 @@ class MyTextField {
       minLines: minLine,
       autofocus: autoFocus,
       onChanged: fn,
-      maxLines: null,
+      maxLines: maxLines,
     );
   }
 }
