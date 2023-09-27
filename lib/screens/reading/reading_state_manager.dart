@@ -10,6 +10,7 @@ class ReadingStateManager extends GetxController{
   late String selectedCategory;
   late int totalReadingTitleLength;
 
+
   @override
   void onInit() {
     super.onInit();
