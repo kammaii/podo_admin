@@ -12,7 +12,6 @@ class UserMain extends StatefulWidget {
   String? userId;
   String? userEmail;
 
-
   @override
   State<UserMain> createState() => _UserMainState();
 }
@@ -22,7 +21,7 @@ class _UserMainState extends State<UserMain> {
   final double cardWidth = 500;
   late Future userFuture;
   bool isSearched = false;
-  List<String> statusList = ['new', 'basic', 'premium'];
+  List<String> statusList = ['new', 'basic', 'premium', 'trial'];
   int? lessonCount;
   int? readingCount;
   int? cloudCount;
@@ -36,7 +35,8 @@ class _UserMainState extends State<UserMain> {
     }
 
     if (widget.userEmail != null && !isSearched) {
-      userFuture = Database().getDocs(collection: 'Users', field: 'email', equalTo: widget.userEmail, orderBy: 'status');
+      userFuture =
+          Database().getDocs(collection: 'Users', field: 'email', equalTo: widget.userEmail, orderBy: 'status');
       isSearched = true;
     }
 
@@ -110,75 +110,81 @@ class _UserMainState extends State<UserMain> {
                             alignment: AlignmentDirectional.topStart,
                             child: Row(
                               children: [
-                                Column(
-                                  children: [
-                                    Card(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(30),
-                                        child: SizedBox(
-                                          width: cardWidth,
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Text(user.name, textScaleFactor: 2),
-                                                  const SizedBox(width: 10),
-                                                  Container(
-                                                    decoration: BoxDecoration(
-                                                        borderRadius: BorderRadius.circular(20),
-                                                        color: Theme.of(context).colorScheme.primaryContainer),
-                                                    child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                                                      child: Text(
-                                                        statusList[user.status],
-                                                        style: TextStyle(
-                                                            color:
-                                                                Theme.of(context).colorScheme.onPrimaryContainer),
+                                SingleChildScrollView(
+                                  child: Column(
+                                    children: [
+                                      Card(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(30),
+                                          child: SizedBox(
+                                            width: cardWidth,
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Text(user.name, textScaleFactor: 2),
+                                                    const SizedBox(width: 10),
+                                                    Container(
+                                                      decoration: BoxDecoration(
+                                                          borderRadius: BorderRadius.circular(20),
+                                                          color: Theme.of(context).colorScheme.primaryContainer),
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                                                        child: Text(
+                                                          statusList[user.status],
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Theme.of(context).colorScheme.onPrimaryContainer),
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 20),
-                                              getInfoRow('아이디', user.id),
-                                              const SizedBox(height: 10),
-                                              getInfoRow('이메일', user.email),
-                                              const SizedBox(height: 10),
-                                              getInfoRow('이름', user.name),
-                                              const SizedBox(height: 10),
-                                              getInfoRow('가입일', MyDateFormat().getDateOnlyFormat(user.dateSignUp)),
-                                              const SizedBox(height: 10),
-                                              getInfoRow(
-                                                  '최종로그인', MyDateFormat().getDateOnlyFormat(user.dateSignIn)),
-                                              const Divider(height: 50),
-                                              getInfoRow('언어', user.language),
-                                              const SizedBox(height: 10),
-                                              getInfoRow('OS', user.os),
-                                              const SizedBox(height: 10),
-                                              getInfoRow('메시지수신', user.fcmState ?? 'null'),
-                                              const Divider(height: 50),
-                                              getInfoRow('레슨완료', '${lessonCount.toString()} 개'),
-                                              const SizedBox(height: 10),
-                                              getInfoRow('읽기완료', '${readingCount.toString()} 개'),
-                                              const SizedBox(height: 10),
-                                              getInfoRow('클라우드메시지', '${cloudCount.toString()} 개'),
-                                              const SizedBox(height: 10),
-                                              getInfoRow('플레시카드', '${flashcardCount.toString()} 개'),
-                                              const SizedBox(height: 10),
-                                            ],
+                                                    const SizedBox(width: 10),
+                                                    user.status == 3
+                                                        ? Text('${MyDateFormat().getDateOnlyFormat(user.trialEnd!)} 까지')
+                                                        : const SizedBox.shrink()
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 20),
+                                                getInfoRow('아이디', user.id),
+                                                const SizedBox(height: 10),
+                                                getInfoRow('이메일', user.email),
+                                                const SizedBox(height: 10),
+                                                getInfoRow('이름', user.name),
+                                                const SizedBox(height: 10),
+                                                getInfoRow('가입일', MyDateFormat().getDateOnlyFormat(user.dateSignUp)),
+                                                const SizedBox(height: 10),
+                                                getInfoRow(
+                                                    '최종로그인', MyDateFormat().getDateOnlyFormat(user.dateSignIn)),
+                                                const Divider(height: 50),
+                                                getInfoRow('언어', user.language),
+                                                const SizedBox(height: 10),
+                                                getInfoRow('OS', user.os),
+                                                const SizedBox(height: 10),
+                                                getInfoRow('메시지수신', user.fcmPermission.toString()),
+                                                const Divider(height: 50),
+                                                getInfoRow('레슨완료', '${lessonCount.toString()} 개'),
+                                                const SizedBox(height: 10),
+                                                getInfoRow('읽기완료', '${readingCount.toString()} 개'),
+                                                const SizedBox(height: 10),
+                                                getInfoRow('클라우드메시지', '${cloudCount.toString()} 개'),
+                                                const SizedBox(height: 10),
+                                                getInfoRow('플레시카드', '${flashcardCount.toString()} 개'),
+                                                const SizedBox(height: 10),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 30),
-                                    ElevatedButton(
-                                        onPressed: () {
-                                          Get.to(UserWritingRecord(), arguments: user.id);
-                                        },
-                                        child: const Text('교정내역 보기'))
-                                  ],
+                                      const SizedBox(height: 30),
+                                      ElevatedButton(
+                                          onPressed: () {
+                                            Get.to(UserWritingRecord(), arguments: user.id);
+                                          },
+                                          child: const Text('교정내역 보기'))
+                                    ],
+                                  ),
                                 ),
                                 const Expanded(child: Text('')),
                               ],

@@ -12,10 +12,9 @@ class User {
   DateTime? trialStart;
   DateTime? trialEnd;
   String language = '';
-  List<Premium>? premiumRecord = [];
-  String? fcmState;
   String? fcmToken;
   List<String>? fcmTopic;
+  bool fcmPermission = false;
   int status = 0;
 
   User();
@@ -30,10 +29,9 @@ class User {
   static const String TRIAL_START = 'trialStart';
   static const String TRIAL_END = 'trialEnd';
   static const String LANGUAGE = 'language';
-  static const String PREMIUM_RECORD = 'premiumRecord';
   static const String FCM_TOKEN = 'fcmToken';
-  static const String FCM_STATE = 'fcmState';
   static const String FCM_TOPIC = 'fcmTopic';
+  static const String FCM_PERMISSION = 'fcmPermission';
   static const String STATUS = 'status';
 
   User.fromJson(Map<String, dynamic> json) {
@@ -46,21 +44,20 @@ class User {
     stamp = json[DATE_SIGNIN];
     dateSignIn = stamp.toDate();
     language = json[LANGUAGE];
-    premiumRecord = json[PREMIUM_RECORD];
+    fcmPermission = json[FCM_PERMISSION];
     if(json[FCM_TOKEN] != null) {
       fcmToken = json[FCM_TOKEN];
-    }
-    if(json[FCM_STATE] != null) {
-      fcmState = json[FCM_STATE];
     }
     if(json[FCM_TOPIC] != null) {
       fcmTopic = json[FCM_TOPIC];
     }
     if(json[TRIAL_START] != null) {
-      trialStart = json[TRIAL_START];
+      Timestamp stamp = json[TRIAL_START];
+      trialStart = stamp.toDate();
     }
     if(json[TRIAL_END] != null) {
-      trialEnd = json[TRIAL_END];
+      Timestamp stamp = json[TRIAL_END];
+      trialEnd = stamp.toDate();
     }
     status = json[STATUS];
   }
