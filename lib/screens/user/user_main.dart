@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/database.dart';
@@ -29,6 +27,52 @@ class _UserMainState extends State<UserMain> {
   int? flashcardCount;
   late List<dynamic> searchResult;
   user_info.User user = user_info.User();
+  int totalUserCount = 0;
+  int newUserCount = 0;
+  int basicUserCount = 0;
+  int trialUserCount = 0;
+  int premiumUserCount = 0;
+  int newUserPercent = 0;
+  int trialUserPercent = 0;
+  int basicUserPercent = 0;
+  int premiumUserPercent = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.wait([
+      Database().getCount(collection: 'Users', field: 'status', equalTo: 0),
+      Database().getCount(collection: 'Users', field: 'status', equalTo: 3),
+      Database().getCount(collection: 'Users', field: 'status', equalTo: 1),
+      Database().getCount(collection: 'Users', field: 'status', equalTo: 2),
+    ]).then((snapshot) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        setState(() {
+          newUserCount = snapshot[0];
+          trialUserCount = snapshot[1];
+          basicUserCount = snapshot[2];
+          premiumUserCount = snapshot[3];
+          totalUserCount = newUserCount + trialUserCount + basicUserCount + premiumUserCount;
+          newUserPercent = (newUserCount / totalUserCount * 100).round();
+          trialUserPercent = (trialUserCount / totalUserCount * 100).round();
+          basicUserPercent = (basicUserCount / totalUserCount * 100).round();
+          premiumUserPercent = (premiumUserCount / totalUserCount * 100).round();
+        });
+      });
+    });
+  }
+
+  Widget getCountUser(String title, int count, {int? percent}) {
+    return Row(
+      children: [
+        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(': ${count.toString()} ', style: const TextStyle(fontSize: 18)),
+        percent != null ?
+        Text('(${percent.toString()}%)', style: const TextStyle(fontSize: 15, color: Colors.grey)) : const Text('      ||'),
+        const SizedBox(width: 30),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,6 +159,12 @@ class _UserMainState extends State<UserMain> {
                   },
                   child: const Text('검색'),
                 ),
+                const SizedBox(width: 50),
+                getCountUser('Total', totalUserCount),
+                getCountUser('New', newUserCount, percent: newUserPercent),
+                getCountUser('Trial', trialUserCount, percent: trialUserPercent),
+                getCountUser('Basic', basicUserCount, percent: basicUserPercent),
+                getCountUser('Premium', premiumUserCount, percent: premiumUserPercent),
               ],
             ),
             const SizedBox(height: 50),
