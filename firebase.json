@@ -32,6 +32,10 @@
     ],
     "rewrites": [
       {
+        "source": "/privacyPolicy.html",
+        "destination": "/privacyPolicy.html"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

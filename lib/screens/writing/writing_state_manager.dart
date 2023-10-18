@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/database.dart';
@@ -15,6 +16,11 @@ class WritingStateManager extends GetxController {
   @override
   void onInit() {
     futureWritings = Database().getDocs(collection: 'Writings', field: 'status', equalTo: key, orderBy: 'dateWriting');
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    firestore.collection('Writings').snapshots().listen((event) {
+      futureWritings = Database().getDocs(collection: 'Writings', field: 'status', equalTo: key, orderBy: 'dateWriting');
+      update();
+    });
   }
 
   void getWriting({bool? isNext}) {
@@ -31,7 +37,6 @@ class WritingStateManager extends GetxController {
       Get.back();
     }
   }
-
 
   Function(String? value) changeStatusRadio() {
     return (String? value) {
