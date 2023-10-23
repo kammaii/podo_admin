@@ -42,7 +42,7 @@ class _CloudMessageReplyMainState extends State<CloudMessageReplyMain> {
 
     return Scaffold(
         appBar: AppBar(
-          title: Text('클라우드 메시지 선정   ( ${Get.arguments} )'),
+          title: Text('포도 메시지 선정   ( ${Get.arguments} )'),
         ),
         body: Column(
           children: [
@@ -72,7 +72,11 @@ class _CloudMessageReplyMainState extends State<CloudMessageReplyMain> {
 
                         return DataRow(cells: [
                           DataCell(Text((controller.replies.length - index).toString())),
-                          DataCell(Text(reply.reply)),
+                          DataCell(Text(reply.reply), onTap: () {
+                            Get.dialog(AlertDialog(
+                              content: Text(reply.reply),
+                            ));
+                          }),
                           DataCell(Text(reply.userName)),
                           DataCell(
                             Padding(
