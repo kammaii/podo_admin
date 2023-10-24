@@ -49,6 +49,7 @@ dependencies:
   file_picker: ^5.2.10
   dart_openai: ^1.9.91
   http: ^0.13.6
+  fl_chart: ^0.64.0
 
 dev_dependencies:
   flutter_test:
