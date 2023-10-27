@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/my_date_format.dart';
@@ -268,7 +269,7 @@ class _UserMainState extends State<UserMain> {
                           ));
                         },
                         child: const Text('활성Basic')),
-                    const SizedBox(width: 30),
+                    const SizedBox(width: 20),
                     ElevatedButton(
                         onPressed: () {
                           Get.to(const Ranking());
@@ -351,9 +352,15 @@ class _UserMainState extends State<UserMain> {
                                                   ],
                                                 ),
                                                 const SizedBox(height: 20),
-                                                getInfoRow('아이디', user.id),
+                                                GestureDetector(child: getInfoRow('아이디', user.id), onTap: (){
+                                                  Clipboard.setData(ClipboardData(text: user.id));
+                                                  Get.snackbar('아이디가 클립보드에 저장되었습니다.', user.id, snackPosition: SnackPosition.BOTTOM);
+                                                }),
                                                 const SizedBox(height: 10),
-                                                getInfoRow('이메일', user.email),
+                                                GestureDetector(child: getInfoRow('이메일', user.email), onTap: (){
+                                                  Clipboard.setData(ClipboardData(text: user.email));
+                                                  Get.snackbar('이메일이 클립보드에 저장되었습니다.', user.email, snackPosition: SnackPosition.BOTTOM);
+                                                }),
                                                 const SizedBox(height: 10),
                                                 getInfoRow('이름', user.name),
                                                 const SizedBox(height: 10),

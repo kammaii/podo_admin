@@ -83,6 +83,7 @@ class WritingMain extends StatelessWidget {
                         return DataTable2(
                           columns: const [
                             DataColumn2(label: Text('날짜'), size: ColumnSize.S),
+                            DataColumn2(label: Text('아이디'), size: ColumnSize.S),
                             DataColumn2(label: Text('타이틀'), size: ColumnSize.S),
                             DataColumn2(label: Text('내용'), size: ColumnSize.L),
                             DataColumn2(label: Text('유저'), size: ColumnSize.S),
@@ -94,6 +95,7 @@ class WritingMain extends StatelessWidget {
 
                             return DataRow(cells: [
                               DataCell(Text(MyDateFormat().getDateFormat(writing.dateWriting))),
+                              DataCell(Text(writing.id.substring(0, 8))),
                               DataCell(Text(writing.questionTitle), onTap: () {
                                 controller.writingIndex = index;
                                 Get.to(WritingDetail());

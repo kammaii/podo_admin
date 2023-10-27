@@ -16,6 +16,10 @@ class User {
   List<String>? fcmTopic;
   bool fcmPermission = false;
   int status = 0;
+  int lessonCount = 0;
+  int readingCount = 0;
+  int podoMsgCount = 0;
+  int flashcardCount = 0;
 
   User();
 
@@ -33,6 +37,10 @@ class User {
   static const String FCM_TOPIC = 'fcmTopic';
   static const String FCM_PERMISSION = 'fcmPermission';
   static const String STATUS = 'status';
+  static const String LESSON_COUNT = 'lessonCount';
+  static const String READING_COUNT = 'readingCount';
+  static const String PODO_MSG_COUNT = 'podoMsgCount';
+  static const String FLASHCARD_COUNT = 'flashcardCount';
 
   User.fromJson(Map<String, dynamic> json) {
     id = json[ID];
@@ -60,5 +68,17 @@ class User {
       trialEnd = stamp.toDate();
     }
     status = json[STATUS];
+    if(json[LESSON_COUNT] != null) {
+      lessonCount = json[LESSON_COUNT];
+    }
+    if(json[READING_COUNT] != null) {
+      readingCount = json[READING_COUNT];
+    }
+    if(json[PODO_MSG_COUNT] != null) {
+      podoMsgCount = json[PODO_MSG_COUNT];
+    }
+    if(json[FLASHCARD_COUNT] != null) {
+      flashcardCount = json[FLASHCARD_COUNT];
+    }
   }
 }

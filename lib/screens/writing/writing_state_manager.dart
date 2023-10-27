@@ -12,6 +12,7 @@ class WritingStateManager extends GetxController {
   late Future<List<dynamic>> futureWritings;
   Map<int, String> statusMap = {0: '신규', 1: '교정완료', 2: '교정불필요', 3: '교정불가'};
   Map<int, Color> statusColor = {0: Colors.orange, 1: Colors.green, 2: Colors.yellow, 3: Colors.red, 4: Colors.grey};
+  RxBool allCorrection = true.obs;
 
   @override
   void onInit() {
@@ -45,8 +46,14 @@ class WritingStateManager extends GetxController {
         key = statusMap.keys.firstWhere((key) => statusMap[key] == value);
         futureWritings =
             Database().getDocs(collection: 'Writings', field: 'status', equalTo: key, orderBy: 'dateWriting');
+        if(key == 0) {
+          allCorrection.value = true;
+        } else {
+          allCorrection.value = false;
+        }
       } else {
         futureWritings = Database().getDocs(collection: 'Writings', orderBy: 'dateWriting');
+        allCorrection.value = false;
       }
       update();
     };

@@ -19,256 +19,306 @@ class _WritingDetailState extends State<WritingDetail> {
   late Writing writing;
   HtmlEditorController htmlController = HtmlEditorController();
   WritingStateManager controller = Get.find<WritingStateManager>();
+  late List<bool> isCorrectedList;
 
   completeCorrection() {
     Get.dialog(
-      RawKeyboardListener(
-        focusNode: FocusNode(),
-        autofocus: true,
-        onKey: (event) {
-          if (event is RawKeyDownEvent) {
-            if (event.logicalKey == LogicalKeyboardKey.enter) {
-              runSave();
-            }
-          }
-        },
-        child: AlertDialog(
-          content: const Text('교정을 완료하겠습니까?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Get.back();
-              },
-              child: const Text('아니요'),
+      controller.allCorrection.value
+          ? AlertDialog(
+              content: checkIsCorrectedAll() ? const Text('교정을 완료하겠습니까?') : const Text('모든 교정이 완료되지 않았습니다.'),
+              actions: checkIsCorrectedAll()
+                  ? [
+                      TextButton(
+                        onPressed: () {
+                          Get.back();
+                        },
+                        child: const Text('아니요'),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          Get.back();
+                          Get.defaultDialog(
+                              title: '저장중', content: const Center(child: CircularProgressIndicator()));
+                          for (Writing w in controller.writings) {
+                            print(w.id);
+                            print(w.correction);
+                            print(w.status);
+                            await runSave(w);
+                          }
+                          Get.back();
+                          Get.back();
+                          Get.snackbar('저장을 완료했습니다.', '', snackPosition: SnackPosition.BOTTOM);
+                        },
+                        child: const Text('네'),
+                      ),
+                    ]
+                  : [],
+            )
+          : AlertDialog(
+              content: const Text('교정을 완료하겠습니까?'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Get.back();
+                  },
+                  child: const Text('아니요'),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    Get.back();
+                    Get.defaultDialog(title: '저장중', content: const Center(child: CircularProgressIndicator()));
+                    print(writing.id);
+                    print(writing.correction);
+                    print(writing.status);
+
+                    await runSave(writing);
+                    controller.writings.removeAt(controller.writingIndex);
+                    controller.getWriting();
+                    Get.back();
+                    Get.snackbar('저장을 완료했습니다.', '', snackPosition: SnackPosition.BOTTOM);
+                  },
+                  child: const Text('네'),
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () {
-                runSave();
-              },
-              child: const Text('네'),
-            ),
-          ],
-        ),
+    );
+  }
+
+  Future<void> runSave(Writing wt) {
+    if (writing.status == 0) {
+      writing.status = 1;
+    }
+    return Database().updateCorrection(writingId: wt.id, correction: wt.correction, status: wt.status);
+  }
+
+  Widget getCircle(Color color) {
+    return Container(
+      width: 28,
+      height: 28,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
       ),
     );
   }
 
-  runSave() async {
-    if(writing.status == 0) {
-      writing.status = 1;
+  bool checkIsCorrectedAll() {
+    for (bool b in isCorrectedList) {
+      if (!b) {
+        return false;
+      }
     }
-    Get.back();
-    Get.defaultDialog(title: '저장중', content: const Center(child: CircularProgressIndicator()));
-    await Database()
-        .updateCorrection(writingId: writing.id, correction: writing.correction, status: writing.status);
-    controller.writings.removeAt(controller.writingIndex);
-    controller.getWriting();
-    Get.back();
-    Get.snackbar('저장을 완료했습니다.', '');
+    return true;
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    isCorrectedList = List<bool>.filled(controller.writings.length, false);
   }
 
   @override
   Widget build(BuildContext context) {
     const double boxSize = 1000;
-    if(controller.writings.isNotEmpty) {
-      writing = controller.writings[controller.writingIndex];
-      htmlController.clear();
-      (writing.correction.isEmpty)
-          ? htmlController.setText(writing.userWriting)
-          : htmlController.setText(writing.correction);
-      return Scaffold(
-        appBar: AppBar(title: const Text('교정_상세')),
-        body: RawKeyboardListener(
-          focusNode: FocusNode(),
-          autofocus: true,
-          onKey: (event) {
-            if (event is RawKeyDownEvent) {
-              setState(() {
-                if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-                  controller.getWriting(isNext: false);
-                } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-                  controller.getWriting(isNext: true);
-                } else if (event.logicalKey == LogicalKeyboardKey.enter) {
-                  completeCorrection();
-                }
-              });
-            }
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: SizedBox(
-              width: boxSize,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color: controller.statusColor[writing.status],
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(controller.statusMap[writing.status]!, textScaleFactor: 2),
-                      const SizedBox(width: 20),
-                      Visibility(
-                        visible: controller.statusRadio == '신규',
-                        child: Text(
-                          '(남은 교정 수 : ${controller.writings.length})',
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Text(writing.questionTitle, textScaleFactor: 2),
-                          const SizedBox(width: 20),
-                          Text('( ${writing.id} )'),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              setState(() {
-                                controller.getWriting(isNext: false);
-                              });
-                            },
-                            icon: const Icon(Icons.arrow_circle_left_outlined),
-                            iconSize: 30,
-                            tooltip: '이전교정',
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              setState(() {
-                                controller.getWriting(isNext: true);
-                              });
-                            },
-                            icon: const Icon(Icons.arrow_circle_right_outlined),
-                            iconSize: 30,
-                            tooltip: '다음교정',
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    child: Container(
-                      width: boxSize,
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        border: Border.all(),
-                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                      ),
-                      child: Text(writing.userWriting),
+    writing = controller.writings[controller.writingIndex];
+    htmlController.clear();
+    (writing.correction.isEmpty)
+        ? htmlController.setText(writing.userWriting)
+        : htmlController.setText(writing.correction);
+    return Scaffold(
+      appBar: AppBar(title: const Text('교정_상세')),
+      body: RawKeyboardListener(
+        focusNode: FocusNode(),
+        autofocus: true,
+        onKey: (event) {
+          if (event is RawKeyDownEvent) {
+            setState(() {
+              if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                controller.getWriting(isNext: false);
+              } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+                controller.getWriting(isNext: true);
+              } else if (event.logicalKey == LogicalKeyboardKey.enter) {
+                completeCorrection();
+              }
+            });
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: SizedBox(
+            width: boxSize,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    getCircle(controller.statusColor[writing.status]!),
+                    const SizedBox(width: 10),
+                    Text(controller.statusMap[writing.status]!, textScaleFactor: 2),
+                    const SizedBox(width: 20),
+                    Text(
+                      '(순서: ${controller.writingIndex + 1} / ${controller.writings.length})',
+                      style: const TextStyle(color: Colors.red),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(' 교정하기', textScaleFactor: 2),
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            writing.correction = MyStrings.perfect;
-                            writing.status = 2;
-                          });
-                        },
-                        child: const Text(
-                          'Perfect',
-                          style: TextStyle(color: Colors.blueAccent),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            writing.correction = MyStrings.noKorean;
-                            writing.status = 3;
-                          });
-                        },
-                        child: const Text(
-                          '한국어 아님',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            writing.correction = MyStrings.noTopic;
-                            writing.status = 3;
-                          });
-                        },
-                        child: const Text(
-                          '주제에 맞지 않는 글',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            writing.correction = MyStrings.cantUnderstand;
-                            writing.status = 3;
-                          });
-                        },
-                        child: const Text(
-                          '이해불가',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
-
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    child: Container(
-                      width: boxSize,
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        border: Border.all(),
-                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                      ),
-                      child: HtmlEditor(
-                        controller: htmlController,
-                        htmlEditorOptions: HtmlEditorOptions(
-                          initialText:
-                          (writing.correction.isEmpty) ? writing.userWriting : writing.correction,
-                        ),
-                        htmlToolbarOptions: HtmlToolbarOptions(
-                          defaultToolbarButtons: [
-                            const OtherButtons(
-                                fullscreen: false,
-                                undo: false,
-                                redo: false,
-                                copy: false,
-                                paste: false,
-                                help: false),
-                          ],
-                          customToolbarButtons: [
-                            MyHtmlColor().colorButton(controller: htmlController, color: MyStrings.red),
-                            MyHtmlColor().colorButton(controller: htmlController, color: MyStrings.blue),
-                            MyHtmlColor().colorButton(controller: htmlController, color: MyStrings.black),
+                    Visibility(
+                      visible: controller.statusRadio == '신규',
+                      child: Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(checkIsCorrectedAll() ? '검토완료' : '검토중',
+                                style: const TextStyle(fontWeight: FontWeight.bold)),
+                            const SizedBox(width: 10),
+                            checkIsCorrectedAll() ? getCircle(Colors.green) : getCircle(Colors.red),
                           ],
                         ),
-                        callbacks: Callbacks(onChangeContent: (String? content) {
-                          writing.correction = content!;
-                        }),
+                      ),
+                    )
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Text(writing.questionTitle, textScaleFactor: 2),
+                        const SizedBox(width: 20),
+                        Text('( ${writing.id} )'),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              controller.getWriting(isNext: false);
+                            });
+                          },
+                          icon: const Icon(Icons.arrow_circle_left_outlined),
+                          iconSize: 30,
+                          tooltip: '이전교정',
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              controller.getWriting(isNext: true);
+                            });
+                          },
+                          icon: const Icon(Icons.arrow_circle_right_outlined),
+                          iconSize: 30,
+                          tooltip: '다음교정',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: Container(
+                    width: boxSize,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      border: Border.all(),
+                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    ),
+                    child: Text(writing.userWriting),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(' 교정하기', textScaleFactor: 2),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          writing.correction = MyStrings.perfect;
+                          writing.status = 2;
+                        });
+                      },
+                      child: const Text(
+                        'Perfect',
+                        style: TextStyle(color: Colors.blueAccent),
                       ),
                     ),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          writing.correction = MyStrings.noKorean;
+                          writing.status = 3;
+                        });
+                      },
+                      child: const Text(
+                        '한국어 아님',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          writing.correction = MyStrings.noTopic;
+                          writing.status = 3;
+                        });
+                      },
+                      child: const Text(
+                        '주제에 맞지 않는 글',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          writing.correction = MyStrings.cantUnderstand;
+                          writing.status = 3;
+                        });
+                      },
+                      child: const Text(
+                        '이해불가',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: Container(
+                    width: boxSize,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      border: Border.all(),
+                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    ),
+                    child: HtmlEditor(
+                      controller: htmlController,
+                      htmlEditorOptions: HtmlEditorOptions(
+                        initialText: (writing.correction.isEmpty) ? writing.userWriting : writing.correction,
+                      ),
+                      htmlToolbarOptions: HtmlToolbarOptions(
+                        defaultToolbarButtons: [
+                          const OtherButtons(
+                              fullscreen: false, undo: false, redo: false, copy: false, paste: false, help: false),
+                        ],
+                        customToolbarButtons: [
+                          MyHtmlColor().colorButton(controller: htmlController, color: MyStrings.red),
+                          MyHtmlColor().colorButton(controller: htmlController, color: MyStrings.blue),
+                          MyHtmlColor().colorButton(controller: htmlController, color: MyStrings.black),
+                        ],
+                      ),
+                      callbacks: Callbacks(onChangeContent: (String? content) {
+                        isCorrectedList[controller.writingIndex] = true;
+                        writing.correction = content!;
+                      }),
+                    ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(30),
-                    child: Center(
-                      child: ElevatedButton(
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(30),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
                         onPressed: () {
                           completeCorrection();
                         },
@@ -280,16 +330,23 @@ class _WritingDetailState extends State<WritingDetail> {
                           ),
                         ),
                       ),
-                    ),
+                      const SizedBox(width: 20),
+                      Obx(() {
+                        return Checkbox(
+                            value: controller.allCorrection.value,
+                            onChanged: (bool? b) {
+                              controller.allCorrection.value = b!;
+                            });
+                      }),
+                      const Text('전체 교정')
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
-      );
-    } else {
-      return const Center(child: Text('교정을 완료했습니다.'));
-    }
+      ),
+    );
   }
 }
