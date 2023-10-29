@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:podo_admin/research.dart';
 import 'package:podo_admin/screens/lesson/lesson_course_main.dart';
 import 'package:podo_admin/screens/loading_controller.dart';
 import 'package:podo_admin/screens/podo_message/podo_message_main.dart';
@@ -21,6 +22,7 @@ class _MainFrameState extends State<MainFrame> {
     LessonCourseMain(),
     ReadingTitleMain(),
     UserMain(),
+    const Research(),
   ];
 
   int _selectedIndex = 0;
@@ -66,6 +68,11 @@ class _MainFrameState extends State<MainFrame> {
                     icon: Icon(Icons.people_outline),
                     selectedIcon: Icon(Icons.people_rounded),
                     label: Text('유저'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.check_circle_outline),
+                    selectedIcon: Icon(Icons.check_circle),
+                    label: Text('조사'),
                   ),
                 ],
                 selectedIndex: _selectedIndex,

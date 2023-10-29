@@ -82,9 +82,9 @@ class Database {
     return titles;
   }
 
-  updateCorrection({required String writingId, required String correction, required int status}) {
+  Future<void> updateCorrection({required String writingId, required String correction, required int status}) async {
     DocumentReference ref = firestore.collection('Writings').doc(writingId);
-    return ref
+    await ref
         .update({'correction': correction, 'dateReply': Timestamp.now(), 'status': status})
         .then((value) => print('Correction updated'))
         .catchError((e) => print('ERROR : $e'));

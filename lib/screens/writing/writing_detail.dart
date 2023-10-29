@@ -20,6 +20,7 @@ class _WritingDetailState extends State<WritingDetail> {
   HtmlEditorController htmlController = HtmlEditorController();
   WritingStateManager controller = Get.find<WritingStateManager>();
   late List<bool> isCorrectedList;
+  String initialContent = '';
 
   completeCorrection() {
     Get.dialog(
@@ -85,8 +86,8 @@ class _WritingDetailState extends State<WritingDetail> {
   }
 
   Future<void> runSave(Writing wt) {
-    if (writing.status == 0) {
-      writing.status = 1;
+    if (wt.status == 0) {
+      wt.status = 1;
     }
     return Database().updateCorrection(writingId: wt.id, correction: wt.correction, status: wt.status);
   }
@@ -138,8 +139,6 @@ class _WritingDetailState extends State<WritingDetail> {
                 controller.getWriting(isNext: false);
               } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
                 controller.getWriting(isNext: true);
-              } else if (event.logicalKey == LogicalKeyboardKey.enter) {
-                completeCorrection();
               }
             });
           }
@@ -307,7 +306,9 @@ class _WritingDetailState extends State<WritingDetail> {
                         ],
                       ),
                       callbacks: Callbacks(onChangeContent: (String? content) {
-                        isCorrectedList[controller.writingIndex] = true;
+                        if(content != '<p><br></p>' && writing.userWriting != content && writing.correction == content) {
+                          isCorrectedList[controller.writingIndex] = true;
+                        }
                         writing.correction = content!;
                       }),
                     ),
