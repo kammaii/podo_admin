@@ -9,7 +9,7 @@ class ReadingStateManager extends GetxController{
   final readingLevel = ['쉬움', '보통', '어려움'];
   late String selectedCategory;
   late int totalReadingTitleLength;
-
+  bool isTranslating = false;
 
   @override
   void onInit() {
@@ -21,5 +21,10 @@ class ReadingStateManager extends GetxController{
   void getTotalLength() async {
     totalReadingTitleLength = await Database().getCount(collection: 'ReadingTitles');
     print(totalReadingTitleLength);
+  }
+
+  void changeTransState(bool b) {
+    isTranslating = b;
+    update();
   }
 }

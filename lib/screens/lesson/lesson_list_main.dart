@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/database.dart';
-import 'package:podo_admin/common/gpt_translator.dart';
+import 'package:podo_admin/common/deepl_translator.dart';
 import 'package:podo_admin/common/languages.dart';
 import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/screens/lesson/lesson.dart';
@@ -23,6 +23,7 @@ class _LessonListMainState extends State<LessonListMain> {
   LessonCourse course = Get.arguments;
   List<bool> typeToggle = [true, false];
   List<bool> optionsToggle = [true, false];
+  List<bool> isFreeToggle = [true, false];
   final KO = 'ko';
   final LESSON_COURSES = 'LessonCourses';
   final LESSONS = 'lessons';
@@ -43,9 +44,8 @@ class _LessonListMainState extends State<LessonListMain> {
         label: KO,
         fn: (String? value) {
           lesson.title[KO] = value!;
-        })
-    );
-    if(course.isTopicMode) {
+        }));
+    if (course.isTopicMode) {
       for (String fo in Languages().getFos) {
         Widget widget = Padding(
           padding: const EdgeInsets.symmetric(vertical: 5),
@@ -79,6 +79,8 @@ class _LessonListMainState extends State<LessonListMain> {
     typeToggle[1] = lesson.type == TYPE_PRACTICE;
     optionsToggle[0] = lesson.hasOptions == true;
     optionsToggle[1] = lesson.hasOptions == false;
+    isFreeToggle[0] = lesson.isFree == true;
+    isFreeToggle[1] = lesson.isFree == false;
 
     Get.dialog(AlertDialog(
       title: Row(
@@ -87,6 +89,12 @@ class _LessonListMainState extends State<LessonListMain> {
       ),
       content: GetBuilder<LessonStateManager>(
         builder: (_) {
+          if (typeToggle[1]) {
+            String? title = lesson.title[KO];
+            for (String fo in Languages().getFos) {
+              lesson.title[fo] = title;
+            }
+          }
           return Padding(
             padding: const EdgeInsets.all(20),
             child: SizedBox(
@@ -104,11 +112,14 @@ class _LessonListMainState extends State<LessonListMain> {
                           onPressed: (int index) {
                             typeToggle[0] = index == 0;
                             typeToggle[1] = index == 1;
-                            if(index == 1) {
+                            if (index == 1) {
                               lesson.type = TYPE_PRACTICE;
                               lesson.hasOptions = false;
                               optionsToggle[0] = false;
                               optionsToggle[1] = true;
+                              lesson.isFree = false;
+                              isFreeToggle[0] = false;
+                              isFreeToggle[1] = true;
                             } else {
                               lesson.type = TYPE_LESSON;
                             }
@@ -116,8 +127,7 @@ class _LessonListMainState extends State<LessonListMain> {
                           },
                           borderRadius: const BorderRadius.all(Radius.circular(10)),
                           children: [
-                            Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 10), child: Text(TYPE_LESSON)),
+                            Padding(padding: const EdgeInsets.symmetric(horizontal: 10), child: Text(TYPE_LESSON)),
                             Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 10), child: Text(TYPE_PRACTICE)),
                           ],
@@ -135,10 +145,25 @@ class _LessonListMainState extends State<LessonListMain> {
                           },
                           borderRadius: const BorderRadius.all(Radius.circular(10)),
                           children: const [
-                            Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 10), child: Text('있음')),
-                            Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 10), child: Text('없음')),
+                            Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('있음')),
+                            Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('없음')),
+                          ],
+                        ),
+                        const SizedBox(width: 20),
+                        const Text('무료', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 20),
+                        ToggleButtons(
+                          isSelected: isFreeToggle,
+                          onPressed: (int index) {
+                            isFreeToggle[0] = index == 0;
+                            isFreeToggle[1] = index == 1;
+                            index == 0 ? lesson.isFree = true : lesson.isFree = false;
+                            controller.update();
+                          },
+                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                          children: const [
+                            Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('O')),
+                            Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('X')),
                           ],
                         ),
                       ],
@@ -168,17 +193,9 @@ class _LessonListMainState extends State<LessonListMain> {
                       children: [
                         const Text('레슨타이틀', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         const SizedBox(width: 10),
-                        TextButton(onPressed: (){
-                          if(typeToggle[1]) {
-                            String? title = lesson.title[KO];
-                            for(String fo in Languages().getFos) {
-                              lesson.title[fo] = title;
-                            }
-                            controller.update();
-                          } else {
-                            GPTTranslator().getTranslations(lesson.title).then((value) => controller.update());
-                          }
-                        }, child: const Text('번역')),
+                        typeToggle[0]
+                            ? DeeplTranslator().getTransBtn(controller, lesson.title)
+                            : const SizedBox.shrink(),
                       ],
                     ),
                     const SizedBox(height: 20),
@@ -315,6 +332,7 @@ class _LessonListMainState extends State<LessonListMain> {
                     DataColumn2(label: Text('아이디'), size: ColumnSize.S),
                     DataColumn2(label: Text('타입'), size: ColumnSize.S),
                     DataColumn2(label: Text('요약/쓰기'), size: ColumnSize.S),
+                    DataColumn2(label: Text('무료'), size: ColumnSize.S),
                     DataColumn2(label: Text('타이틀'), size: ColumnSize.L),
                     DataColumn2(label: Text('상태'), size: ColumnSize.S),
                     DataColumn2(label: Text('태그'), size: ColumnSize.S),
@@ -334,10 +352,12 @@ class _LessonListMainState extends State<LessonListMain> {
                         }),
                         DataCell(Text(lesson.type)),
                         DataCell(Text(lesson.hasOptions ? 'O' : 'X')),
+                        DataCell(Text(lesson.isFree ? 'O' : 'X')),
                         DataCell(Text(lesson.title[KO]), onTap: () {
                           lessonDialog(index: index);
                         }),
-                        DataCell(Icon(Icons.circle, color: lesson.isReleased ? Colors.green : Colors.red), onTap: () {
+                        DataCell(Icon(Icons.circle, color: lesson.isReleased ? Colors.green : Colors.red),
+                            onTap: () {
                           Get.dialog(AlertDialog(
                             content: const Text('상태를 변경하겠습니까?'),
                             actions: [

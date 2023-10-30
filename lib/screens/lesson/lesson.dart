@@ -8,6 +8,7 @@ class Lesson {
   late bool isReleased;
   String? tag;
   late bool hasOptions;
+  late bool isFree;
 
   Lesson() {
     id = const Uuid().v4();
@@ -15,6 +16,7 @@ class Lesson {
     title = {};
     isReleased = false;
     hasOptions = true;
+    isFree = true;
   }
 
   static const String ID = 'id';
@@ -23,6 +25,7 @@ class Lesson {
   static const String ISRELEASED = 'isReleased';
   static const String TAG = 'tag';
   static const String HAS_OPTIONS = 'hasOptions';
+  static const String IS_FREE = 'isFree';
 
   Lesson.fromJson(Map<String, dynamic> json) {
     id = json[ID];
@@ -31,6 +34,7 @@ class Lesson {
     isReleased = json[ISRELEASED];
     tag = json[TAG] ?? null;
     hasOptions = json[HAS_OPTIONS];
+    isFree = json[IS_FREE];
   }
 
   Map<String, dynamic> toJson() {
@@ -40,6 +44,7 @@ class Lesson {
       TITLE: title,
       ISRELEASED: isReleased,
       HAS_OPTIONS: hasOptions,
+      IS_FREE: isFree,
     };
     map[TAG] = tag ?? null;
     return map;

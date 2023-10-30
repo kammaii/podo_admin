@@ -2,38 +2,25 @@ const functions = require("firebase-functions");
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
 const OpenAI = require("openai");
-const {onRequest} = require('firebase-functions/v2/https');
+const {onRequest} = require('firebase-functions/v1/https');
+const { v4: uuidv4 } = require('uuid');
+const deepl = require('deepl-node');
+const authKey = functions.config().deepl.key
+const translator = new deepl.Translator(authKey);
 
-const openai = new OpenAI({
-    apiKey: functions.config().openai.key
-});
+var languages = ['es', 'fr', 'de', 'pt-BR', 'id', 'ru'];
 
-var languages = ['Spanish', 'French', 'German', 'Portuguese', 'Indonesian', 'Russian'];
-
-async function translationRequest(en) {
-    let result = [];
+async function onDeeplFunction(request, response) {
+    let message = request.body;
+    let results = [];
     for(let i=0; i<languages.length; i++) {
-        let lang = languages[i];
-        let response = await openai.chat.completions.create({
-            messages: [{ role: "user", content: "Translate '" + en + "' into " + lang + ". Just answer with the translated result only without double quote and repeating the English sentence I wrote."}],
-            model: "gpt-3.5-turbo",
-        });
-        result.push(response.choices[0].message.content);
+        let result = await translator.translateText(message, null, languages[i]);
+        results.push(result.text);
+        console.log(result); // Bonjour, le monde !
     }
-    return result;
+    response.set('Access-Control-Allow-Origin', '*');
+    response.status(200).send(results);
 }
-
-function chatGPTFunction(request, response) {
-    if(request.method == 'POST') {
-        var en = request.body;
-        var result = translationRequest(en).then((value) => {
-            response.set('Access-Control-Allow-Origin', '*');
-            response.status(200).send(value);
-        });
-    }
-}
-
-
 
 // export GOOGLE_APPLICATION_CREDENTIALS="G:\keys\podo-49335-firebase-adminsdk-qqve9-4227c667f7.json"
 
@@ -68,7 +55,6 @@ function onFeedbackSent(snap, context) {
       return null;
     });
 }
-
 
 function onPodoMsgActivated(change, context) {
    let beforeData = change.before.data();
@@ -158,7 +144,19 @@ function onWritingReplied(change, context) {
   }
 }
 
+//function onSchedule() {
+//    const ref =
+//    let newUsers;
+//    let trialUsers;
+//    let basicUsers;
+//    let premiumUsers;
+//    let totalUsers;
+//}
+
 exports.onWritingReply = functions.firestore.document('Writings/{writingId}').onUpdate(onWritingReplied);
 exports.onPodoMsgActive = functions.firestore.document('PodoMessages/{podoMessageId}').onUpdate(onPodoMsgActivated);
 exports.onFeedbackSent = functions.firestore.document('Feedbacks/{feedbackId}').onCreate(onFeedbackSent);
-exports.onChatGPT = onRequest({}, chatGPTFunction);
+exports.onDeepl = onRequest(onDeeplFunction);
+exports.scheduledFunction = functions.pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun((context) => {
+  onSchedule();
+});

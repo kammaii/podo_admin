@@ -41,9 +41,6 @@ class _WritingDetailState extends State<WritingDetail> {
                           Get.defaultDialog(
                               title: '저장중', content: const Center(child: CircularProgressIndicator()));
                           for (Writing w in controller.writings) {
-                            print(w.id);
-                            print(w.correction);
-                            print(w.status);
                             await runSave(w);
                           }
                           Get.back();
@@ -68,13 +65,13 @@ class _WritingDetailState extends State<WritingDetail> {
                   onPressed: () async {
                     Get.back();
                     Get.defaultDialog(title: '저장중', content: const Center(child: CircularProgressIndicator()));
-                    print(writing.id);
-                    print(writing.correction);
-                    print(writing.status);
-
                     await runSave(writing);
-                    controller.writings.removeAt(controller.writingIndex);
-                    controller.getWriting();
+                    if(controller.writings.length > 1) {
+                      controller.writings.removeAt(controller.writingIndex);
+                      controller.getWriting();
+                    } else {
+                      Get.back();
+                    }
                     Get.back();
                     Get.snackbar('저장을 완료했습니다.', '', snackPosition: SnackPosition.BOTTOM);
                   },

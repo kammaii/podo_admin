@@ -6,6 +6,7 @@ import 'package:podo_admin/screens/loading_controller.dart';
 import 'package:podo_admin/screens/podo_message/podo_message_main.dart';
 import 'package:podo_admin/screens/reading/reading_title_main.dart';
 import 'package:podo_admin/screens/user/user_main.dart';
+import 'package:podo_admin/screens/user/user_state_manager.dart';
 import 'package:podo_admin/screens/writing/writing_main.dart';
 
 class MainFrame extends StatefulWidget {
@@ -22,7 +23,7 @@ class _MainFrameState extends State<MainFrame> {
     LessonCourseMain(),
     ReadingTitleMain(),
     UserMain(),
-    const Research(),
+    // const Research(),
   ];
 
   int _selectedIndex = 0;
@@ -30,7 +31,7 @@ class _MainFrameState extends State<MainFrame> {
   @override
   Widget build(BuildContext context) {
     Get.put(LoadingController());
-
+    Get.put(UserStateManager());
     return Scaffold(
       body: Stack(
         children: [
@@ -69,11 +70,11 @@ class _MainFrameState extends State<MainFrame> {
                     selectedIcon: Icon(Icons.people_rounded),
                     label: Text('유저'),
                   ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.check_circle_outline),
-                    selectedIcon: Icon(Icons.check_circle),
-                    label: Text('조사'),
-                  ),
+                  // NavigationRailDestination(
+                  //   icon: Icon(Icons.check_circle_outline),
+                  //   selectedIcon: Icon(Icons.check_circle),
+                  //   label: Text('조사'),
+                  // ),
                 ],
                 selectedIndex: _selectedIndex,
                 onDestinationSelected: (index) {

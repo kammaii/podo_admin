@@ -25,6 +25,7 @@ class LessonStateManager extends GetxController {
   final KO = 'ko';
   final AUDIO = 'audio';
   final PRONUN = 'pronun';
+  bool isTranslating = false;
 
   @override
   void onInit() {
@@ -109,5 +110,10 @@ class LessonStateManager extends GetxController {
       cardType = value!;
       update();
     };
+  }
+
+  void changeTransState(bool b) {
+    isTranslating = b;
+    update();
   }
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/database.dart';
-import 'package:podo_admin/common/gpt_translator.dart';
+import 'package:podo_admin/common/deepl_translator.dart';
 import 'package:podo_admin/common/languages.dart';
 import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/screens/reading/reading.dart';
@@ -27,6 +27,8 @@ class _ReadingDetailState extends State<ReadingDetail> {
   final translator = GoogleTranslator();
   final languages = [...Languages().getFos];
   List<Reading> readings = [];
+  String translatingId = '';
+
 
   @override
   void initState() {
@@ -36,6 +38,38 @@ class _ReadingDetailState extends State<ReadingDetail> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadReadings(readingTitle.id);
     });
+  }
+
+  void runTranslation(String id, Map<String, dynamic> map, {bool isSetState = true}) {
+    translatingId = id;
+    if (isSetState) {
+      setState(() {
+        controller.isTranslating = true;
+      });
+      DeeplTranslator().getTranslations(map).then((value) => setState(() {
+        controller.isTranslating = false;
+      }));
+    } else {
+      controller.changeTransState(true);
+      DeeplTranslator().getTranslations(map).then((value) {
+        controller.changeTransState(false);
+      }).catchError((e) {
+        Get.snackbar('번역 오류 발생', e.toString(), snackPosition: SnackPosition.BOTTOM);
+        controller.changeTransState(false);
+      });
+    }
+  }
+
+  Widget getTransBtn(String id) {
+    return Row(
+      children: [
+        const Text('번역'),
+        const SizedBox(width: 10),
+        controller.isTranslating && id == translatingId
+            ? const SizedBox(height: 15, width: 15, child: CircularProgressIndicator(strokeWidth: 1.5))
+            : const SizedBox.shrink()
+      ],
+    );
   }
 
   void loadReadings(String readingTitleId) async {
@@ -76,8 +110,16 @@ class _ReadingDetailState extends State<ReadingDetail> {
           const Text('단어입력'),
           const SizedBox(width: 20),
           TextButton(onPressed: (){
-            GPTTranslator().getWordTranslations(reading.words).then((value) => controller.update());
-          }, child: const Text('번역')),
+            DeeplTranslator().getWordTranslations(controller, reading.words).then((value) => controller.update());
+          }, child: Row(
+            children: [
+              const Text('번역'),
+              const SizedBox(width: 10),
+              controller.isTranslating
+                  ? const SizedBox(height: 15, width: 15, child: CircularProgressIndicator(strokeWidth: 1.5))
+                  : const SizedBox.shrink()
+            ],
+          ),),
         ],
       ),
       content: getWordList(reading),
@@ -125,9 +167,9 @@ class _ReadingDetailState extends State<ReadingDetail> {
               const SizedBox(width: 10),
               TextButton(
                   onPressed: () {
-                    GPTTranslator().getTranslations(reading.content).then((value) => setState(() {}));
+                    runTranslation(reading.id, reading.content);
                   },
-                  child: const Text('번역')),
+                  child: getTransBtn(reading.id)),
             ],
           ),
           const SizedBox(height: 10),

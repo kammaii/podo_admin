@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/screens/user/user.dart';
 import 'package:podo_admin/screens/user/user_main.dart';
 
@@ -42,7 +41,7 @@ class _RankingState extends State<Ranking> {
         child: FutureBuilder(
           future: future,
           builder: (BuildContext context, AsyncSnapshot snapshot) {
-            if (snapshot.hasData == true) {
+            if (snapshot.hasData) {
               List<User> users = [];
               for (QueryDocumentSnapshot<Map<String, dynamic>> doc in snapshot.data.docs) {
                 users.add(User.fromJson(doc.data()));

@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@sendgrid/mail": "^7.7.0"
+    "@sendgrid/mail": "^7.7.0",
+    "uuid": "^9.0.1"
   }
 }

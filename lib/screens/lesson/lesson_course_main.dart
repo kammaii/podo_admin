@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/database.dart';
-import 'package:podo_admin/common/gpt_translator.dart';
+import 'package:podo_admin/common/deepl_translator.dart';
 import 'package:podo_admin/common/languages.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/common/my_textfield.dart';
@@ -190,13 +190,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                     children: [
                       const Text('타이틀', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(width: 10),
-                      TextButton(
-                          onPressed: () {
-                            GPTTranslator()
-                                .getTranslations(lessonCourse!.title)
-                                .then((value) => controller.update());
-                          },
-                          child: const Text('번역')),
+                      DeeplTranslator().getTransBtn(controller, lessonCourse!.title),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -206,13 +200,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                     children: [
                       const Text('설명', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(width: 10),
-                      TextButton(
-                          onPressed: () {
-                            GPTTranslator()
-                                .getTranslations(lessonCourse!.description)
-                                .then((value) => controller.update());
-                          },
-                          child: const Text('번역')),
+                      DeeplTranslator().getTransBtn(controller, lessonCourse!.description),
                     ],
                   ),
                   const SizedBox(height: 10),

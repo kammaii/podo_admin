@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:html_editor_enhanced/html_editor.dart';
 import 'package:podo_admin/common/database.dart';
-import 'package:podo_admin/common/gpt_translator.dart';
+import 'package:podo_admin/common/deepl_translator.dart';
 import 'package:podo_admin/common/languages.dart';
 import 'package:podo_admin/common/my_html_color.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
@@ -35,6 +35,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
   int detailFoIndex = 0;
   final htmlEditorController = HtmlEditorController();
   Lesson lesson = Get.arguments;
+  String translatingId = '';
   final LESSONS = 'Lessons';
   final LESSON_CARDS = 'LessonCards';
   final LESSON_SUMMARIES = 'LessonSummaries';
@@ -120,6 +121,38 @@ class _LessonCardMainState extends State<LessonCardMain> {
     }
   }
 
+  void runTranslation(String id, Map<String, dynamic> map, {bool isSetState = true}) {
+    translatingId = id;
+    if (isSetState) {
+      setState(() {
+        _controller.isTranslating = true;
+      });
+      DeeplTranslator().getTranslations(map).then((value) => setState(() {
+        _controller.isTranslating = false;
+          }));
+    } else {
+      _controller.changeTransState(true);
+      DeeplTranslator().getTranslations(map).then((value) {
+        _controller.changeTransState(false);
+      }).catchError((e) {
+        Get.snackbar('번역 오류 발생', e.toString(), snackPosition: SnackPosition.BOTTOM);
+        _controller.changeTransState(false);
+      });
+    }
+  }
+
+  Widget getTransBtn(String id) {
+    return Row(
+      children: [
+        const Text('번역'),
+        const SizedBox(width: 10),
+        _controller.isTranslating && id == translatingId
+            ? const SizedBox(height: 15, width: 15, child: CircularProgressIndicator(strokeWidth: 1.5))
+            : const SizedBox.shrink()
+      ],
+    );
+  }
+
   void setCards() {
     cardWidgets = [];
     cardWidgets = List<Widget>.generate(
@@ -153,12 +186,10 @@ class _LessonCardMainState extends State<LessonCardMain> {
                     TextButton(
                         onPressed: () {
                           if (_controller.cards[index].detailTitle != null) {
-                            GPTTranslator()
-                                .getTranslations(_controller.cards[index].detailTitle!)
-                                .then((value) => setState(() {}));
+                            runTranslation(card.id, _controller.cards[index].detailTitle!);
                           }
                         },
-                        child: const Text('번역'))
+                        child: getTransBtn(card.id))
                   ],
                 ),
                 const SizedBox(height: 5),
@@ -378,11 +409,9 @@ class _LessonCardMainState extends State<LessonCardMain> {
                 card.type != MyStrings.subject && card.type != MyStrings.explain
                     ? TextButton(
                         onPressed: () {
-                          GPTTranslator()
-                              .getTranslations(_controller.cards[index].content)
-                              .then((value) => setState(() {}));
+                          runTranslation(card.id, _controller.cards[index].content);
                         },
-                        child: const Text('번역'))
+                        child: getTransBtn(card.id))
                     : const SizedBox.shrink(),
               ],
             ),
@@ -550,11 +579,10 @@ class _LessonCardMainState extends State<LessonCardMain> {
                               children: [
                                 TextButton(
                                     onPressed: () {
-                                      GPTTranslator()
-                                          .getTranslations(_controller.lessonSummaries[index].content)
-                                          .then((value) => _controller.update());
+                                      runTranslation(_controller.lessonSummaries[index].id,
+                                          _controller.lessonSummaries[index].content, isSetState: false);
                                     },
-                                    child: const Text('번역'))
+                                    child: getTransBtn(_controller.lessonSummaries[index].id))
                               ],
                             ),
                             const SizedBox(height: 10),
@@ -590,7 +618,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
 
     return GetBuilder<LessonStateManager>(
       builder: (_) {
-        if(_controller.writingQuestions.isEmpty) {
+        if (_controller.writingQuestions.isEmpty) {
           _controller.writingQuestions.add(WritingQuestion());
           _controller.writingQuestions.add(WritingQuestion());
           writingControllers.add({KO: TextEditingController(), FO: TextEditingController()});
@@ -691,11 +719,10 @@ class _LessonCardMainState extends State<LessonCardMain> {
                                   const SizedBox(height: 20),
                                   TextButton(
                                       onPressed: () {
-                                        GPTTranslator()
-                                            .getTranslations(_controller.writingQuestions[index].title)
-                                            .then((value) => _controller.update());
+                                        runTranslation(_controller.writingQuestions[index].id,
+                                            _controller.writingQuestions[index].title, isSetState: false);
                                       },
-                                      child: const Text('번역')),
+                                      child: getTransBtn(_controller.writingQuestions[index].id)),
                                   const SizedBox(height: 10),
                                   Expanded(child: InnerCardTextField().getWritingQuestionFos(index)),
                                 ],
@@ -767,8 +794,8 @@ class _LessonCardMainState extends State<LessonCardMain> {
                           _controller.cards.add(LessonCard());
                         });
                       },
-                      child: Row(
-                        children: const [
+                      child: const Row(
+                        children: [
                           Icon(Icons.add),
                           SizedBox(width: 10),
                           Text('카드추가'),
@@ -828,7 +855,8 @@ class _LessonCardMainState extends State<LessonCardMain> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              Text('마지막카드No: ${_controller.cards.length-1}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                              Text('마지막카드No: ${_controller.cards.length - 1}',
+                                  style: const TextStyle(fontWeight: FontWeight.bold)),
                             ],
                           ),
                           Expanded(

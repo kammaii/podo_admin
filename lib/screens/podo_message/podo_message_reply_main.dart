@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
+import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/screens/podo_message/podo_message_state_manager.dart';
 import 'package:podo_admin/screens/podo_message/podo_message_reply.dart';
+import 'package:podo_admin/screens/user/user_main.dart';
 
 class CloudMessageReplyMain extends StatefulWidget {
   CloudMessageReplyMain({Key? key}) : super(key: key);
@@ -62,7 +64,8 @@ class _CloudMessageReplyMainState extends State<CloudMessageReplyMain> {
                     return DataTable2(
                       columns: const [
                         DataColumn2(label: Text('순서'), size: ColumnSize.S),
-                        DataColumn2(label: Text('내용'), size: ColumnSize.L),
+                        DataColumn2(label: Text('답변'), size: ColumnSize.L),
+                        DataColumn2(label: Text('교정'), size: ColumnSize.L),
                         DataColumn2(label: Text('유저이름'), size: ColumnSize.S),
                         DataColumn2(label: Text('상태'), size: ColumnSize.S),
                       ],
@@ -72,12 +75,65 @@ class _CloudMessageReplyMainState extends State<CloudMessageReplyMain> {
 
                         return DataRow(cells: [
                           DataCell(Text((controller.replies.length - index).toString())),
-                          DataCell(Text(reply.reply), onTap: () {
+                          DataCell(Text(reply.originalReply ?? reply.reply), onTap: () {
                             Get.dialog(AlertDialog(
                               content: Text(reply.reply),
                             ));
+                          }, onDoubleTap: () {
+                            final originalReply = reply.originalReply ?? reply.reply;
+                            String newReply = '';
+                            final tec = TextEditingController(text: originalReply);
+
+                            Get.dialog(AlertDialog(
+                              content: Row(
+                                children: [
+                                  SizedBox(
+                                    width: 500,
+                                    child: MyTextField().getTextField(
+                                        controller: tec,
+                                        fn: (value) {
+                                          newReply = value;
+                                        }),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  ElevatedButton(
+                                      onPressed: () {
+                                        Get.dialog(AlertDialog(
+                                          title: const Text('답변을 수정할까요?'),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () {
+                                                Get.back();
+                                              },
+                                              child: const Text('아니요'),
+                                            ),
+                                            TextButton(
+                                              onPressed: () async {
+                                                Get.back();
+                                                Get.back();
+                                                reply.reply = newReply;
+                                                await Database().updateField(
+                                                  collection:
+                                                      'PodoMessages/${controller.selectedMessageId}/Replies',
+                                                  docId: reply.id,
+                                                  map: {'originalReply': originalReply, 'reply': newReply},
+                                                );
+                                                controller.update();
+                                              },
+                                              child: const Text('네'),
+                                            ),
+                                          ],
+                                        ));
+                                      },
+                                      child: const Text('수정'))
+                                ],
+                              ),
+                            ));
                           }),
-                          DataCell(Text(reply.userName)),
+                          DataCell(Text(reply.originalReply != null ? reply.reply! : '')),
+                          DataCell(Text(reply.userName), onDoubleTap: () {
+                            Get.to(UserMain(userId: reply.userId));
+                          }),
                           DataCell(
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 5),

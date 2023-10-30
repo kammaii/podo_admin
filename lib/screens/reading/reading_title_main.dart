@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/database.dart';
-import 'package:podo_admin/common/gpt_translator.dart';
+import 'package:podo_admin/common/deepl_translator.dart';
 import 'package:podo_admin/common/languages.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:podo_admin/common/my_textfield.dart';
@@ -198,9 +198,7 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
                           children: [
                             const Text('읽기 타이틀', textScaleFactor: 1.5),
                             const SizedBox(width: 10),
-                            TextButton(onPressed: (){
-                              GPTTranslator().getTranslations(readingTitle.title).then((value) => controller.update());
-                            }, child: const Text('번역')),
+                            DeeplTranslator().getTransBtn(controller, readingTitle.title),
                           ],
                         ),
                         getTitleLine('ko'),

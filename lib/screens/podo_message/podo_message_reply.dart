@@ -7,6 +7,7 @@ class PodoMessageReply {
   late String reply;
   late DateTime date;
   late bool isSelected;
+  String? originalReply;
 
 
   static const String ID = 'id';
@@ -15,6 +16,7 @@ class PodoMessageReply {
   static const String REPLY = 'reply';
   static const String DATE = 'date';
   static const String ISSELECTED = 'isSelected';
+  static const String ORIGINAL_REPLY = 'originalReply';
 
 
   PodoMessageReply.fromJson(Map<String, dynamic> json) {
@@ -25,5 +27,8 @@ class PodoMessageReply {
     Timestamp stamp = json[DATE];
     date = stamp.toDate();
     isSelected = json[ISSELECTED];
+    if(json[ORIGINAL_REPLY] != null) {
+      originalReply = json[ORIGINAL_REPLY];
+    }
   }
 }
