@@ -44,6 +44,14 @@ class _LessonCardMainState extends State<LessonCardMain> {
   final KO = 'ko';
   final FO = 'fo';
   final PRONUN = 'pronun';
+  final List<String> radios = [
+    MyStrings.subject,
+    MyStrings.mention,
+    MyStrings.tip,
+    MyStrings.explain,
+    MyStrings.repeat,
+    MyStrings.quiz
+  ];
 
   @override
   void initState() {
@@ -128,7 +136,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
         _controller.isTranslating = true;
       });
       DeeplTranslator().getTranslations(map).then((value) => setState(() {
-        _controller.isTranslating = false;
+            _controller.isTranslating = false;
           }));
     } else {
       _controller.changeTransState(true);
@@ -580,7 +588,8 @@ class _LessonCardMainState extends State<LessonCardMain> {
                                 TextButton(
                                     onPressed: () {
                                       runTranslation(_controller.lessonSummaries[index].id,
-                                          _controller.lessonSummaries[index].content, isSetState: false);
+                                          _controller.lessonSummaries[index].content,
+                                          isSetState: false);
                                     },
                                     child: getTransBtn(_controller.lessonSummaries[index].id))
                               ],
@@ -590,7 +599,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                             const SizedBox(height: 20),
                             TextButton(
                                 onPressed: () {
-                                  _controller.lessonSummaries[index].examples.add(' ');
+                                  _controller.lessonSummaries[index].examples.add('');
                                   controller.update();
                                 },
                                 child: const Text('예문추가')),
@@ -720,7 +729,8 @@ class _LessonCardMainState extends State<LessonCardMain> {
                                   TextButton(
                                       onPressed: () {
                                         runTranslation(_controller.writingQuestions[index].id,
-                                            _controller.writingQuestions[index].title, isSetState: false);
+                                            _controller.writingQuestions[index].title,
+                                            isSetState: false);
                                       },
                                       child: getTransBtn(_controller.writingQuestions[index].id)),
                                   const SizedBox(height: 10),
@@ -749,159 +759,186 @@ class _LessonCardMainState extends State<LessonCardMain> {
       appBar: AppBar(
         title: Text('레슨카드  ( ${lesson.title[KO]} : ${lesson.id.substring(0, 8)})'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          children: [
-            GetBuilder<LessonStateManager>(
-              builder: (_) {
-                return Row(
-                  children: [
-                    MyRadioBtn().getRadioButton(
-                        context: context,
-                        value: MyStrings.subject,
-                        groupValue: _controller.cardType,
-                        f: _controller.changeCardTypeRadio()),
-                    MyRadioBtn().getRadioButton(
-                        context: context,
-                        value: MyStrings.mention,
-                        groupValue: _controller.cardType,
-                        f: _controller.changeCardTypeRadio()),
-                    MyRadioBtn().getRadioButton(
-                        context: context,
-                        value: MyStrings.tip,
-                        groupValue: _controller.cardType,
-                        f: _controller.changeCardTypeRadio()),
-                    MyRadioBtn().getRadioButton(
-                        context: context,
-                        value: MyStrings.explain,
-                        groupValue: _controller.cardType,
-                        f: _controller.changeCardTypeRadio()),
-                    MyRadioBtn().getRadioButton(
-                        context: context,
-                        value: MyStrings.repeat,
-                        groupValue: _controller.cardType,
-                        f: _controller.changeCardTypeRadio()),
-                    MyRadioBtn().getRadioButton(
-                        context: context,
-                        value: MyStrings.quiz,
-                        groupValue: _controller.cardType,
-                        f: _controller.changeCardTypeRadio()),
-                    const SizedBox(width: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _controller.cards.add(LessonCard());
-                        });
-                      },
-                      child: const Row(
-                        children: [
-                          Icon(Icons.add),
-                          SizedBox(width: 10),
-                          Text('카드추가'),
-                        ],
+      body: RawKeyboardListener(
+        focusNode: FocusNode(),
+        autofocus: true,
+        onKey: (event) {
+          if (event is RawKeyDownEvent) {
+            int index = radios.indexOf(_controller.cardType);
+            if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+              setState(() {
+                index--;
+                if (index < 0) {
+                  index = radios.length - 1;
+                }
+                _controller.cardType = radios[index];
+              });
+            }
+            if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+              setState(() {
+                index++;
+                if (index >= radios.length) {
+                  index = 0;
+                }
+                _controller.cardType = radios[index];
+              });
+            }
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            children: [
+              GetBuilder<LessonStateManager>(
+                builder: (_) {
+                  return Row(
+                    children: [
+                      MyRadioBtn().getRadioButton(
+                          context: context,
+                          value: MyStrings.subject,
+                          groupValue: _controller.cardType,
+                          f: _controller.changeCardTypeRadio()),
+                      MyRadioBtn().getRadioButton(
+                          context: context,
+                          value: MyStrings.mention,
+                          groupValue: _controller.cardType,
+                          f: _controller.changeCardTypeRadio()),
+                      MyRadioBtn().getRadioButton(
+                          context: context,
+                          value: MyStrings.tip,
+                          groupValue: _controller.cardType,
+                          f: _controller.changeCardTypeRadio()),
+                      MyRadioBtn().getRadioButton(
+                          context: context,
+                          value: MyStrings.explain,
+                          groupValue: _controller.cardType,
+                          f: _controller.changeCardTypeRadio()),
+                      MyRadioBtn().getRadioButton(
+                          context: context,
+                          value: MyStrings.repeat,
+                          groupValue: _controller.cardType,
+                          f: _controller.changeCardTypeRadio()),
+                      MyRadioBtn().getRadioButton(
+                          context: context,
+                          value: MyStrings.quiz,
+                          groupValue: _controller.cardType,
+                          f: _controller.changeCardTypeRadio()),
+                      const SizedBox(width: 20),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _controller.cards.add(LessonCard());
+                          });
+                        },
+                        child: const Row(
+                          children: [
+                            Icon(Icons.add),
+                            SizedBox(width: 10),
+                            Text('카드추가'),
+                          ],
+                        ),
                       ),
-                    ),
-                    const Expanded(child: SizedBox.shrink()),
-                    ElevatedButton(
-                      onPressed: () {
-                        Get.dialog(AlertDialog(
-                          content: getSummaryDialog(),
-                        ));
-                      },
-                      child: const Text('요약보기'),
-                    ),
-                    const SizedBox(width: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        Get.dialog(AlertDialog(
-                          content: getWritingDialog(),
-                        ));
-                      },
-                      child: const Text('쓰기보기'),
-                    ),
-                  ],
-                );
-              },
-            ),
-            Expanded(
-              child: FutureBuilder(
-                future: _controller.futureList,
-                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                  if (snapshot.hasData && snapshot.connectionState != ConnectionState.waiting) {
-                    if (_controller.cards.isEmpty) {
-                      for (dynamic snapshot in snapshot.data[0]) {
-                        LessonCard card = LessonCard.fromJson(snapshot);
-                        _controller.snapshots[LESSON_CARDS]!.add(card);
-                        _controller.cards.add(LessonCard.fromJson(snapshot));
-                      }
-                      for (dynamic snapshot in snapshot.data[1]) {
-                        LessonSummary summary = LessonSummary.fromJson(snapshot);
-                        _controller.snapshots[LESSON_SUMMARIES]!.add(summary);
-                        _controller.lessonSummaries.add(summary);
-                      }
-                      for (dynamic snapshot in snapshot.data[2]) {
-                        WritingQuestion question = WritingQuestion.fromJson(snapshot);
-                        _controller.snapshots[WRITING_QUESTIONS]!.add(question);
-                        _controller.writingQuestions.add(question);
-                      }
-                    }
-                    setCards();
-                    if (_controller.cards.isEmpty) {
-                      return const Center(child: Text('카드가 없습니다.'));
-                    } else {
-                      return Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text('마지막카드No: ${_controller.cards.length - 1}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                          Expanded(
-                            child: Scrollbar(
-                              controller: scrollController,
-                              child: ReorderableListView(
-                                scrollController: scrollController,
-                                padding: const EdgeInsets.all(20),
-                                scrollDirection: Axis.horizontal,
-                                onReorder: (int oldIndex, int newIndex) {
-                                  setState(() {
-                                    _controller.reorderCardItem(oldIndex, newIndex);
-                                  });
-                                },
-                                children: cardWidgets,
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    }
-                  } else {
-                    return const Center(child: CircularProgressIndicator());
-                  }
+                      const Expanded(child: SizedBox.shrink()),
+                      ElevatedButton(
+                        onPressed: () {
+                          Get.dialog(AlertDialog(
+                            content: getSummaryDialog(),
+                          ));
+                        },
+                        child: const Text('요약보기'),
+                      ),
+                      const SizedBox(width: 20),
+                      ElevatedButton(
+                        onPressed: () {
+                          Get.dialog(AlertDialog(
+                            content: getWritingDialog(),
+                          ));
+                        },
+                        child: const Text('쓰기보기'),
+                      ),
+                    ],
+                  );
                 },
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(30),
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_controller.cards.isNotEmpty) {
-                    Database().runLessonBatch(lessonId: lesson.id, collection: LESSON_CARDS);
-                  }
-                },
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  child: Text(
-                    '저장',
-                    style: TextStyle(fontSize: 20),
+              Expanded(
+                child: FutureBuilder(
+                  future: _controller.futureList,
+                  builder: (BuildContext context, AsyncSnapshot snapshot) {
+                    if (snapshot.hasData && snapshot.connectionState != ConnectionState.waiting) {
+                      if (_controller.cards.isEmpty) {
+                        for (dynamic snapshot in snapshot.data[0]) {
+                          LessonCard card = LessonCard.fromJson(snapshot);
+                          _controller.snapshots[LESSON_CARDS]!.add(card);
+                          _controller.cards.add(LessonCard.fromJson(snapshot));
+                        }
+                        for (dynamic snapshot in snapshot.data[1]) {
+                          LessonSummary summary = LessonSummary.fromJson(snapshot);
+                          _controller.snapshots[LESSON_SUMMARIES]!.add(summary);
+                          _controller.lessonSummaries.add(summary);
+                        }
+                        for (dynamic snapshot in snapshot.data[2]) {
+                          WritingQuestion question = WritingQuestion.fromJson(snapshot);
+                          _controller.snapshots[WRITING_QUESTIONS]!.add(question);
+                          _controller.writingQuestions.add(question);
+                        }
+                      }
+                      setCards();
+                      if (_controller.cards.isEmpty) {
+                        return const Center(child: Text('카드가 없습니다.'));
+                      } else {
+                        return Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text('마지막카드No: ${_controller.cards.length - 1}',
+                                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                            Expanded(
+                              child: Scrollbar(
+                                controller: scrollController,
+                                child: ReorderableListView(
+                                  scrollController: scrollController,
+                                  padding: const EdgeInsets.all(20),
+                                  scrollDirection: Axis.horizontal,
+                                  onReorder: (int oldIndex, int newIndex) {
+                                    setState(() {
+                                      _controller.reorderCardItem(oldIndex, newIndex);
+                                    });
+                                  },
+                                  children: cardWidgets,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                    } else {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(30),
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (_controller.cards.isNotEmpty) {
+                      Database().runLessonBatch(lessonId: lesson.id, collection: LESSON_CARDS);
+                    }
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: Text(
+                      '저장',
+                      style: TextStyle(fontSize: 20),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

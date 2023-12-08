@@ -89,12 +89,6 @@ class _LessonListMainState extends State<LessonListMain> {
       ),
       content: GetBuilder<LessonStateManager>(
         builder: (_) {
-          if (typeToggle[1]) {
-            String? title = lesson.title[KO];
-            for (String fo in Languages().getFos) {
-              lesson.title[fo] = title;
-            }
-          }
           return Padding(
             padding: const EdgeInsets.all(20),
             child: SizedBox(
@@ -193,9 +187,7 @@ class _LessonListMainState extends State<LessonListMain> {
                       children: [
                         const Text('레슨타이틀', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         const SizedBox(width: 10),
-                        typeToggle[0]
-                            ? DeeplTranslator().getTransBtn(controller, lesson.title)
-                            : const SizedBox.shrink(),
+                        DeeplTranslator().getTransBtn(controller, lesson.title),
                       ],
                     ),
                     const SizedBox(height: 20),
