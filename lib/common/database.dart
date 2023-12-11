@@ -98,10 +98,10 @@ class Database {
     }).catchError((e) => print(e));
   }
 
-  Future<void> setEmptyDoc({required String collection, required String docId}) async {
+  Future<void> setLessonTitle({required String collection, required String docId}) async {
     DocumentReference ref = firestore.collection(collection).doc(docId);
-    Map<String, dynamic> emptyMap = {};
-    return await ref.set(emptyMap).then((value) {
+    Map<String, dynamic> map = {'id': docId};
+    return await ref.set(map).then((value) {
       print('Document is Saved');
       Get.snackbar('Document is saved', 'id: ${docId}', snackPosition: SnackPosition.BOTTOM);
     }).catchError((e) => print(e));

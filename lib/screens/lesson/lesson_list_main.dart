@@ -203,7 +203,7 @@ class _LessonListMainState extends State<LessonListMain> {
                               course.lessons.add(lesson.toJson());
                             }
                             updateLessons();
-                            Database().setEmptyDoc(collection: LESSON_COLLECTION, docId: lesson.id);
+                            Database().setLessonTitle(collection: LESSON_COLLECTION, docId: lesson.id);
                           }
                         },
                         child: const Padding(
