@@ -1,15 +1,16 @@
-const deepl = require('deepl-node');
-const authKey = '0f8fd09a-93c6-4475-78be-86bf7596999f:fx';
-const translator = new deepl.Translator(authKey);
+const admin = require('firebase-admin');
+admin.initializeApp();
 
-var languages = ['es', 'fr', 'de', 'pt', 'id', 'ru'];
+//export GOOGLE_APPLICATION_CREDENTIALS="G:/keys/newpodo/podo-49335-5e9743918010.json"
 
-async function onDeeplFunction() {
-        const result = await translator.translateText('Hello, world!', null, 'fr');
-        console.log(result.text); // Bonjour, le monde !
-        response.set('Access-Control-Allow-Origin', '*');
-        response.status(200).send(result);
+async function onSchedule() {
+    const now = new Date();
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(now.getMonth() - 1);
+    let totalBasicUsers = await admin.firestore().collection('Users').where('dateSignIn', '<=', sixMonthsAgo).get();
+
+    console.log(totalBasicUsers.docs[0].get('email'));
 }
 
-onDeeplFunction();
+onSchedule();
 

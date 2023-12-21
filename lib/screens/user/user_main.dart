@@ -292,7 +292,6 @@ class _UserMainState extends State<UserMain> {
                                   'query': FirebaseFirestore.instance
                                       .collection('Users')
                                       .where('status', isEqualTo: 2)
-                                      .limit(20)
                                       .orderBy('dateSignIn', descending: true),
                                   'userCount': controller.premiumCount,
                                 });

@@ -144,19 +144,27 @@ function onWritingReplied(change, context) {
   }
 }
 
-//function onSchedule() {
-//    const ref =
-//    let newUsers;
-//    let trialUsers;
-//    let basicUsers;
-//    let premiumUsers;
-//    let totalUsers;
-//}
+async function onUserCountScheduleFunction() {
+    const db = admin.firestore();
+    let newUsers = await admin.firestore().collection('Users').where('status', '==', 0).get();
+    let basicUsers = await admin.firestore().collection('Users').where('status', '==', 1).get();
+    let premiumUsers = await admin.firestore().collection('Users').where('status', '==', 2).get();
+    let trialUsers = await admin.firestore().collection('Users').where('status', '==', 3).get();
+    let data = {
+        'date': new Date(),
+        'newUsers': newUsers.size,
+        'basicUsers': basicUsers.size,
+        'premiumUsers': premiumUsers.size,
+        'trialUsers': trialUsers.size,
+        'totalUsers': newUsers.size + basicUsers.size + premiumUsers.size + trialUsers.size,
+    }
+    db.collection('UserCounts').doc().set(data);
+}
 
 exports.onWritingReply = functions.firestore.document('Writings/{writingId}').onUpdate(onWritingReplied);
 exports.onPodoMsgActive = functions.firestore.document('PodoMessages/{podoMessageId}').onUpdate(onPodoMsgActivated);
 exports.onFeedbackSent = functions.firestore.document('Feedbacks/{feedbackId}').onCreate(onFeedbackSent);
 exports.onDeepl = onRequest(onDeeplFunction);
-exports.scheduledFunction = functions.pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun((context) => {
-  onSchedule();
+exports.onUserCountSchedule = functions.pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun((context) => {
+  onUserCountScheduleFunction();
 });
