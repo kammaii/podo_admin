@@ -234,38 +234,42 @@ class _LessonListMainState extends State<LessonListMain> {
   Widget _orderArrow(int index) {
     return Row(
       children: [
-        IconButton(
-            onPressed: () {
-              if (index != 0) {
-                int newIndex = index - 1;
-                final lesson1 = course.lessons[index];
-                final lesson2 = course.lessons[newIndex];
-                course.lessons[index] = lesson2;
-                course.lessons[newIndex] = lesson1;
-                updateLessons(shouldBack: false);
-              } else {
-                Get.dialog(const AlertDialog(
-                  title: Text('첫번째 레슨입니다.'),
-                ));
-              }
-            },
-            icon: const Icon(Icons.arrow_drop_up_outlined)),
-        IconButton(
-            onPressed: () {
-              if (index != course.lessons.length + 1) {
-                int newIndex = index + 1;
-                final lesson1 = course.lessons[index];
-                final lesson2 = course.lessons[newIndex];
-                course.lessons[index] = lesson2;
-                course.lessons[newIndex] = lesson1;
-                updateLessons(shouldBack: false);
-              } else {
-                Get.dialog(const AlertDialog(
-                  title: Text('마지막 레슨입니다.'),
-                ));
-              }
-            },
-            icon: const Icon(Icons.arrow_drop_down_outlined)),
+        Expanded(
+          child: IconButton(
+              onPressed: () {
+                if (index != 0) {
+                  int newIndex = index - 1;
+                  final lesson1 = course.lessons[index];
+                  final lesson2 = course.lessons[newIndex];
+                  course.lessons[index] = lesson2;
+                  course.lessons[newIndex] = lesson1;
+                  updateLessons(shouldBack: false);
+                } else {
+                  Get.dialog(const AlertDialog(
+                    title: Text('첫번째 레슨입니다.'),
+                  ));
+                }
+              },
+              icon: const Icon(Icons.arrow_drop_up_outlined)),
+        ),
+        Expanded(
+          child: IconButton(
+              onPressed: () {
+                if (index != course.lessons.length + 1) {
+                  int newIndex = index + 1;
+                  final lesson1 = course.lessons[index];
+                  final lesson2 = course.lessons[newIndex];
+                  course.lessons[index] = lesson2;
+                  course.lessons[newIndex] = lesson1;
+                  updateLessons(shouldBack: false);
+                } else {
+                  Get.dialog(const AlertDialog(
+                    title: Text('마지막 레슨입니다.'),
+                  ));
+                }
+              },
+              icon: const Icon(Icons.arrow_drop_down_outlined)),
+        ),
       ],
     );
   }

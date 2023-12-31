@@ -355,44 +355,48 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                             DataCell(
                               Row(
                                 children: [
-                                  IconButton(
-                                      onPressed: () async {
-                                        if (index != 0) {
-                                          int newIndex = index - 1;
-                                          LessonCourse thatCourse = courses[newIndex];
-                                          await Database().switchOrderTransaction(
-                                              collection: LESSON_COURSES,
-                                              docId1: course.id,
-                                              docId2: thatCourse.id);
-                                          getDataFromDb();
-                                          Get.back();
-                                          setState(() {});
-                                        } else {
-                                          Get.dialog(const AlertDialog(
-                                            title: Text('첫번째 레슨입니다.'),
-                                          ));
-                                        }
-                                      },
-                                      icon: const Icon(Icons.arrow_drop_up_outlined)),
-                                  IconButton(
-                                      onPressed: () async {
-                                        if (index != courses.length - 1) {
-                                          int newIndex = index + 1;
-                                          LessonCourse thatCourse = courses[newIndex];
-                                          await Database().switchOrderTransaction(
-                                              collection: LESSON_COURSES,
-                                              docId1: course.id,
-                                              docId2: thatCourse.id);
-                                          getDataFromDb();
-                                          Get.back();
-                                          setState(() {});
-                                        } else {
-                                          Get.dialog(const AlertDialog(
-                                            title: Text('마지막 레슨입니다.'),
-                                          ));
-                                        }
-                                      },
-                                      icon: const Icon(Icons.arrow_drop_down_outlined)),
+                                  Expanded(
+                                    child: IconButton(
+                                        onPressed: () async {
+                                          if (index != 0) {
+                                            int newIndex = index - 1;
+                                            LessonCourse thatCourse = courses[newIndex];
+                                            await Database().switchOrderTransaction(
+                                                collection: LESSON_COURSES,
+                                                docId1: course.id,
+                                                docId2: thatCourse.id);
+                                            getDataFromDb();
+                                            Get.back();
+                                            setState(() {});
+                                          } else {
+                                            Get.dialog(const AlertDialog(
+                                              title: Text('첫번째 레슨입니다.'),
+                                            ));
+                                          }
+                                        },
+                                        icon: const Icon(Icons.arrow_drop_up_outlined)),
+                                  ),
+                                  Expanded(
+                                    child: IconButton(
+                                        onPressed: () async {
+                                          if (index != courses.length - 1) {
+                                            int newIndex = index + 1;
+                                            LessonCourse thatCourse = courses[newIndex];
+                                            await Database().switchOrderTransaction(
+                                                collection: LESSON_COURSES,
+                                                docId1: course.id,
+                                                docId2: thatCourse.id);
+                                            getDataFromDb();
+                                            Get.back();
+                                            setState(() {});
+                                          } else {
+                                            Get.dialog(const AlertDialog(
+                                              title: Text('마지막 레슨입니다.'),
+                                            ));
+                                          }
+                                        },
+                                        icon: const Icon(Icons.arrow_drop_down_outlined)),
+                                  ),
                                 ],
                               ),
                             ),

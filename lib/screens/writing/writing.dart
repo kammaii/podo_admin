@@ -6,17 +6,20 @@ class Writing {
   late String questionTitle;
   late int questionLevel;
   late String userId;
+  late String userName;
   late String userWriting;
   late String correction;
   late DateTime dateWriting;
   DateTime? dateReply;
   late int status;
+  bool isPremiumUser = false; // 교정 화면용
 
   static const String ID = 'id';
   static const String QUESTIONID = 'questionId';
   static const String QUESTIONTITLE = 'questionTitle';
   static const String QUESTIONLEVEL = 'questionLevel';
   static const String USERID = 'userId';
+  static const String USERNAME = 'userName';
   static const String USERWRITING = 'userWriting';
   static const String CORRECTION = 'correction';
   static const String DATEWRITING = 'dateWriting';
@@ -29,6 +32,8 @@ class Writing {
     questionTitle = json[QUESTIONTITLE];
     questionLevel = json[QUESTIONLEVEL];
     userId = json[USERID];
+    userName = json[USERNAME] ?? '';
+
     userWriting = json[USERWRITING];
     correction = json[CORRECTION];
     Timestamp writingStamp = json[DATEWRITING];
@@ -38,23 +43,5 @@ class Writing {
       dateReply = replyStamp.toDate();
     }
     status = json[STATUS];
-  }
-
-  Map<String, dynamic> toJson() {
-    Map<String, dynamic> map = {
-      ID: id,
-      QUESTIONID: questionId,
-      QUESTIONTITLE: questionTitle,
-      QUESTIONLEVEL: questionLevel,
-      USERID: userId,
-      USERWRITING: userWriting,
-      CORRECTION: correction,
-      DATEWRITING: Timestamp.fromDate(dateWriting),
-      STATUS: status,
-    };
-    if(dateReply != null) {
-      map[DATEREPLY] = Timestamp.fromDate(dateReply!);
-    }
-    return map;
   }
 }

@@ -29,6 +29,10 @@ class Database {
     return count;
   }
 
+  Future<dynamic> getDoc({required String collection, required String doc}) {
+    return firestore.collection(collection).doc(doc).get();
+  }
+
   Future<List<dynamic>> getDocs(
       {required String collection,
       dynamic field,

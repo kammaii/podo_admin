@@ -38,8 +38,7 @@ class _WritingDetailState extends State<WritingDetail> {
                       TextButton(
                         onPressed: () async {
                           Get.back();
-                          Get.defaultDialog(
-                              title: '저장중', content: const Center(child: CircularProgressIndicator()));
+                          Get.defaultDialog(title: '저장중', content: const Center(child: CircularProgressIndicator()));
                           for (Writing w in controller.writings) {
                             await runSave(w);
                           }
@@ -66,7 +65,7 @@ class _WritingDetailState extends State<WritingDetail> {
                     Get.back();
                     Get.defaultDialog(title: '저장중', content: const Center(child: CircularProgressIndicator()));
                     await runSave(writing);
-                    if(controller.writings.length > 1) {
+                    if (controller.writings.length > 1) {
                       controller.writings.removeAt(controller.writingIndex);
                       controller.getWriting();
                     } else {
@@ -109,7 +108,6 @@ class _WritingDetailState extends State<WritingDetail> {
     return true;
   }
 
-
   @override
   void initState() {
     super.initState();
@@ -118,7 +116,7 @@ class _WritingDetailState extends State<WritingDetail> {
 
   @override
   Widget build(BuildContext context) {
-    const double boxSize = 1000;
+    const double boxSize = 1200;
     writing = controller.writings[controller.writingIndex];
     htmlController.clear();
     (writing.correction.isEmpty)
@@ -157,6 +155,20 @@ class _WritingDetailState extends State<WritingDetail> {
                       '(순서: ${controller.writingIndex + 1} / ${controller.writings.length})',
                       style: const TextStyle(color: Colors.red),
                     ),
+                    const SizedBox(width: 20),
+                    writing.isPremiumUser ?
+                    Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: Theme.of(context).colorScheme.primaryContainer),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                        child: Text(
+                          'Premium',
+                          style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer),
+                        ),
+                      ),
+                    ) : const SizedBox.shrink(),
                     Visibility(
                       visible: controller.statusRadio == '신규',
                       child: Expanded(
@@ -303,7 +315,9 @@ class _WritingDetailState extends State<WritingDetail> {
                         ],
                       ),
                       callbacks: Callbacks(onChangeContent: (String? content) {
-                        if(content != '<p><br></p>' && writing.userWriting != content && writing.correction == content) {
+                        if (content != '<p><br></p>' &&
+                            writing.userWriting != content &&
+                            writing.correction == content) {
                           isCorrectedList[controller.writingIndex] = true;
                         }
                         writing.correction = content!;

@@ -52,17 +52,18 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
   }
 
   Widget getCategoryRadioBtn(String value) {
-    return MyRadioBtn().getRadioButton(
-      width: 200,
-      context: context,
-      value: value,
-      groupValue: controller.selectedCategory,
-      f: (String? value) {
-        controller.selectedCategory = value!;
-        setState(() {
-          getDataFromDb();
-        });
-      },
+    return Expanded(
+      child: MyRadioBtn().getRadioButton(
+        context: context,
+        value: value,
+        groupValue: controller.selectedCategory,
+        f: (String? value) {
+          controller.selectedCategory = value!;
+          setState(() {
+            getDataFromDb();
+          });
+        },
+      ),
     );
   }
 
@@ -257,14 +258,16 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    getCategoryRadioBtn(controller.categories[0]),
-                    getCategoryRadioBtn(controller.categories[1]),
-                    getCategoryRadioBtn(controller.categories[2]),
-                    getCategoryRadioBtn(controller.categories[3]),
-                    getCategoryRadioBtn(controller.categories[4]),
-                  ],
+                Expanded(
+                  child: Row(
+                    children: [
+                      getCategoryRadioBtn(controller.categories[0]),
+                      getCategoryRadioBtn(controller.categories[1]),
+                      getCategoryRadioBtn(controller.categories[2]),
+                      getCategoryRadioBtn(controller.categories[3]),
+                      getCategoryRadioBtn(controller.categories[4]),
+                    ],
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -399,40 +402,44 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
                   DataCell(
                     Row(
                       children: [
-                        IconButton(
-                            onPressed: () async {
-                              if (index != 0) {
-                                int newIndex = index - 1;
-                                ReadingTitle thatReading = readingTitles[newIndex];
-                                await Database().switchOrderTransaction(
-                                    collection: READING_TITLES, docId1: readingTitle.id, docId2: thatReading.id);
-                                setState(() {
-                                  getDataFromDb();
-                                });
-                              } else {
-                                Get.dialog(const AlertDialog(
-                                  title: Text('첫번째 읽기입니다.'),
-                                ));
-                              }
-                            },
-                            icon: const Icon(Icons.arrow_drop_up_outlined)),
-                        IconButton(
-                            onPressed: () async {
-                              if (index != readingTitles.length - 1) {
-                                int newIndex = index + 1;
-                                ReadingTitle thatReading = readingTitles[newIndex];
-                                await Database().switchOrderTransaction(
-                                    collection: READING_TITLES, docId1: readingTitle.id, docId2: thatReading.id);
-                                setState(() {
-                                  getDataFromDb();
-                                });
-                              } else {
-                                Get.dialog(const AlertDialog(
-                                  title: Text('마지막 레슨입니다.'),
-                                ));
-                              }
-                            },
-                            icon: const Icon(Icons.arrow_drop_down_outlined)),
+                        Expanded(
+                          child: IconButton(
+                              onPressed: () async {
+                                if (index != 0) {
+                                  int newIndex = index - 1;
+                                  ReadingTitle thatReading = readingTitles[newIndex];
+                                  await Database().switchOrderTransaction(
+                                      collection: READING_TITLES, docId1: readingTitle.id, docId2: thatReading.id);
+                                  setState(() {
+                                    getDataFromDb();
+                                  });
+                                } else {
+                                  Get.dialog(const AlertDialog(
+                                    title: Text('첫번째 읽기입니다.'),
+                                  ));
+                                }
+                              },
+                              icon: const Icon(Icons.arrow_drop_up_outlined)),
+                        ),
+                        Expanded(
+                          child: IconButton(
+                              onPressed: () async {
+                                if (index != readingTitles.length - 1) {
+                                  int newIndex = index + 1;
+                                  ReadingTitle thatReading = readingTitles[newIndex];
+                                  await Database().switchOrderTransaction(
+                                      collection: READING_TITLES, docId1: readingTitle.id, docId2: thatReading.id);
+                                  setState(() {
+                                    getDataFromDb();
+                                  });
+                                } else {
+                                  Get.dialog(const AlertDialog(
+                                    title: Text('마지막 레슨입니다.'),
+                                  ));
+                                }
+                              },
+                              icon: const Icon(Icons.arrow_drop_down_outlined)),
+                        ),
                       ],
                     ),
                   ),

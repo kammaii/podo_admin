@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/my_date_format.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
 import 'package:data_table_2/data_table_2.dart';
+import 'package:podo_admin/screens/user/user.dart';
 import 'package:podo_admin/screens/user/user_main.dart';
 import 'package:podo_admin/screens/writing/writing.dart';
 import 'package:podo_admin/screens/writing/writing_detail.dart';
@@ -15,15 +17,14 @@ class WritingMain extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     WritingStateManager controller = Get.put(WritingStateManager());
 
     Widget getRadioBtn(String title) {
       return MyRadioBtn().getRadioButton(
-          context: context,
-          value: title,
-          groupValue: controller.statusRadio,
-          f: controller.changeStatusRadio(),
+        context: context,
+        value: title,
+        groupValue: controller.statusRadio,
+        f: controller.changeStatusRadio(),
       );
     }
 
@@ -77,7 +78,7 @@ class WritingMain extends StatelessWidget {
                         writings.add(Writing.fromJson(snapshot));
                       }
                       controller.writings = writings;
-                      if(writings.isEmpty) {
+                      if (writings.isEmpty) {
                         return const Center(child: Text('검색된 교정이 없습니다.'));
                       } else {
                         return DataTable2(
@@ -87,6 +88,8 @@ class WritingMain extends StatelessWidget {
                             DataColumn2(label: Text('타이틀'), size: ColumnSize.S),
                             DataColumn2(label: Text('내용'), size: ColumnSize.L),
                             DataColumn2(label: Text('유저'), size: ColumnSize.S),
+                            DataColumn2(label: Text('이름'), size: ColumnSize.S),
+                            DataColumn2(label: Text(''), size: ColumnSize.S),
                             DataColumn2(label: Text('상태'), size: ColumnSize.S),
                           ],
                           rows: List<DataRow>.generate(controller.writings.length, (index) {
@@ -109,6 +112,37 @@ class WritingMain extends StatelessWidget {
                               }, onDoubleTap: () {
                                 Get.to(UserMain(userId: writing.userId));
                               }),
+                              DataCell(Text(writing.userName)),
+                              controller.statusRadio == '신규'
+                                  ? DataCell(FutureBuilder(
+                                      future: Database().getDoc(collection: 'Users', doc: writing.userId),
+                                      builder: (BuildContext context, AsyncSnapshot snapshot) {
+                                        if (!snapshot.hasData) {
+                                          return const Text('');
+                                        }
+                                        Map<String, dynamic> data = snapshot.data!.data() as Map<String, dynamic>;
+                                        User user = User.fromJson(data);
+                                        if (user.status == 2) {
+                                          writing.isPremiumUser = true;
+                                          return Container(
+                                            decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(20),
+                                                color: Theme.of(context).colorScheme.primaryContainer),
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                                              child: Text(
+                                                'Premium',
+                                                style:
+                                                    TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer),
+                                              ),
+                                            ),
+                                          );
+                                        } else {
+                                          return const Text('');
+                                        }
+                                      },
+                                    ))
+                                  : const DataCell(Text('')),
                               DataCell(Text(status!)),
                             ]);
                           }),
