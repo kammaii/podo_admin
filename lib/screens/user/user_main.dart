@@ -206,6 +206,16 @@ class _UserMainState extends State<UserMain> {
                                                       user.status == 3
                                                           ? Text(
                                                               '${MyDateFormat().getDateOnlyFormat(user.trialEnd!)} 까지')
+                                                          : const SizedBox.shrink(),
+                                                      user.status == 2
+                                                          ? Row(
+                                                            children: [
+                                                              Text(
+                                                              '${user.premiumStart} ~ ${user.premiumEnd}'),
+                                                              const SizedBox(width: 5),
+                                                              Icon(Icons.circle, color: user.premiumWillRenew != null && user.premiumWillRenew! ? Colors.green : Colors.red)
+                                                            ],
+                                                          )
                                                           : const SizedBox.shrink()
                                                     ],
                                                   ),
@@ -298,6 +308,7 @@ class _UserMainState extends State<UserMain> {
                                       .limit(20)
                                       .orderBy('trialEnd', descending: false),
                                   'userCount': controller.trialCount,
+                                  'userStatus': 3,
                                 });
                               }),
                           GestureDetector(
@@ -312,6 +323,7 @@ class _UserMainState extends State<UserMain> {
                                       .limit(20)
                                       .orderBy('dateSignIn', descending: true),
                                   'userCount': controller.basicCount,
+                                  'userStatus': 1,
                                 });
                               }),
                           GestureDetector(
@@ -325,6 +337,7 @@ class _UserMainState extends State<UserMain> {
                                       .where('status', isEqualTo: 2)
                                       .orderBy('dateSignIn', descending: true),
                                   'userCount': controller.premiumCount,
+                                  'userStatus': 2,
                                 });
                               }),
                           IconButton(

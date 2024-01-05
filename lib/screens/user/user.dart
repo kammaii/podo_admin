@@ -11,6 +11,11 @@ class User {
   late DateTime dateSignIn;
   DateTime? trialStart;
   DateTime? trialEnd;
+  String? premiumStart;
+  String? premiumEnd;
+  String? premiumLatestPurchase;
+  String? premiumUnsubscribeDetected;
+  bool? premiumWillRenew;
   String language = '';
   String? fcmToken;
   List<String>? fcmTopic;
@@ -32,6 +37,11 @@ class User {
   static const String DATE_SIGNIN = 'dateSignIn';
   static const String TRIAL_START = 'trialStart';
   static const String TRIAL_END = 'trialEnd';
+  static const String PREMIUM_START = 'premiumStart';
+  static const String PREMIUM_END = 'premiumEnd';
+  static const String PREMIUM_LATEST_PURCHASE = 'premiumLatestPurchase';
+  static const String PREMIUM_UNSUBSCRIBE_DETECTED = 'premiumUnsubscribeDetected';
+  static const String PREMIUM_WILL_RENEW = 'premiumWillRenew';
   static const String LANGUAGE = 'language';
   static const String FCM_TOKEN = 'fcmToken';
   static const String FCM_TOPIC = 'fcmTopic';
@@ -67,6 +77,26 @@ class User {
       Timestamp stamp = json[TRIAL_END];
       trialEnd = stamp.toDate();
     }
+    if(json[PREMIUM_START] != null) {
+      premiumStart = json[PREMIUM_START].substring(0, 10).replaceAll('-', '.');
+    }
+
+    if(json[PREMIUM_END] != null) {
+      premiumEnd = json[PREMIUM_END].substring(0, 10).replaceAll('-', '.');
+    }
+
+    if(json[PREMIUM_LATEST_PURCHASE] != null) {
+      premiumLatestPurchase = json[PREMIUM_LATEST_PURCHASE].substring(0, 10).replaceAll('-', '.');
+    }
+
+    if(json[PREMIUM_UNSUBSCRIBE_DETECTED] != null) {
+      premiumUnsubscribeDetected = json[PREMIUM_UNSUBSCRIBE_DETECTED].substring(0, 10).replaceAll('-', '.');
+    }
+
+    if(json[PREMIUM_WILL_RENEW] != null) {
+      premiumWillRenew = json[PREMIUM_WILL_RENEW];
+    }
+
     status = json[STATUS];
     if(json[LESSON_COUNT] != null) {
       lessonCount = json[LESSON_COUNT];

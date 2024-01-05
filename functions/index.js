@@ -144,7 +144,7 @@ function onWritingReplied(change, context) {
   }
 }
 
-async function onUserCountScheduleFunction() {
+async function userCountFunction() {
     const db = admin.firestore();
     let newUsers = await admin.firestore().collection('Users').where('status', '==', 0).get();
     let basicUsers = await admin.firestore().collection('Users').where('status', '==', 1).get();
@@ -165,6 +165,6 @@ exports.onWritingReply = functions.firestore.document('Writings/{writingId}').on
 exports.onPodoMsgActive = functions.firestore.document('PodoMessages/{podoMessageId}').onUpdate(onPodoMsgActivated);
 exports.onFeedbackSent = functions.firestore.document('Feedbacks/{feedbackId}').onCreate(onFeedbackSent);
 exports.onDeepl = onRequest(onDeeplFunction);
-exports.onUserCountSchedule = functions.pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun((context) => {
-  onUserCountScheduleFunction();
+exports.onUserCount = functions.pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun((context) => {
+  userCountFunction();
 });
