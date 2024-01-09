@@ -1,7 +1,10 @@
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
+const auth = require('firebase/auth');
+const app = require('firebase-admin/app');
 
-admin.initializeApp();
+//admin.initializeApp();
+app.initializeApp();
 
 //export GOOGLE_APPLICATION_CREDENTIALS="G:/keys/newpodo/podo-49335-5e9743918010.json"
 
@@ -45,16 +48,39 @@ async function onSchedule() {
     aWeekAgo.setDate(aWeekAgo.getDate() - 7)
     let totalBasicUsers = await admin.firestore().collection('Users')
 //        .where('emailLastSend', '<=', aWeekAgo)
-        //.where('dateSignIn', '<=', sixMonthsAgo)
+        .where('dateSignIn', '<=', sixMonthsAgo)
         .where('userType', '==', 'test')
         .get();
     for(let i=0; i<totalBasicUsers.docs.length; i++) {
         // send Email and update email notification sent date
-        let email = totalBasicUsers.docs[i].get('email');
-        let emailLastSend = totalBasicUsers.docs[i].get('emailLastSend');
-        sendEmail(email);
-        console.log('Email send: ' + email);
-        admin.firestore().collection('Users').doc(totalBasicUsers.docs[i].id).update({'emailLastSend': now});
+        let userDoc = totalBasicUsers.docs[i];
+        let email = userDoc.get('email');
+        let emailLastSend = userDoc.get('emailLastSend');
+        if(emailLastSend) {
+            console.log('InActiveUser');
+            if(emailLastSend < aWeekAgo) {
+            console.log('REMOVE ACCOUNT');
+                //remove account
+                let userId = userDoc.get('id');
+                console.log('ADMIN:' + auth.getAuth);
+
+//                auth.getAuth()
+//                  .getUser(userId)
+//                  .then((userRecord) => {
+//                    // See the UserRecord reference doc for the contents of userRecord.
+//                    console.log(`Successfully fetched user data: ${userRecord.toJSON()}`);
+//                  })
+//                  .catch((error) => {
+//                    console.log('Error fetching user data:', error);
+//                  });
+
+            }
+        } else {
+            sendEmail(email);
+            console.log('Email send: ' + email);
+            admin.firestore().collection('Users').doc(totalBasicUsers.docs[i].id).update({'emailLastSend': now});
+
+        }
     }
     //console.log(totalBasicUsers.docs[0].get('email'));
 }

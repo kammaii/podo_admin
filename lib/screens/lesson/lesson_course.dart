@@ -13,6 +13,7 @@ class LessonCourse {
   String? tag;
   late List<dynamic> lessons;
   late bool isReleased;
+  late bool hasWorkbook;
 
   LessonCourse() {
     id = const Uuid().v4();
@@ -22,6 +23,7 @@ class LessonCourse {
     description = {};
     lessons = [];
     isReleased = false;
+    hasWorkbook = false;
   }
 
   static const String ID = 'id';
@@ -33,6 +35,7 @@ class LessonCourse {
   static const String TAG = 'tag';
   static const String LESSONS = 'lessons';
   static const String ISRELEASED = 'isReleased';
+  static const String HASWORKBOOK = 'hasWorkbook';
 
   LessonCourse.fromJson(Map<String, dynamic> json) {
     id = json[ID];
@@ -44,6 +47,7 @@ class LessonCourse {
     tag = json[TAG] ?? null;
     lessons = json[LESSONS];
     isReleased = json[ISRELEASED];
+    hasWorkbook = json[HASWORKBOOK] ?? false;
   }
 
   Map<String, dynamic> toJson() {
@@ -54,7 +58,8 @@ class LessonCourse {
       DESCRIPTION: description,
       ISTOPICMODE: isTopicMode,
       LESSONS: lessons,
-      ISRELEASED: isReleased
+      ISRELEASED: isReleased,
+      HASWORKBOOK: hasWorkbook
     };
     map[TAG] = tag ?? null;
     map[IMAGE] = image ?? null;

@@ -13,6 +13,7 @@ import 'package:podo_admin/screens/lesson/lesson_course.dart';
 import 'package:podo_admin/screens/lesson/lesson_list_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:podo_admin/screens/lesson/workbook_main.dart';
 
 class LessonCourseMain extends StatefulWidget {
   LessonCourseMain({Key? key}) : super(key: key);
@@ -36,6 +37,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
   final FO = 'fo';
   final DESC = 'desc';
   File? imageFile;
+  List<bool> workbookToggle = [true, false];
 
   @override
   void initState() {
@@ -132,10 +134,12 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
     );
   }
 
-  courseDialog({LessonCourse? lessonCourse}) async {
-    lessonCourse = lessonCourse ?? LessonCourse();
+  courseDialog({LessonCourse? course}) async {
+    LessonCourse lessonCourse = course ?? LessonCourse();
     String title;
     isTopicMode ? title = 'Topic Mode (${lessonCourse.id})' : title = 'Grammar Mode (${lessonCourse.id})';
+    workbookToggle[0] = lessonCourse.hasWorkbook == true;
+    workbookToggle[1] = lessonCourse.hasWorkbook == false;
 
     Get.dialog(AlertDialog(
       title: Row(
@@ -190,7 +194,39 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                     children: [
                       const Text('타이틀', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(width: 10),
-                      DeeplTranslator().getTransBtn(controller, lessonCourse!.title),
+                      DeeplTranslator().getTransBtn(controller, lessonCourse.title),
+                      const SizedBox(width: 20),
+                      const Text('워크북', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(width: 10),
+                      ToggleButtons(
+                        isSelected: workbookToggle,
+                        onPressed: (int index) {
+                          workbookToggle[0] = index == 0;
+                          workbookToggle[1] = index == 1;
+                          if (index == 0) {
+                            lessonCourse.hasWorkbook = true;
+                          } else {
+                            lessonCourse.hasWorkbook = false;
+                          }
+                          controller.update();
+                        },
+                        borderRadius: const BorderRadius.all(Radius.circular(10)),
+                        children: const [
+                          Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('있음')),
+                          Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 10), child: Text("없음")),
+                        ],
+                      ),
+                      const SizedBox(width: 20),
+                      ElevatedButton(
+                        onPressed: () {
+                          Get.to(const WorkbookMain(), arguments: lessonCourse);
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          child: Text('워크북 보기'),
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -303,7 +339,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                               Get.snackbar('아이디가 클립보드에 저장되었습니다.', course.id, snackPosition: SnackPosition.BOTTOM);
                             }),
                             DataCell(Text(course.title['en']!), onTap: () {
-                              courseDialog(lessonCourse: course);
+                              courseDialog(course: course);
                             }),
                             DataCell(Text(lessonLength.toString())),
                             DataCell(Text(course.tag != null ? course.tag.toString() : ''), onTap: () {
