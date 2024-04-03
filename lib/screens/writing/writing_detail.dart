@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:html_editor_enhanced/html_editor.dart';
 import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/my_html_color.dart';
+import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 import 'package:podo_admin/screens/writing/writing.dart';
 import 'package:podo_admin/screens/writing/writing_state_manager.dart';
@@ -18,6 +19,7 @@ class WritingDetail extends StatefulWidget {
 class _WritingDetailState extends State<WritingDetail> {
   late Writing writing;
   HtmlEditorController htmlController = HtmlEditorController();
+  TextEditingController commentController = TextEditingController();
   WritingStateManager controller = Get.find<WritingStateManager>();
   late List<bool> isCorrectedList;
   String initialContent = '';
@@ -38,7 +40,8 @@ class _WritingDetailState extends State<WritingDetail> {
                       TextButton(
                         onPressed: () async {
                           Get.back();
-                          Get.defaultDialog(title: '저장중', content: const Center(child: CircularProgressIndicator()));
+                          Get.defaultDialog(
+                              title: '저장중', content: const Center(child: CircularProgressIndicator()));
                           for (Writing w in controller.writings) {
                             await runSave(w);
                           }
@@ -85,7 +88,8 @@ class _WritingDetailState extends State<WritingDetail> {
     if (wt.status == 0) {
       wt.status = 1;
     }
-    return Database().updateCorrection(writingId: wt.id, correction: wt.correction, status: wt.status);
+    return Database()
+        .updateCorrection(writingId: wt.id, correction: wt.correction, status: wt.status, comments: wt.comments);
   }
 
   Widget getCircle(Color color) {
@@ -122,6 +126,9 @@ class _WritingDetailState extends State<WritingDetail> {
     (writing.correction.isEmpty)
         ? htmlController.setText(writing.userWriting)
         : htmlController.setText(writing.correction);
+
+    commentController.text = writing.comments ?? '';
+
     return Scaffold(
       appBar: AppBar(title: const Text('교정_상세')),
       body: RawKeyboardListener(
@@ -156,19 +163,20 @@ class _WritingDetailState extends State<WritingDetail> {
                       style: const TextStyle(color: Colors.red),
                     ),
                     const SizedBox(width: 20),
-                    writing.isPremiumUser ?
-                    Container(
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: Theme.of(context).colorScheme.primaryContainer),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                        child: Text(
-                          'Premium',
-                          style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer),
-                        ),
-                      ),
-                    ) : const SizedBox.shrink(),
+                    writing.isPremiumUser
+                        ? Container(
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                color: Theme.of(context).colorScheme.primaryContainer),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                              child: Text(
+                                'Premium',
+                                style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer),
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink(),
                     Visibility(
                       visible: controller.statusRadio == '신규',
                       child: Expanded(
@@ -325,6 +333,18 @@ class _WritingDetailState extends State<WritingDetail> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 20),
+                const Text(' 코멘트', textScaleFactor: 2),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: MyTextField().getTextField(
+                      controller: commentController,
+                      fn: (String? value) {
+                        writing.comments = value;
+                      }),
+                ),
+                const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.all(30),
                   child: Row(

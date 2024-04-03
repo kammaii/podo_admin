@@ -86,10 +86,16 @@ class Database {
     return titles;
   }
 
-  Future<void> updateCorrection({required String writingId, required String correction, required int status}) async {
+  Future<void> updateCorrection({required String writingId, required String correction, required int status, String? comments}) async {
     DocumentReference ref = firestore.collection('Writings').doc(writingId);
+    Map<String, dynamic> map = {
+      'correction': correction, 'dateReply': Timestamp.now(), 'status': status
+    };
+    if(comments != null && comments.isNotEmpty) {
+      map['comments'] = comments;
+    }
     await ref
-        .update({'correction': correction, 'dateReply': Timestamp.now(), 'status': status})
+        .update(map)
         .then((value) => print('Correction updated'))
         .catchError((e) => print('ERROR : $e'));
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:podo_admin/feedback/feedback_main.dart';
 import 'package:podo_admin/research.dart';
 import 'package:podo_admin/screens/lesson/lesson_course_main.dart';
 import 'package:podo_admin/screens/loading_controller.dart';
@@ -19,6 +20,7 @@ class MainFrame extends StatefulWidget {
 class _MainFrameState extends State<MainFrame> {
   final List<Widget> _buildScreens = [
     WritingMain(),
+    FeedbackMain(),
     PodoMessageMain(),
     LessonCourseMain(),
     ReadingTitleMain(),
@@ -49,6 +51,11 @@ class _MainFrameState extends State<MainFrame> {
                     icon: Icon(Icons.message_outlined),
                     selectedIcon: Icon(Icons.message_rounded),
                     label: Text('교정'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.feedback_outlined),
+                    selectedIcon: Icon(Icons.feedback),
+                    label: Text('피드백'),
                   ),
                   NavigationRailDestination(
                     icon: Icon(Icons.cloud_outlined),

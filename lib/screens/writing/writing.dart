@@ -12,6 +12,7 @@ class Writing {
   late DateTime dateWriting;
   DateTime? dateReply;
   late int status;
+  String? comments;
   bool isPremiumUser = false; // 교정 화면용
 
   static const String ID = 'id';
@@ -25,6 +26,7 @@ class Writing {
   static const String DATEWRITING = 'dateWriting';
   static const String DATEREPLY = 'dateReply';
   static const String STATUS = 'status';
+  static const String COMMENTS = 'comments';
 
   Writing.fromJson(Map<String, dynamic> json) {
     id = json[ID];
@@ -43,5 +45,8 @@ class Writing {
       dateReply = replyStamp.toDate();
     }
     status = json[STATUS];
+    if (json[COMMENTS] != null) {
+      comments = json[COMMENTS];
+    }
   }
 }
