@@ -1,12 +1,18 @@
 const functions = require("firebase-functions");
 const admin = require('firebase-admin');
+const auth = require('firebase/auth');
 const nodemailer = require('nodemailer');
 const OpenAI = require("openai");
 const {onRequest} = require('firebase-functions/v1/https');
-const { v4: uuidv4 } = require('uuid');
+const {v4: uuidv4} = require('uuid');
 const deepl = require('deepl-node');
-const authKey = functions.config().deepl.key
-const translator = new deepl.Translator(authKey);
+const deeplKey = functions.config().deepl.key;
+const translator = new deepl.Translator(deeplKey);
+const gmailKey = functions.config().gmail.key;
+
+admin.initializeApp();
+
+// export GOOGLE_APPLICATION_CREDENTIALS="G:\keys\podo-49335-e6a47f70b42a.json"
 
 var languages = ['es', 'fr', 'de', 'pt-BR', 'id', 'ru'];
 
@@ -16,21 +22,16 @@ async function onDeeplFunction(request, response) {
     for(let i=0; i<languages.length; i++) {
         let result = await translator.translateText(message, null, languages[i]);
         results.push(result.text);
-        console.log(result); // Bonjour, le monde !
     }
     response.set('Access-Control-Allow-Origin', '*');
     response.status(200).send(results);
 }
 
-// export GOOGLE_APPLICATION_CREDENTIALS="G:\keys\podo-49335-firebase-adminsdk-qqve9-4227c667f7.json"
-
-admin.initializeApp();
-
 const mailTransport = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'akorean.danny@gmail.com',
-    pass: 'eseymladnsdaokxl',
+    user: 'akorean.help@gmail.com',
+    pass: gmailKey,
   },
 });
 
@@ -39,9 +40,9 @@ function onFeedbackSent(snap, context) {
   const userEmail = feedbackData.email;
   const message = feedbackData.message;
   const mailOptions = {
-    from: userEmail,
-    to: 'akorean.help@gmail.com', // 수신 이메일 주소
-    subject: '[podo] Feedback from the user',
+    from: 'Podo Korean <' + userEmail + '>',
+    to: 'akorean.help@gmail.com',
+    subject: 'Feedback from the user',
     text: message + "\n\n" + userEmail,
   };
 
@@ -144,27 +145,116 @@ function onWritingReplied(change, context) {
   }
 }
 
-async function userCountFunction() {
+//todo: RevenueCat API에서 구독자수 가져오기
+async function userCountFunction(context) {
     const db = admin.firestore();
+    let today = new Date();
+    let todayISO = today.toISOString();
     let newUsers = await admin.firestore().collection('Users').where('status', '==', 0).get();
     let basicUsers = await admin.firestore().collection('Users').where('status', '==', 1).get();
     let premiumUsers = await admin.firestore().collection('Users').where('status', '==', 2).get();
+    let premiumEndUsers = await admin.firestore().collection('Users').where('status', '==', 2).where('premiumEnd', '<', todayISO).get();
     let trialUsers = await admin.firestore().collection('Users').where('status', '==', 3).get();
+    let trialEndUsers = await admin.firestore().collection('Users').where('status', '==', 3).where('trialEnd', '<', today).get();
     let data = {
-        'date': new Date(),
+        'date': today,
         'newUsers': newUsers.size,
-        'basicUsers': basicUsers.size,
-        'premiumUsers': premiumUsers.size,
-        'trialUsers': trialUsers.size,
+        'basicUsers': basicUsers.size + premiumEndUsers.size + trialEndUsers.size,
+        'premiumUsers': premiumUsers.size - premiumEndUsers.size,
+        'trialUsers': trialUsers.size - trialEndUsers.size,
         'totalUsers': newUsers.size + basicUsers.size + premiumUsers.size + trialUsers.size,
     }
     db.collection('UserCounts').doc().set(data);
 }
 
+
+// 비활성 유저 계정 삭제 알림 코드
+async function userCleanUp(context) {
+    const now = new Date();
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(now.getMonth() - 6);
+    const aWeekAgo = new Date();
+    aWeekAgo.setDate(aWeekAgo.getDate() - 7)
+    let totalBasicUsers = await admin.firestore().collection('Users')
+        .where('dateSignIn', '<=', sixMonthsAgo)
+        .get();
+    for(let i=0; i<totalBasicUsers.docs.length; i++) {
+        let userDoc = totalBasicUsers.docs[i];
+        let email = userDoc.get('email');
+        console.log('------------------------------');
+        console.log('InActiveUser: ' + email);
+        let dateEmailSendTimestamp = userDoc.get('dateEmailSend');
+        if(dateEmailSendTimestamp) {
+            let dateEmailSend = dateEmailSendTimestamp.toDate();
+            if(dateEmailSend < aWeekAgo) {
+                console.log('REMOVE ACCOUNT');
+                let userId = userDoc.get('id');
+                await sendEmail(email, 1); // 계정 삭제 이메일
+                await admin.auth()
+                  .deleteUser(userId)
+                  .then(() => {
+                    console.log('Successfully deleted user');
+                  })
+                  .catch((error) => {
+                    console.log('Error deleting user:', error);
+                  });
+                await deleteSubCollection('Users/'+userId+'/Histories');
+                await deleteSubCollection('Users/'+userId+'/FlashCards');
+                userDoc.ref.delete();
+            } else {
+                console.log('Pending Account Deletion');
+            }
+        } else {
+            await sendEmail(email, 0); // 계정 삭제 경고 이메일
+            console.log('Email sent');
+            admin.firestore().collection('Users').doc(totalBasicUsers.docs[i].id).update({'dateEmailSend': now});
+        }
+    }
+}
+
+async function sendEmail(userEmail, msgType) {
+  let mailOptions;
+  if(msgType == 0) {
+      mailOptions = {
+        from: 'Podo Korean <akorean.help@gmail.com>',
+        to: userEmail,
+        subject: 'Account Deletion Notice',
+        text: 'Hello,\n\nThank you for using Podo Korean.\n\nYour activity is valuable to us and contributes greatly to the ongoing improvement of our service.\n\nWe want to inform you that if you haven\'t logged in for the past 6 months, your account will be deleted within the next 7 days.\n\nPlease be aware that once your account is deleted, you will lose access to any stored information or data, and account recovery will not be possible.\n\nHowever, if you log in before your account is deleted, it will automatically be transitioned to an active status.\n\nIf you have any questions or need assistance regarding your account, please feel free to contact us. We are here to help.\n\nThank you.\n\nPodo Korean',
+      };
+  } else if (msgType == 1) {
+    mailOptions = {
+          from: 'Podo Korean <akorean.help@gmail.com>',
+          to: userEmail,
+          subject: 'Account Deletion Notice',
+          text: 'Hello,\n\nThank you for using Podo Korean.\n\nWe regularly review unused accounts for customer account security and data management.\n\nAs previously notified, accounts that have not logged in for over 6 months will be automatically deleted.\n\nRegrettably, your account has been automatically deleted because you have not logged in for a week since the notification a week ago.\n\nTherefore, it is not possible to recover any data.\n\nThank you once again for using Podo Korean.\n\nWe are committed to continually improving our service to offer a better experience.\n\nThank you.\n\nThe Podo Korean'
+    };
+  }
+
+  return mailTransport.sendMail(mailOptions)
+    .then(() => {
+      console.log('이메일 전송 성공');
+      return null;
+    })
+    .catch((error) => {
+      console.error('이메일 전송 실패:', error);
+      return null;
+    });
+}
+
+async function deleteSubCollection(path) {
+    let collectionDocs = await admin.firestore().collection(path).get();
+    for(let i=0; i<collectionDocs.docs.length; i++) {
+        let doc = collectionDocs.docs[i];
+        console.log('DocId:' + doc.id);
+        doc.ref.delete();
+    }
+}
+
+
+
 exports.onWritingReply = functions.firestore.document('Writings/{writingId}').onUpdate(onWritingReplied);
 exports.onPodoMsgActive = functions.firestore.document('PodoMessages/{podoMessageId}').onUpdate(onPodoMsgActivated);
 exports.onFeedbackSent = functions.firestore.document('Feedbacks/{feedbackId}').onCreate(onFeedbackSent);
 exports.onDeepl = onRequest(onDeeplFunction);
-exports.onUserCount = functions.pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun((context) => {
-  userCountFunction();
-});
+exports.onUserCount = functions.pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun(userCountFunction);
+exports.onEmailSend = functions.pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun(userCleanUp);

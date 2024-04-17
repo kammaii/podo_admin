@@ -58,7 +58,7 @@ class DeeplTranslator {
       controller.changeTransState(true);
       for (int i = 0; i < enWords.length; i++) {
         final response = await http.post(
-          Uri.parse('https://onchatgpt-7yvptwuwwq-uc.a.run.app'),
+          Uri.parse('https://us-central1-podo-49335.cloudfunctions.net/onDeepl'),
           headers: {
             'Content-Type': 'text/plain',
           },

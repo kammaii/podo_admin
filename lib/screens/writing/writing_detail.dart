@@ -328,6 +328,8 @@ class _WritingDetailState extends State<WritingDetail> {
                             writing.correction == content) {
                           isCorrectedList[controller.writingIndex] = true;
                         }
+
+                        print('CONTENT: $content');
                         writing.correction = content!;
                       }),
                     ),
@@ -341,6 +343,8 @@ class _WritingDetailState extends State<WritingDetail> {
                   child: MyTextField().getTextField(
                       controller: commentController,
                       fn: (String? value) {
+                        print('WRITING: ${writing.correction}');
+                        print('COMMENT: $value');
                         writing.comments = value;
                       }),
                 ),
