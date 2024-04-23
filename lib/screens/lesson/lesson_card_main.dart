@@ -29,6 +29,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
   final _controller = Get.find<LessonStateManager>();
   List<Widget> cardWidgets = [];
   final ScrollController scrollController = ScrollController();
+  final FocusNode focusNode = FocusNode();
   final double cardWidth = 350;
   late List<Map<String, TextEditingController>> writingControllers;
   int explainFoIndex = 0;
@@ -67,6 +68,15 @@ class _LessonCardMainState extends State<LessonCardMain> {
       Database()
           .getDocs(collection: '$LESSONS/${lesson.id}/$WRITING_QUESTIONS', orderBy: ORDER_ID, descending: false)
     ]);
+    focusNode.requestFocus();
+  }
+
+
+  @override
+  void dispose() {
+    focusNode.dispose();
+    scrollController.dispose();
+    super.dispose();
   }
 
   Widget getDetailContent(LessonCard card) {
@@ -760,7 +770,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
         title: Text('레슨카드  ( ${lesson.title[KO]} : ${lesson.id.substring(0, 8)})'),
       ),
       body: RawKeyboardListener(
-        focusNode: FocusNode(),
+        focusNode: focusNode,
         autofocus: true,
         onKey: (event) {
           if (event is RawKeyDownEvent) {

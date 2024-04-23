@@ -136,13 +136,15 @@ class _WritingDetailState extends State<WritingDetail> {
         autofocus: true,
         onKey: (event) {
           if (event is RawKeyDownEvent) {
-            setState(() {
-              if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+            if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+              setState(() {
                 controller.getWriting(isNext: false);
-              } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+              });
+            } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+              setState(() {
                 controller.getWriting(isNext: true);
-              }
-            });
+              });
+            }
           }
         },
         child: Padding(
@@ -328,8 +330,6 @@ class _WritingDetailState extends State<WritingDetail> {
                             writing.correction == content) {
                           isCorrectedList[controller.writingIndex] = true;
                         }
-
-                        print('CONTENT: $content');
                         writing.correction = content!;
                       }),
                     ),
@@ -343,8 +343,6 @@ class _WritingDetailState extends State<WritingDetail> {
                   child: MyTextField().getTextField(
                       controller: commentController,
                       fn: (String? value) {
-                        print('WRITING: ${writing.correction}');
-                        print('COMMENT: $value');
                         writing.comments = value;
                       }),
                 ),

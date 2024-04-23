@@ -38,15 +38,19 @@ class Database {
       dynamic field,
       dynamic equalTo,
       required String orderBy,
-      bool hasLimit = false,
+      int? limit,
       bool descending = true}) async {
     List<dynamic> documents = [];
     final ref = firestore.collection(collection);
-    final queryRef;
+    dynamic queryRef;
     if (field != null) {
       queryRef = ref.where(field, isEqualTo: equalTo).orderBy(orderBy, descending: descending);
     } else {
       queryRef = ref.orderBy(orderBy, descending: descending);
+    }
+    if(limit != null) {
+      print('LIMIT');
+      queryRef = queryRef.limit(limit);
     }
 
     await queryRef.get().then((QuerySnapshot snapshot) {

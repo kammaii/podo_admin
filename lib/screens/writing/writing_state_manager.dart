@@ -45,7 +45,7 @@ class WritingStateManager extends GetxController {
       if (value != '전체') {
         key = statusMap.keys.firstWhere((key) => statusMap[key] == value);
         futureWritings =
-            Database().getDocs(collection: 'Writings', field: 'status', equalTo: key, orderBy: 'dateWriting');
+            Database().getDocs(collection: 'Writings', field: 'status', equalTo: key, orderBy: 'dateWriting', limit: 10);
         if(key == 0) {
           allCorrection.value = true;
         } else {
