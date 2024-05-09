@@ -16,7 +16,7 @@ class Lesson {
     title = {};
     isReleased = false;
     hasOptions = true;
-    isFree = true;
+    isFree = false;
   }
 
   static const String ID = 'id';

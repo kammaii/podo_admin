@@ -59,11 +59,11 @@ class UserStateManager extends GetxController {
       getActiveUsers(),
     ]).then((snapshot) {
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-        newCount = snapshot[0];
-        trialEndCount = snapshot[2];
-        trialCount = snapshot[1];
-        basicCount = snapshot[3];
-        premiumCount = snapshot[4];
+        newCount = snapshot[0]!;
+        trialEndCount = snapshot[2]!;
+        trialCount = snapshot[1]!;
+        basicCount = snapshot[3]!;
+        premiumCount = snapshot[4]!;
         totalCount = newCount + trialCount + basicCount + premiumCount;
         newPercent = (newCount / totalCount * 100).round();
         trialPercent = (trialCount / totalCount * 100).round();
@@ -77,8 +77,10 @@ class UserStateManager extends GetxController {
 
   Future<int> getActiveUsers() async {
     final collection = FirebaseFirestore.instance.collection('Users');
-    basicActiveList = await getCount(collection.where('status', isEqualTo: 1));
-    trialActiveList = await getCount(collection.where('status', isEqualTo: 3));
+    List<int?> bList = await getCount(collection.where('status', isEqualTo: 1));
+    basicActiveList = bList.where((element) => element != null).cast<int>().toList();
+    List<int?> tList = await getCount(collection.where('status', isEqualTo: 3));
+    trialActiveList = tList.where((element) => element != null).cast<int>().toList();
     totalActiveList = [
       basicActiveList[0] + trialActiveList[0],
       basicActiveList[1] + trialActiveList[1],
@@ -114,7 +116,7 @@ class UserStateManager extends GetxController {
     ];
   }
 
-  Future<List<int>> getCount(Query query) async {
+  Future<List<int?>> getCount(Query query) async {
     final today = DateTime(now.year, now.month, now.day);
     final d_1 = today.subtract(const Duration(days: 1));
     final d_2 = today.subtract(const Duration(days: 2));

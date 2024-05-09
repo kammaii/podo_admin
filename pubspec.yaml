@@ -41,11 +41,11 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   firebase_core: ^2.13.0
-  cloud_firestore: ^4.8.0
-  cloud_functions: ^4.3.2
-  firebase_storage: ^11.2.2
+  cloud_firestore: ^4.17.3
+  cloud_functions: ^4.7.4
+  firebase_storage: ^11.7.5
   translator: ^0.1.7
-  firebase_auth: ^4.10.0
+  firebase_auth: ^4.19.5
   file_picker: ^5.2.10
   dart_openai: ^1.9.91
   http: ^0.13.6

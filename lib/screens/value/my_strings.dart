@@ -1,6 +1,6 @@
 class MyStrings {
   // 스크린에 표기되는 것들은 번역을 위해 이곳에 입력하기
-  static const String perfect = 'Perfect! 잘했어요!';
+  static const String perfect = '잘했어요!';
   static const String noKorean = 'Please write in Korean.';
   static const String noTopic = 'Please write on the given topic.';
   static const String cantUnderstand = 'I\'m sorry. I cannot correct your writing as it\'s difficult to understand.';

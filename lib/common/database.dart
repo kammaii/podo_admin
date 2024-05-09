@@ -24,7 +24,7 @@ class Database {
       ref = firestore.collection(collection);
     }
     await ref.count().get().then((snapshot) {
-      count = snapshot.count;
+      count = snapshot.count!;
     }, onError: (error) => print('Count error: $error'));
     return count;
   }

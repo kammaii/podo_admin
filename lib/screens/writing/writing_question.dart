@@ -11,7 +11,7 @@ class WritingQuestion {
   WritingQuestion() {
     id = const Uuid().v4();
     orderId = Get.find<LessonStateManager>().writingQuestions.length;
-    level = 0;
+    level = 1;
     title = {};
   }
 

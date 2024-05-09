@@ -48,9 +48,9 @@ class _LessonCardMainState extends State<LessonCardMain> {
   final List<String> radios = [
     MyStrings.subject,
     MyStrings.mention,
+    MyStrings.repeat,
     MyStrings.tip,
     MyStrings.explain,
-    MyStrings.repeat,
     MyStrings.quiz
   ];
 
@@ -639,8 +639,6 @@ class _LessonCardMainState extends State<LessonCardMain> {
       builder: (_) {
         if (_controller.writingQuestions.isEmpty) {
           _controller.writingQuestions.add(WritingQuestion());
-          _controller.writingQuestions.add(WritingQuestion());
-          writingControllers.add({KO: TextEditingController(), FO: TextEditingController()});
           writingControllers.add({KO: TextEditingController(), FO: TextEditingController()});
         }
         return SizedBox(
@@ -815,17 +813,17 @@ class _LessonCardMainState extends State<LessonCardMain> {
                           f: _controller.changeCardTypeRadio()),
                       MyRadioBtn().getRadioButton(
                           context: context,
+                          value: MyStrings.repeat,
+                          groupValue: _controller.cardType,
+                          f: _controller.changeCardTypeRadio()),
+                      MyRadioBtn().getRadioButton(
+                          context: context,
                           value: MyStrings.tip,
                           groupValue: _controller.cardType,
                           f: _controller.changeCardTypeRadio()),
                       MyRadioBtn().getRadioButton(
                           context: context,
                           value: MyStrings.explain,
-                          groupValue: _controller.cardType,
-                          f: _controller.changeCardTypeRadio()),
-                      MyRadioBtn().getRadioButton(
-                          context: context,
-                          value: MyStrings.repeat,
                           groupValue: _controller.cardType,
                           f: _controller.changeCardTypeRadio()),
                       MyRadioBtn().getRadioButton(

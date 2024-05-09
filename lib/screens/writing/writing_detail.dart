@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -197,14 +198,15 @@ class _WritingDetailState extends State<WritingDetail> {
                 ),
                 const SizedBox(height: 20),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Text(writing.questionTitle, textScaleFactor: 2),
-                        const SizedBox(width: 20),
-                        Text('( ${writing.id} )'),
-                      ],
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Text(writing.questionTitle, textScaleFactor: 2),
+                          const SizedBox(width: 20),
+                          Text('( ${writing.id.substring(0, 8)}... )'),
+                        ],
+                      ),
                     ),
                     Row(
                       children: [

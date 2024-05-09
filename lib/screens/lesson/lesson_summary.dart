@@ -10,7 +10,7 @@ class LessonSummary {
     id = const Uuid().v4();
     content = {};
     orderId = order;
-    examples = [];
+    examples = ['','','',''];
   }
 
   static const String ID = 'id';
