@@ -137,7 +137,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
   courseDialog({LessonCourse? course}) async {
     LessonCourse lessonCourse = course ?? LessonCourse();
     String title;
-    isTopicMode ? title = 'Topic Mode (${lessonCourse.id})' : title = 'Grammar Mode (${lessonCourse.id})';
+    isTopicMode ? title = 'Topic Mode (${lessonCourse.id.substring(0, 8)})' : title = 'Grammar Mode (${lessonCourse.id.substring(0, 8)})';
     workbookToggle[0] = lessonCourse.hasWorkbook == true;
     workbookToggle[1] = lessonCourse.hasWorkbook == false;
 

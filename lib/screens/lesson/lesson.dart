@@ -9,6 +9,12 @@ class Lesson {
   String? tag;
   late bool hasOptions;
   late bool isFree;
+  bool? isFreeOptions;
+  String? speakingId;
+  String? readingId;
+  bool? isSpeakingReleased;
+  bool? isReadingReleased;
+
 
   Lesson() {
     id = const Uuid().v4();
@@ -17,6 +23,7 @@ class Lesson {
     isReleased = false;
     hasOptions = true;
     isFree = false;
+    isFreeOptions = false;
   }
 
   static const String ID = 'id';
@@ -26,6 +33,12 @@ class Lesson {
   static const String TAG = 'tag';
   static const String HAS_OPTIONS = 'hasOptions';
   static const String IS_FREE = 'isFree';
+  static const String IS_FREE_OPTIONS = 'isFreeOptions';
+  static const String SPEAKING_ID = 'speakingId';
+  static const String READING_ID = 'readingId';
+  static const String IS_SPEAKING_RELEASED = 'isSpeakingReleased';
+  static const String IS_READING_RELEASED = 'isReadingReleased';
+
 
   Lesson.fromJson(Map<String, dynamic> json) {
     id = json[ID];
@@ -35,6 +48,17 @@ class Lesson {
     tag = json[TAG] ?? null;
     hasOptions = json[HAS_OPTIONS];
     isFree = json[IS_FREE];
+    if(json[IS_FREE_OPTIONS] != null) {
+      isFreeOptions = json[IS_FREE_OPTIONS];
+    }
+    if(json[SPEAKING_ID] != null) {
+      speakingId = json[SPEAKING_ID];
+    }
+    if(json[READING_ID] != null) {
+      readingId = json[READING_ID];
+    }
+    isReadingReleased = json[IS_READING_RELEASED] ?? false;
+    isSpeakingReleased = json[IS_SPEAKING_RELEASED] ?? false;
   }
 
   Map<String, dynamic> toJson() {
@@ -47,6 +71,15 @@ class Lesson {
       IS_FREE: isFree,
     };
     map[TAG] = tag ?? null;
+    map[IS_FREE_OPTIONS] = isFreeOptions ?? null;
+    if(speakingId != null) {
+      map[SPEAKING_ID] = speakingId;
+      map[IS_SPEAKING_RELEASED] = isSpeakingReleased ?? false;
+    }
+    if(readingId != null) {
+      map[READING_ID] = readingId;
+      map[IS_READING_RELEASED] = isReadingReleased ?? false;
+    }
     return map;
   }
 }

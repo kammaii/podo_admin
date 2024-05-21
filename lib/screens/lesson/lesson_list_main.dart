@@ -1,6 +1,8 @@
 import 'package:data_table_2/data_table_2.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/deepl_translator.dart';
@@ -24,6 +26,7 @@ class _LessonListMainState extends State<LessonListMain> {
   List<bool> typeToggle = [true, false];
   List<bool> optionsToggle = [true, false];
   List<bool> isFreeToggle = [true, false];
+  List<bool> isFreeOptionToggle = [true, false];
   final KO = 'ko';
   final LESSON_COURSES = 'LessonCourses';
   final LESSONS = 'lessons';
@@ -81,6 +84,8 @@ class _LessonListMainState extends State<LessonListMain> {
     optionsToggle[1] = lesson.hasOptions == false;
     isFreeToggle[0] = lesson.isFree == true;
     isFreeToggle[1] = lesson.isFree == false;
+    isFreeOptionToggle[0] = lesson.isFreeOptions == true;
+    isFreeOptionToggle[1] = lesson.isFreeOptions == false;
 
     Get.dialog(AlertDialog(
       title: Row(
@@ -144,7 +149,7 @@ class _LessonListMainState extends State<LessonListMain> {
                           ],
                         ),
                         const SizedBox(width: 20),
-                        const Text('무료', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        const Text('레슨무료', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         const SizedBox(width: 20),
                         ToggleButtons(
                           isSelected: isFreeToggle,
@@ -152,6 +157,23 @@ class _LessonListMainState extends State<LessonListMain> {
                             isFreeToggle[0] = index == 0;
                             isFreeToggle[1] = index == 1;
                             index == 0 ? lesson.isFree = true : lesson.isFree = false;
+                            controller.update();
+                          },
+                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                          children: const [
+                            Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('O')),
+                            Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('X')),
+                          ],
+                        ),
+                        const SizedBox(width: 20),
+                        const Text('옵션무료', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 20),
+                        ToggleButtons(
+                          isSelected: isFreeOptionToggle,
+                          onPressed: (int index) async {
+                            isFreeOptionToggle[0] = index == 0;
+                            isFreeOptionToggle[1] = index == 1;
+                            index == 0 ? lesson.isFreeOptions = true : lesson.isFreeOptions = false;
                             controller.update();
                           },
                           borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -197,6 +219,19 @@ class _LessonListMainState extends State<LessonListMain> {
                       child: ElevatedButton(
                         onPressed: () {
                           if (lesson.title.isNotEmpty) {
+                            if (lesson.readingId != null) {
+                              Database().updateField(
+                                  collection: 'ReadingTitles',
+                                  docId: lesson.readingId!,
+                                  map: {'isFree': lesson.isFreeOptions});
+                            }
+                            if (lesson.speakingId != null) {
+                              Database().updateField(
+                                  collection: 'SpeakingTitles',
+                                  docId: lesson.speakingId!,
+                                  map: {'isFree': lesson.isFreeOptions});
+                            }
+
                             if (isEditMode) {
                               course.lessons[index!] = lesson.toJson();
                             } else {
@@ -327,8 +362,9 @@ class _LessonListMainState extends State<LessonListMain> {
                     DataColumn2(label: Text('순서'), size: ColumnSize.S),
                     DataColumn2(label: Text('아이디'), size: ColumnSize.S),
                     DataColumn2(label: Text('타입'), size: ColumnSize.S),
-                    DataColumn2(label: Text('요약/쓰기'), size: ColumnSize.S),
-                    DataColumn2(label: Text('무료'), size: ColumnSize.S),
+                    DataColumn2(label: Text('레슨무료'), size: ColumnSize.S),
+                    DataColumn2(label: Text('옵션'), size: ColumnSize.S),
+                    DataColumn2(label: Text('옵션무료'), size: ColumnSize.S),
                     DataColumn2(label: Text('타이틀'), size: ColumnSize.L),
                     DataColumn2(label: Text('상태'), size: ColumnSize.S),
                     DataColumn2(label: Text('태그'), size: ColumnSize.S),
@@ -340,6 +376,35 @@ class _LessonListMainState extends State<LessonListMain> {
                     int index = course.lessons.length - 1 - i;
                     if (course.lessons[index] is Map) {
                       Lesson lesson = Lesson.fromJson(course.lessons[index]);
+                      List<Widget> optionsIcon = [];
+                      if (lesson.hasOptions) {
+                        optionsIcon.add(const Icon(CupertinoIcons.pen, color: Colors.deepPurpleAccent));
+                      }
+                      if (lesson.readingId != null) {
+                        Color iconColor = lesson.isReadingReleased! ? Colors.deepPurpleAccent : Colors.grey;
+                        optionsIcon.add(
+                            GestureDetector(onTap: () {
+                              String titleMsg = lesson.isReadingReleased! ? '읽기를 비공개 하겠습니까?' : '읽기를 공개하겠습니까?';
+                              Get.dialog(AlertDialog(
+                                title: Text(titleMsg),
+                                actions: [
+                                  TextButton(onPressed: (){
+                                    Get.back();
+                                  }, child: const Text('아니오')),
+                                  TextButton(onPressed: (){
+                                    lesson.isReadingReleased = !lesson.isReadingReleased!;
+                                    course.lessons[index] = lesson.toJson();
+                                    updateLessons();
+                                    Database().updateField(collection: 'ReadingTitles', docId: lesson.readingId!, map: {'isReleased': lesson.isReadingReleased});
+                                  }, child: const Text('네')),
+                                ],
+                              ));
+                            }, child: Icon(CupertinoIcons.book, color: iconColor)));
+                      }
+                      if (lesson.speakingId != null) {
+                        Color iconColor = lesson.isSpeakingReleased! ? Colors.deepPurpleAccent : Colors.grey;
+                        optionsIcon.add(Icon(CupertinoIcons.text_bubble, color: iconColor));
+                      }
                       return DataRow(cells: [
                         DataCell(Text(index.toString())),
                         DataCell(Text(lesson.id.substring(0, 8)), onTap: () {
@@ -347,8 +412,9 @@ class _LessonListMainState extends State<LessonListMain> {
                           Get.snackbar('아이디가 클립보드에 저장되었습니다.', lesson.id, snackPosition: SnackPosition.BOTTOM);
                         }),
                         DataCell(Text(lesson.type)),
-                        DataCell(Text(lesson.hasOptions ? 'O' : 'X')),
                         DataCell(Text(lesson.isFree ? 'O' : 'X')),
+                        DataCell(Row(children: optionsIcon)),
+                        DataCell(Text(lesson.isFreeOptions != null && lesson.isFreeOptions! ? 'O' : 'X')),
                         DataCell(Text(lesson.title[KO]), onTap: () {
                           lessonDialog(index: index);
                         }),
@@ -428,7 +494,7 @@ class _LessonListMainState extends State<LessonListMain> {
                         DataCell(ElevatedButton(
                           child: const Text('보기'),
                           onPressed: () {
-                            Get.to(const LessonCardMain(), arguments: lesson);
+                            Get.to(const LessonCardMain(), arguments: {'course': course, 'index': index});
                           },
                         )),
                       ]);

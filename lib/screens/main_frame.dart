@@ -5,6 +5,7 @@ import 'package:podo_admin/research.dart';
 import 'package:podo_admin/screens/lesson/lesson_course_main.dart';
 import 'package:podo_admin/screens/loading_controller.dart';
 import 'package:podo_admin/screens/podo_message/podo_message_main.dart';
+import 'package:podo_admin/screens/reading/reading_state_manager.dart';
 import 'package:podo_admin/screens/reading/reading_title_main.dart';
 import 'package:podo_admin/screens/user/user_main.dart';
 import 'package:podo_admin/screens/user/user_state_manager.dart';
@@ -34,6 +35,7 @@ class _MainFrameState extends State<MainFrame> {
   Widget build(BuildContext context) {
     Get.put(LoadingController());
     Get.put(UserStateManager());
+    Get.put(ReadingStateManager());
     return Scaffold(
       body: Stack(
         children: [

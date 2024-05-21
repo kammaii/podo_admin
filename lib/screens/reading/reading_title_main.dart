@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:data_table_2/data_table_2.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
@@ -30,16 +29,21 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
   @override
   void initState() {
     super.initState();
-    controller = Get.put(ReadingStateManager());
+    controller = Get.find<ReadingStateManager>();
     getDataFromDb();
   }
 
   getDataFromDb() {
-    if (controller.selectedCategory == controller.categories[4]) {
-      controller.futureList = Database().getDocs(collection: READING_TITLES, orderBy: 'orderId', descending: false);
+    if (controller.selectedCategory == controller.categories[5]) {
+      controller.futureList =
+          Database().getDocs(collection: READING_TITLES, orderBy: 'orderId', descending: false);
     } else {
       controller.futureList = Database().getDocs(
-          collection: READING_TITLES, field: 'category', equalTo: controller.selectedCategory, orderBy: 'orderId', descending: false);
+          collection: READING_TITLES,
+          field: 'category',
+          equalTo: controller.selectedCategory,
+          orderBy: 'orderId',
+          descending: false);
     }
   }
 
@@ -266,6 +270,7 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
                       getCategoryRadioBtn(controller.categories[2]),
                       getCategoryRadioBtn(controller.categories[3]),
                       getCategoryRadioBtn(controller.categories[4]),
+                      getCategoryRadioBtn(controller.categories[5]),
                     ],
                   ),
                 ),
@@ -324,7 +329,7 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
                 int index = readingTitles.length - 1 - i;
                 ReadingTitle readingTitle = readingTitles[index];
                 return DataRow(cells: [
-                  DataCell(Text(readingTitle.orderId.toString())),
+                  DataCell(readingTitle.orderId != null ? Text(readingTitle.orderId.toString()) : const Text('-')),
                   DataCell(Text(readingTitle.id.substring(0, 8)), onTap: () {
                     Clipboard.setData(ClipboardData(text: readingTitle.id));
                     Get.snackbar('아이디가 클립보드에 저장되었습니다.', readingTitle.id, snackPosition: SnackPosition.BOTTOM);
@@ -357,126 +362,145 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
                     );
                   }),
                   DataCell(Icon(Icons.circle, color: readingTitle.isReleased ? Colors.green : Colors.red),
-                      onTap: () {
-                    Get.dialog(AlertDialog(
-                      content: const Text('상태를 변경하겠습니까?'),
-                      actions: [
-                        TextButton(
-                            onPressed: () {
-                              updateDB(
-                                  collection: READING_TITLES, docId: readingTitle.id, value: {'isReleased': true});
-                            },
-                            child: const Text('게시중')),
-                        TextButton(
-                            onPressed: () {
-                              updateDB(
-                                  collection: READING_TITLES,
-                                  docId: readingTitle.id,
-                                  value: {'isReleased': false});
-                            },
-                            child: const Text('입력중')),
-                      ],
-                    ));
-                  }),
+                      onTap: readingTitle.category == 'Lesson'
+                          ? null
+                          : () {
+                              Get.dialog(AlertDialog(
+                                content: const Text('상태를 변경하겠습니까?'),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () {
+                                        updateDB(
+                                            collection: READING_TITLES,
+                                            docId: readingTitle.id,
+                                            value: {'isReleased': true});
+                                      },
+                                      child: const Text('게시중')),
+                                  TextButton(
+                                      onPressed: () {
+                                        updateDB(
+                                            collection: READING_TITLES,
+                                            docId: readingTitle.id,
+                                            value: {'isReleased': false});
+                                      },
+                                      child: const Text('입력중')),
+                                ],
+                              ));
+                            }),
                   DataCell(
                       Icon(readingTitle.isFree ? CupertinoIcons.check_mark_circled : CupertinoIcons.xmark_circle,
-                          color: readingTitle.isFree ? Colors.green : Colors.red), onTap: () {
-                    Get.dialog(AlertDialog(
-                      content: const Text('상태를 변경하겠습니까?'),
-                      actions: [
-                        TextButton(
-                            onPressed: () {
-                              updateDB(
-                                  collection: READING_TITLES, docId: readingTitle.id, value: {'isFree': true});
-                            },
-                            child: const Text('무료')),
-                        TextButton(
-                            onPressed: () {
-                              updateDB(
-                                  collection: READING_TITLES, docId: readingTitle.id, value: {'isFree': false});
-                            },
-                            child: const Text('유료')),
-                      ],
-                    ));
-                  }),
-                  DataCell(
-                    Row(
-                      children: [
-                        Expanded(
-                          child: IconButton(
-                              onPressed: () async {
-                                if (index != 0) {
-                                  int newIndex = index - 1;
-                                  ReadingTitle thatReading = readingTitles[newIndex];
-                                  await Database().switchOrderTransaction(
-                                      collection: READING_TITLES, docId1: readingTitle.id, docId2: thatReading.id);
-                                  setState(() {
-                                    getDataFromDb();
-                                  });
-                                } else {
-                                  Get.dialog(const AlertDialog(
-                                    title: Text('첫번째 읽기입니다.'),
-                                  ));
-                                }
-                              },
-                              icon: const Icon(Icons.arrow_drop_up_outlined)),
+                          color: readingTitle.isFree ? Colors.green : Colors.red),
+                      onTap: readingTitle.category == 'Lesson'
+                          ? null
+                          : () {
+                              Get.dialog(AlertDialog(
+                                content: const Text('상태를 변경하겠습니까?'),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () {
+                                        updateDB(
+                                            collection: READING_TITLES,
+                                            docId: readingTitle.id,
+                                            value: {'isFree': true});
+                                      },
+                                      child: const Text('무료')),
+                                  TextButton(
+                                      onPressed: () {
+                                        updateDB(
+                                            collection: READING_TITLES,
+                                            docId: readingTitle.id,
+                                            value: {'isFree': false});
+                                      },
+                                      child: const Text('유료')),
+                                ],
+                              ));
+                            }),
+                  readingTitle.category == 'Lesson'
+                      ? const DataCell(Text('-'))
+                      : DataCell(
+                          Row(
+                            children: [
+                              Expanded(
+                                child: IconButton(
+                                    onPressed: () async {
+                                      if (index != 0) {
+                                        int newIndex = index - 1;
+                                        ReadingTitle thatReading = readingTitles[newIndex];
+                                        await Database().switchOrderTransaction(
+                                            collection: READING_TITLES,
+                                            docId1: readingTitle.id,
+                                            docId2: thatReading.id);
+                                        setState(() {
+                                          getDataFromDb();
+                                        });
+                                      } else {
+                                        Get.dialog(const AlertDialog(
+                                          title: Text('첫번째 읽기입니다.'),
+                                        ));
+                                      }
+                                    },
+                                    icon: const Icon(Icons.arrow_drop_up_outlined)),
+                              ),
+                              Expanded(
+                                child: IconButton(
+                                    onPressed: () async {
+                                      if (index != readingTitles.length - 1) {
+                                        int newIndex = index + 1;
+                                        ReadingTitle thatReading = readingTitles[newIndex];
+                                        await Database().switchOrderTransaction(
+                                            collection: READING_TITLES,
+                                            docId1: readingTitle.id,
+                                            docId2: thatReading.id);
+                                        setState(() {
+                                          getDataFromDb();
+                                        });
+                                      } else {
+                                        Get.dialog(const AlertDialog(
+                                          title: Text('마지막 레슨입니다.'),
+                                        ));
+                                      }
+                                    },
+                                    icon: const Icon(Icons.arrow_drop_down_outlined)),
+                              ),
+                            ],
+                          ),
                         ),
-                        Expanded(
-                          child: IconButton(
-                              onPressed: () async {
-                                if (index != readingTitles.length - 1) {
-                                  int newIndex = index + 1;
-                                  ReadingTitle thatReading = readingTitles[newIndex];
-                                  await Database().switchOrderTransaction(
-                                      collection: READING_TITLES, docId1: readingTitle.id, docId2: thatReading.id);
-                                  setState(() {
-                                    getDataFromDb();
-                                  });
-                                } else {
-                                  Get.dialog(const AlertDialog(
-                                    title: Text('마지막 레슨입니다.'),
-                                  ));
-                                }
-                              },
-                              icon: const Icon(Icons.arrow_drop_down_outlined)),
+                  readingTitle.category == 'Lesson'
+                      ? const DataCell(Text('-'))
+                      : DataCell(
+                          IconButton(
+                            icon: const Icon(
+                              Icons.delete,
+                              color: Colors.red,
+                            ),
+                            onPressed: () {
+                              Get.dialog(AlertDialog(
+                                title: const Text('정말 삭제하겠습니까?'),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () async {
+                                        Get.back();
+                                        await Database().deleteListAndReorderBatch(
+                                            collection: READING_TITLES, index: index, list: readingTitles);
+                                        controller.getTotalLength();
+                                        setState(() {
+                                          getDataFromDb();
+                                        });
+                                      },
+                                      child: const Text(
+                                        '네',
+                                        style: TextStyle(color: Colors.red),
+                                      )),
+                                  TextButton(
+                                      onPressed: () {
+                                        Get.back();
+                                      },
+                                      child: const Text('아니오')),
+                                ],
+                              ));
+                            },
+                          ),
                         ),
-                      ],
-                    ),
-                  ),
-                  DataCell(
-                    IconButton(
-                      icon: const Icon(
-                        Icons.delete,
-                        color: Colors.red,
-                      ),
-                      onPressed: () {
-                        Get.dialog(AlertDialog(
-                          title: const Text('정말 삭제하겠습니까?'),
-                          actions: [
-                            TextButton(
-                                onPressed: () async {
-                                  Get.back();
-                                  await Database().deleteListAndReorderBatch(
-                                      collection: READING_TITLES, index: index, list: readingTitles);
-                                  controller.getTotalLength();
-                                  setState(() {
-                                    getDataFromDb();
-                                  });
-                                },
-                                child: const Text(
-                                  '네',
-                                  style: TextStyle(color: Colors.red),
-                                )),
-                            TextButton(
-                                onPressed: () {
-                                  Get.back();
-                                },
-                                child: const Text('아니오')),
-                          ],
-                        ));
-                      },
-                    ),
-                  ),
                   DataCell(ElevatedButton(
                     child: const Text('상세보기'),
                     onPressed: () {

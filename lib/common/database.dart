@@ -15,11 +15,16 @@ class Database {
     print('Database 초기화');
   }
 
-  Future<int> getCount({required String collection, String? field, dynamic equalTo}) async {
+  Future<int> getCount({required String collection, String? field, dynamic equalTo, dynamic notEqualTo}) async {
     int count = 0;
     late final Query<Map<String, dynamic>> ref;
     if (field != null) {
-      ref = firestore.collection(collection).where(field, isEqualTo: equalTo);
+      if(equalTo != null) {
+        ref = firestore.collection(collection).where(field, isEqualTo: equalTo);
+      }
+      if(notEqualTo != null) {
+        ref = firestore.collection(collection).where(field, isNotEqualTo: notEqualTo);
+      }
     } else {
       ref = firestore.collection(collection);
     }
@@ -108,7 +113,7 @@ class Database {
     DocumentReference ref = firestore.collection(collection).doc(doc.id);
     return await ref.set(doc.toJson()).then((value) {
       print('Document is Saved');
-      Get.snackbar('Document is saved', 'id: ${doc.id}', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Document is saved', 'id: ${doc.id}', snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 1));
     }).catchError((e) => print(e));
   }
 
@@ -117,7 +122,7 @@ class Database {
     Map<String, dynamic> map = {'id': docId};
     return await ref.set(map).then((value) {
       print('Document is Saved');
-      Get.snackbar('Document is saved', 'id: ${docId}', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Document is saved', 'id: ${docId}', snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 1));
     }).catchError((e) => print(e));
   }
 
@@ -153,7 +158,7 @@ class Database {
 
     await batch.commit().then((value) {
       controller.snapshots[collection] = [...docs[snapshotIndex]];
-      Get.snackbar('$collection are saved', '', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('$collection are saved', '', snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 1));
       print('$collection are saved');
     }).catchError((e) {
       print(e);
@@ -166,7 +171,7 @@ class Database {
     DocumentReference ref = firestore.collection(collection).doc(docId);
     return await ref.update(map).then((value) {
       print('Updated');
-      Get.snackbar('Updated', 'id: ${docId}', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Updated', 'id: ${docId}', snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 1));
     }).catchError((e) => print(e));
   }
 
@@ -184,7 +189,7 @@ class Database {
       transaction.update(ref2, {'orderId': doc1Index});
     }).then((value) {
       print('Transaction completed');
-      Get.snackbar('Transaction completed', '', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Transaction completed', '', snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 1));
     }).onError((e, stackTrace) {
       Get.snackbar('에러', e.toString(), snackPosition: SnackPosition.BOTTOM);
     });
@@ -204,10 +209,10 @@ class Database {
       transaction.update(ref, {field: newValue});
     }).then((_) {
       print('Transaction completed');
-      Get.snackbar('레슨이 추가되었습니다.', addValue, snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('레슨이 추가되었습니다.', addValue, snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 1));
       Get.find<LessonStateManager>().update();
     }).onError((e, stackTrace) {
-      Get.snackbar('에러', e.toString(), snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('에러', e.toString(), snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 1));
     });
   }
 
@@ -215,7 +220,7 @@ class Database {
     DocumentReference ref = firestore.collection(collection).doc(doc.id);
     return await ref.delete().then((value) {
       print('${doc.id} is Deleted');
-      Get.snackbar('Document is deleted', 'id: ${doc.id}', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Document is deleted', 'id: ${doc.id}', snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 1));
     }).catchError((e) => print(e));
   }
 
@@ -234,7 +239,7 @@ class Database {
     }
     await batch.commit().then((value) {
       print('Batch completed');
-      Get.snackbar('Document is deleted', '', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Document is deleted', '', snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 1));
     }).catchError((e) => print(e));
   }
 }

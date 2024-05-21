@@ -1,3 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -11,8 +14,12 @@ import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/screens/lesson/inner_card_textfield.dart';
 import 'package:podo_admin/screens/lesson/lesson.dart';
 import 'package:podo_admin/screens/lesson/lesson_card.dart';
+import 'package:podo_admin/screens/lesson/lesson_course.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:podo_admin/screens/lesson/lesson_summary.dart';
+import 'package:podo_admin/screens/reading/reading_detail.dart';
+import 'package:podo_admin/screens/reading/reading_state_manager.dart';
+import 'package:podo_admin/screens/reading/reading_title.dart';
 import 'package:podo_admin/screens/writing/writing_question.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 import 'dart:convert';
@@ -27,6 +34,7 @@ class LessonCardMain extends StatefulWidget {
 
 class _LessonCardMainState extends State<LessonCardMain> {
   final _controller = Get.find<LessonStateManager>();
+  final readingController = Get.find<ReadingStateManager>();
   List<Widget> cardWidgets = [];
   final ScrollController scrollController = ScrollController();
   final FocusNode focusNode = FocusNode();
@@ -35,7 +43,9 @@ class _LessonCardMainState extends State<LessonCardMain> {
   int explainFoIndex = 0;
   int detailFoIndex = 0;
   final htmlEditorController = HtmlEditorController();
-  Lesson lesson = Get.arguments;
+  LessonCourse course = Get.arguments['course'];
+  int lessonIndex = Get.arguments['index'];
+  late Lesson lesson;
   String translatingId = '';
   final LESSONS = 'Lessons';
   final LESSON_CARDS = 'LessonCards';
@@ -53,10 +63,13 @@ class _LessonCardMainState extends State<LessonCardMain> {
     MyStrings.explain,
     MyStrings.quiz
   ];
+  late ReadingTitle readingTitle;
 
   @override
   void initState() {
     super.initState();
+    lessonIndex = Get.arguments['index'];
+    lesson = Lesson.fromJson(course.lessons[lessonIndex]);
     _controller.snapshots = {LESSON_CARDS: [], LESSON_SUMMARIES: [], WRITING_QUESTIONS: []};
     _controller.cards = [];
     _controller.lessonSummaries = [];
@@ -70,7 +83,6 @@ class _LessonCardMainState extends State<LessonCardMain> {
     ]);
     focusNode.requestFocus();
   }
-
 
   @override
   void dispose() {
@@ -761,6 +773,231 @@ class _LessonCardMainState extends State<LessonCardMain> {
     );
   }
 
+  Future uploadImage(ReadingTitle readingTitle) async {
+    final pickedFile = await FilePicker.platform.pickFiles(type: FileType.image);
+
+    if (pickedFile != null) {
+      Uint8List? imageBytes = pickedFile.files.single.bytes;
+      if (imageBytes != null) {
+        String base64Image = base64Encode(imageBytes);
+        readingTitle.image = base64Image;
+        readingController.update();
+      } else {
+        print('Failed to read image file.');
+      }
+    } else {
+      print('No image selected.');
+    }
+  }
+
+  Widget getTitleLine(String lang) {
+    String text = readingTitle.title[lang] ?? '';
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 100,
+          child: Text(lang),
+        ),
+        Expanded(
+          child: TextField(
+            controller: TextEditingController(text: text),
+            onChanged: (value) {
+              readingTitle.title[lang] = value;
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> openReadingTitleDialog() async {
+    String? readingId = lesson.readingId;
+    if (readingId != null) {
+      DocumentSnapshot<Map<String, dynamic>> snapshot =
+          await Database().getDoc(collection: 'ReadingTitles', doc: readingId);
+      readingTitle = ReadingTitle.fromJson(snapshot.data() as Map<String, dynamic>);
+    } else {
+      readingTitle = ReadingTitle(isLesson: true);
+      if(course.id == '56034e93-6374-489b-a6c2-59e8ce42d83f') {
+        readingTitle.level = 0;
+      } else if(course.id == '27b73188-998d-4124-b604-177a8921d9df') {
+        readingTitle.level = 1;
+      } else {
+        readingTitle.level = 2;
+      }
+    }
+
+    Get.dialog(
+      AlertDialog(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('읽기 타이틀 추가하기'),
+            TextButton(onPressed: (){
+              Get.dialog(AlertDialog(
+                title: const Text('읽기를 삭제하겠습니까?'),
+                actions: [
+                  TextButton(onPressed: () async {
+                    Get.back();
+                    List<dynamic> lessons = course.lessons;
+                    lessons[lessonIndex].remove('readingId');
+
+                    FirebaseFirestore firestore = FirebaseFirestore.instance;
+                    DocumentReference readingTitleRef = firestore.collection('ReadingTitles').doc(readingTitle.id);
+                    DocumentReference lessonCourseRef = firestore.collection('LessonCourses').doc(course.id);
+                    QuerySnapshot subReadingsSnapshot = await readingTitleRef.collection('Readings').get();
+                    WriteBatch batch = firestore.batch();
+                    for (QueryDocumentSnapshot doc in subReadingsSnapshot.docs) {
+                      batch.delete(doc.reference);
+                    }
+                    batch.delete(readingTitleRef);
+                    batch.update(lessonCourseRef, {'lessons': lessons});
+                    await batch.commit();
+                    lesson.readingId = null;
+                    Get.back();
+                  }, child: const Text('네')),
+                  TextButton(onPressed: (){
+                    Get.back();
+                  }, child: const Text('아니오'))
+                ],
+              ));
+            }, child: const Text('삭제'))
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(15),
+            child: GetBuilder<ReadingStateManager>(
+              builder: (controller) {
+                return SizedBox(
+                  width: 500,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              children: [
+                                const Text('레벨', textScaleFactor: 1.5),
+                                DropdownButton(
+                                  value: controller.readingLevel[readingTitle.level],
+                                  icon: const Icon(Icons.arrow_drop_down_outlined),
+                                  items: controller.readingLevel.map<DropdownMenuItem<String>>((value) {
+                                    return DropdownMenuItem(value: value, child: Text(value));
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    readingTitle.level = controller.readingLevel.indexOf(value.toString());
+                                    controller.update();
+                                  },
+                                ),
+                              ],
+                            ),
+                            Column(
+                              children: [
+                                readingTitle.image != null
+                                    ? Stack(
+                                        children: [
+                                          Image.memory(base64Decode(readingTitle.image!), height: 100, width: 100),
+                                          Positioned(
+                                            top: 0,
+                                            right: 0,
+                                            child: IconButton(
+                                              alignment: Alignment.topRight,
+                                              padding: const EdgeInsets.all(0),
+                                              icon: const Icon(Icons.remove_circle_outline_outlined),
+                                              color: Colors.red,
+                                              onPressed: () {
+                                                readingTitle.image = null;
+                                                controller.update();
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : const Icon(Icons.error),
+                                const SizedBox(height: 10),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    uploadImage(readingTitle);
+                                  },
+                                  child: const Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                    child: Text('이미지 업로드'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            const Text('읽기 타이틀', textScaleFactor: 1.5),
+                            const SizedBox(width: 10),
+                            DeeplTranslator().getTransBtn(controller, readingTitle.title),
+                          ],
+                        ),
+                        getTitleLine('ko'),
+                        const SizedBox(height: 10),
+                        getTitleLine(Languages().getFos[0]),
+                        const SizedBox(height: 10),
+                        getTitleLine(Languages().getFos[1]),
+                        const SizedBox(height: 10),
+                        getTitleLine(Languages().getFos[2]),
+                        const SizedBox(height: 10),
+                        getTitleLine(Languages().getFos[3]),
+                        const SizedBox(height: 10),
+                        getTitleLine(Languages().getFos[4]),
+                        const SizedBox(height: 10),
+                        getTitleLine(Languages().getFos[5]),
+                        const SizedBox(height: 10),
+                        getTitleLine(Languages().getFos[6]),
+                        const SizedBox(height: 30),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ElevatedButton(
+                                onPressed: () async {
+                                  lesson.readingId = readingTitle.id;
+                                  await Database().setDoc(collection: 'ReadingTitles', doc: readingTitle);
+                                  List<dynamic> lessons = course.lessons;
+                                  lessons[lessonIndex]['readingId'] = readingTitle.id;
+                                  await Database().updateField(
+                                      collection: 'LessonCourses',
+                                      docId: course.id,
+                                      map: {'lessons': lessons});
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.all(10),
+                                  child: Text('저장'),
+                                )),
+                            const SizedBox(width: 20),
+                            ElevatedButton(
+                                onPressed: () {
+                                  Get.back();
+                                  Get.to(const ReadingDetail(), arguments: readingTitle);
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.all(10),
+                                  child: Text('상세보기'),
+                                )),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -847,23 +1084,37 @@ class _LessonCardMainState extends State<LessonCardMain> {
                         ),
                       ),
                       const Expanded(child: SizedBox.shrink()),
-                      ElevatedButton(
-                        onPressed: () {
-                          Get.dialog(AlertDialog(
-                            content: getSummaryDialog(),
-                          ));
-                        },
-                        child: const Text('요약보기'),
-                      ),
-                      const SizedBox(width: 20),
-                      ElevatedButton(
-                        onPressed: () {
-                          Get.dialog(AlertDialog(
-                            content: getWritingDialog(),
-                          ));
-                        },
-                        child: const Text('쓰기보기'),
-                      ),
+                      Visibility(
+                        visible: lesson.hasOptions,
+                        child: Row(
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                Get.dialog(AlertDialog(
+                                  content: getSummaryDialog(),
+                                ));
+                              },
+                              child: const Text('요약보기'),
+                            ),
+                            const SizedBox(width: 20),
+                            ElevatedButton(
+                              onPressed: () {
+                                Get.dialog(AlertDialog(
+                                  content: getWritingDialog(),
+                                ));
+                              },
+                              child: const Text('쓰기보기'),
+                            ),
+                            const SizedBox(width: 20),
+                            ElevatedButton(
+                              onPressed: () {
+                                openReadingTitleDialog();
+                              },
+                              child: const Text('읽기보기'),
+                            ),
+                          ],
+                        ),
+                      )
                     ],
                   );
                 },

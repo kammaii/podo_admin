@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -29,7 +30,6 @@ class _ReadingDetailState extends State<ReadingDetail> {
   List<Reading> readings = [];
   String translatingId = '';
 
-
   @override
   void initState() {
     super.initState();
@@ -47,8 +47,8 @@ class _ReadingDetailState extends State<ReadingDetail> {
         controller.isTranslating = true;
       });
       DeeplTranslator().getTranslations(map).then((value) => setState(() {
-        controller.isTranslating = false;
-      }));
+            controller.isTranslating = false;
+          }));
     } else {
       controller.changeTransState(true);
       DeeplTranslator().getTranslations(map).then((value) {
@@ -109,17 +109,22 @@ class _ReadingDetailState extends State<ReadingDetail> {
         children: [
           const Text('단어입력'),
           const SizedBox(width: 20),
-          TextButton(onPressed: (){
-            DeeplTranslator().getWordTranslations(controller, reading.words).then((value) => controller.update());
-          }, child: Row(
-            children: [
-              const Text('번역'),
-              const SizedBox(width: 10),
-              controller.isTranslating
-                  ? const SizedBox(height: 15, width: 15, child: CircularProgressIndicator(strokeWidth: 1.5))
-                  : const SizedBox.shrink()
-            ],
-          ),),
+          TextButton(
+            onPressed: () {
+              DeeplTranslator()
+                  .getWordTranslations(controller, reading.words)
+                  .then((value) => controller.update());
+            },
+            child: Row(
+              children: [
+                const Text('번역'),
+                const SizedBox(width: 10),
+                controller.isTranslating
+                    ? const SizedBox(height: 15, width: 15, child: CircularProgressIndicator(strokeWidth: 1.5))
+                    : const SizedBox.shrink()
+              ],
+            ),
+          ),
         ],
       ),
       content: getWordList(reading),
@@ -254,7 +259,7 @@ class _ReadingDetailState extends State<ReadingDetail> {
           GestureDetector(
               onTap: () {
                 Clipboard.setData(ClipboardData(text: reading.id));
-                Get.snackbar('아이디가 클립보드에 저장되었습니다.', reading.id, snackPosition: SnackPosition.BOTTOM);
+                Get.snackbar('아이디가 클립보드에 저장되었습니다.', reading.id, snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 1));
               },
               child: Text(reading.id)),
         ],
@@ -280,6 +285,36 @@ class _ReadingDetailState extends State<ReadingDetail> {
         ],
       ),
     );
+  }
+
+  List<Widget> getSummaryTextField() {
+    readingTitle.summary ??= {};
+    List<Widget> textFields = [];
+    textFields.add(TextButton(
+        onPressed: () {
+          runTranslation(readingTitle.id, readingTitle.summary!, isSetState: false);
+        },
+        child: getTransBtn(readingTitle.id)));
+    textFields.add(const SizedBox(height: 10));
+    for (String lang in Languages().fos) {
+      textFields.add(Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Row(
+          children: [
+            SizedBox(width: 50, child: Text(lang)),
+            Expanded(
+              child: MyTextField().getTextField(
+                  controller: TextEditingController(text: readingTitle.summary![lang]),
+                  label: lang,
+                  fn: (value) {
+                    readingTitle.summary![lang] = value;
+                  }),
+            ),
+          ],
+        ),
+      ));
+    }
+    return textFields;
   }
 
   Widget getWordList(Reading reading) {
@@ -337,7 +372,41 @@ class _ReadingDetailState extends State<ReadingDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${readingTitle.title['ko']} (${readingTitle.id})'),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            GestureDetector(onTap: (){
+              Clipboard.setData(ClipboardData(text: readingTitle.id));
+              Get.snackbar('아이디가 클립보드에 저장되었습니다.', readingTitle.id, snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 1));
+            }, child: Text('${readingTitle.title['ko']} (${readingTitle.id})')),
+            ElevatedButton(
+                onPressed: () {
+                  Get.dialog(AlertDialog(
+                    title: const Text('요약을 입력하세요.'),
+                    content: GetBuilder<ReadingStateManager>(
+                      builder: (_) {
+                        return Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: SizedBox(
+                              width: cardWidth,
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  children: getSummaryTextField(),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ));
+                },
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white),
+                child: const Text('요약입력', style: TextStyle(color: Colors.deepPurpleAccent)))
+          ],
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -376,6 +445,9 @@ class _ReadingDetailState extends State<ReadingDetail> {
                   child: ElevatedButton(
                     onPressed: () async {
                       Get.back();
+                      if(readingTitle.summary != null) {
+                        await Database().updateField(collection: 'ReadingTitles', docId: readingTitle.id, map: {'summary': readingTitle.summary});
+                      }
                       for (Reading reading in readings) {
                         await Database()
                             .setDoc(collection: 'ReadingTitles/${readingTitle.id}/Readings', doc: reading);

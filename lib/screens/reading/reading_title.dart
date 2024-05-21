@@ -4,7 +4,7 @@ import 'package:uuid/uuid.dart';
 
 class ReadingTitle {
   late String id;
-  late int orderId;
+  int? orderId;
   String? image;
   late Map<String, dynamic> title;
   late int level;
@@ -12,17 +12,22 @@ class ReadingTitle {
   late String tag;
   late bool isReleased;
   late bool isFree;
+  Map<String,dynamic>? summary;
 
-  ReadingTitle() {
+  ReadingTitle({bool isLesson = false}) {
     final controller = Get.find<ReadingStateManager>();
     id = const Uuid().v4();
-    orderId = controller.totalReadingTitleLength;
-    title = {};
-    level = 1;
-    category = controller.selectedCategory;
-    tag = '';
+    if(!isLesson) {
+      orderId = controller.totalReadingTitleLength;
+      category = controller.selectedCategory;
+    } else {
+      category = 'Lesson';
+    }
     isReleased = false;
     isFree = false;
+    title = {};
+    level = 1;
+    tag = '';
   }
 
   static const String ID = 'id';
@@ -34,6 +39,7 @@ class ReadingTitle {
   static const String TAG = 'tag';
   static const String ISRELEASED = 'isReleased';
   static const String ISFREE = 'isFree';
+  static const String SUMMARY = 'summary';
 
   ReadingTitle.fromJson(Map<String, dynamic> json) {
     id = json[ID];
@@ -43,8 +49,11 @@ class ReadingTitle {
     level = json[LEVEL];
     category = json[CATEGORY];
     tag = json[TAG];
-    isReleased = json[ISRELEASED];
+    isReleased = json[ISRELEASED] ?? false;
     isFree = json[ISFREE];
+    if(json[SUMMARY] != null) {
+      summary = json[SUMMARY];
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -57,5 +66,6 @@ class ReadingTitle {
         TAG: tag,
         ISRELEASED: isReleased,
         ISFREE: isFree,
+        SUMMARY: summary ?? null,
       };
 }
