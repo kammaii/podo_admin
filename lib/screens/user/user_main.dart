@@ -40,11 +40,6 @@ class _UserMainState extends State<UserMain> {
         children: [
           Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           Text(': ${count.toString()} ', style: const TextStyle(fontSize: 18)),
-          isTrial
-              ? Text(
-              '(${(controller.trialCount - controller.trialEndCount).toString()}/${controller.trialEndCount
-                  .toString()}) ')
-              : const SizedBox.shrink(),
           percent != null
               ? Text('(${percent.toString()}%)', style: const TextStyle(fontSize: 15, color: Colors.grey))
               : const Text('      :'),
@@ -60,11 +55,6 @@ class _UserMainState extends State<UserMain> {
               Row(
                 children: [
                   Text(': ${count.toString()} ', style: const TextStyle(fontSize: 18)),
-                  isTrial
-                      ? Text(
-                      '(${(controller.trialCount - controller.trialEndCount).toString()}/${controller.trialEndCount
-                          .toString()}) ')
-                      : const SizedBox.shrink(),
                   percent != null
                       ? Text('(${percent.toString()}%)', style: const TextStyle(fontSize: 15, color: Colors.grey))
                       : const Text('      :'),
@@ -365,7 +355,7 @@ class _UserMainState extends State<UserMain> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                        '최근 5일간 활성 유저 수: ${controller.totalActive}명 (${(controller.totalActive / (controller.basicCount + controller.trialCount) * 100).roundToDouble()}%)    Trial: ${controller.trialActiveCount}명 (${(controller.trialActiveCount / controller.trialCount * 100).roundToDouble()}%),  Basic: ${controller.basicActiveCount}명 (${(controller.basicActiveCount / controller.basicCount * 100).roundToDouble()}%)',
+                                        '최근 5일간 활성 유저 수: ${controller.totalActive}명 (${(controller.totalActive / (controller.totalCount) * 100).roundToDouble()}%)    Premium: ${controller.premiumActiveCount}명 (${(controller.premiumActiveCount / controller.premiumCount * 100).roundToDouble()}%),  Basic: ${controller.basicActiveCount}명 (${(controller.basicActiveCount / controller.basicCount * 100).roundToDouble()}%)',
                                         style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                                     const SizedBox(height: 20),
                                     SizedBox(
@@ -417,7 +407,7 @@ class _UserMainState extends State<UserMain> {
                                                     Color color = Colors.deepPurple;
                                                     switch (barSpot.barIndex) {
                                                       case 0:
-                                                        barTitle = 'Trial';
+                                                        barTitle = 'Premium';
                                                         color = Colors.blueAccent;
                                                         break;
                                                       case 1:
@@ -435,7 +425,7 @@ class _UserMainState extends State<UserMain> {
                                                 })),
                                         lineBarsData: [
                                           LineChartBarData(
-                                            spots: controller.trialActivePoints,
+                                            spots: controller.premiumActivePoints,
                                             color: Colors.blueAccent,
                                             dotData: const FlDotData(),
                                           ),

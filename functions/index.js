@@ -9,6 +9,9 @@ const deepl = require('deepl-node');
 const deeplKey = functions.config().deepl.key;
 const translator = new deepl.Translator(deeplKey);
 const gmailKey = functions.config().gmail.key;
+const axios = require('axios');
+const revenueCatKey = functions.config().revenuecat.key;
+
 
 admin.initializeApp();
 
@@ -145,38 +148,88 @@ function onWritingReplied(change, context) {
   }
 }
 
-//todo: RevenueCat API에서 구독자수 가져오기
 async function userCountFunction(context) {
     const db = admin.firestore();
     let today = new Date();
-    let todayISO = today.toISOString();
+
+    // 구독자 상태 최신화
+    let subscribers = await db.collection('Users').where('status', '==', 2).get();
+        for(let i=0; i<subscribers.docs.length; i++) {
+            let userId = subscribers.docs[i].get('id');
+            console.log(userId);
+            const url = "https://api.revenuecat.com/v1/subscribers/"+userId;
+
+            try {
+                const response = await axios.get(url, {
+                    headers: {
+                        'Authorization' : 'Bearer '+revenueCatKey,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                let data = response.data['subscriber']['subscriptions']['podo_premium'];
+                if(data == null) {
+                    data = response.data['subscriber']['subscriptions']['podo_premium_2m_999'];
+                }
+
+                let premiumLastPurchase = data['purchase_date'];
+                let premiumStart = data['original_purchase_date'];
+                let premiumEnd = data['expires_date'];
+                let premiumUnsubscribeDetected = data['unsubscribe_detected_at'];
+                let status = 2;
+                let end = new Date(premiumEnd);
+                if(today > end) {
+                    status = 1;
+                }
+
+                await admin.firestore().collection('Users').doc(userId).update({
+                    'premiumStart': premiumStart,
+                    'premiumEnd': premiumEnd,
+                    'premiumLastPurchase': premiumLastPurchase,
+                    'premiumUnsubscribeDetected': premiumUnsubscribeDetected,
+                    'status': status
+                });
+                console.log('Updated user premium date');
+
+            } catch (e) {
+                console.error('Error', e);
+            }
+        }
+
+    // trial 유저 상태 최신화
+    let trialEndUsers = await admin.firestore().collection('Users').where('status', '==', 3).where('trialEnd', '<', today).get();
+    for(let i=0; i<trialEndUsers.docs.length; i++) {
+        let userId = trialEndUsers.docs[i].get('id');
+        await admin.firestore().collection('Users').doc(userId).update({'status': 1});
+        console.log('User state update: ' + userId);
+    }
+
+    // userCount 저장
     let newUsers = await admin.firestore().collection('Users').where('status', '==', 0).get();
     let basicUsers = await admin.firestore().collection('Users').where('status', '==', 1).get();
     let premiumUsers = await admin.firestore().collection('Users').where('status', '==', 2).get();
-    let premiumEndUsers = await admin.firestore().collection('Users').where('status', '==', 2).where('premiumEnd', '<', todayISO).get();
     let trialUsers = await admin.firestore().collection('Users').where('status', '==', 3).get();
-    let trialEndUsers = await admin.firestore().collection('Users').where('status', '==', 3).where('trialEnd', '<', today).get();
     let data = {
         'date': today,
         'newUsers': newUsers.size,
-        'basicUsers': basicUsers.size + premiumEndUsers.size + trialEndUsers.size,
-        'premiumUsers': premiumUsers.size - premiumEndUsers.size,
-        'trialUsers': trialUsers.size - trialEndUsers.size,
+        'basicUsers': basicUsers.size,
+        'premiumUsers': premiumUsers.size,
+        'trialUsers': trialUsers.size,
         'totalUsers': newUsers.size + basicUsers.size + premiumUsers.size + trialUsers.size,
     }
-    db.collection('UserCounts').doc().set(data);
+    await db.collection('UserCounts').doc().set(data);
 }
 
 
 // 비활성 유저 계정 삭제 알림 코드
 async function userCleanUp(context) {
     const now = new Date();
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(now.getMonth() - 6);
+    const aYearAgo = new Date();
+    aYearAgo.setMonth(now.getMonth() - 12);
     const aWeekAgo = new Date();
     aWeekAgo.setDate(aWeekAgo.getDate() - 7)
     let totalBasicUsers = await admin.firestore().collection('Users')
-        .where('dateSignIn', '<=', sixMonthsAgo)
+        .where('dateSignIn', '<=', aYearAgo)
+        .where('status', '!=', 2)
         .get();
     for(let i=0; i<totalBasicUsers.docs.length; i++) {
         let userDoc = totalBasicUsers.docs[i];
@@ -200,6 +253,7 @@ async function userCleanUp(context) {
                   });
                 await deleteSubCollection('Users/'+userId+'/Histories');
                 await deleteSubCollection('Users/'+userId+'/FlashCards');
+                await deleteSubCollection('Users/'+userId+'/Readings');
                 userDoc.ref.delete();
             } else {
                 console.log('Pending Account Deletion');
@@ -219,14 +273,14 @@ async function sendEmail(userEmail, msgType) {
         from: 'Podo Korean <akorean.help@gmail.com>',
         to: userEmail,
         subject: 'Account Deletion Notice',
-        text: 'Hello,\n\nThank you for using Podo Korean.\n\nYour activity is valuable to us and contributes greatly to the ongoing improvement of our service.\n\nWe want to inform you that if you haven\'t logged in for the past 6 months, your account will be deleted within the next 7 days.\n\nPlease be aware that once your account is deleted, you will lose access to any stored information or data, and account recovery will not be possible.\n\nHowever, if you log in before your account is deleted, it will automatically be transitioned to an active status.\n\nIf you have any questions or need assistance regarding your account, please feel free to contact us. We are here to help.\n\nThank you.\n\nPodo Korean',
+        text: 'Hello,\n\nThank you for using Podo Korean.\n\nYour activity is valuable to us and contributes greatly to the ongoing improvement of our service.\n\nWe want to inform you that if you haven\'t logged in for the past a year, your account will be deleted within the next 7 days.\n\nPlease be aware that once your account is deleted, you will lose access to any stored information or data, and account recovery will not be possible.\n\nHowever, if you log in before your account is deleted, it will automatically be transitioned to an active status.\n\nIf you have any questions or need assistance regarding your account, please feel free to contact us. We are here to help.\n\nThank you.\n\nPodo Korean',
       };
   } else if (msgType == 1) {
     mailOptions = {
           from: 'Podo Korean <akorean.help@gmail.com>',
           to: userEmail,
           subject: 'Account Deletion Notice',
-          text: 'Hello,\n\nThank you for using Podo Korean.\n\nWe regularly review unused accounts for customer account security and data management.\n\nAs previously notified, accounts that have not logged in for over 6 months will be automatically deleted.\n\nRegrettably, your account has been automatically deleted because you have not logged in for a week since the notification a week ago.\n\nTherefore, it is not possible to recover any data.\n\nThank you once again for using Podo Korean.\n\nWe are committed to continually improving our service to offer a better experience.\n\nThank you.\n\nThe Podo Korean'
+          text: 'Hello,\n\nThank you for using Podo Korean.\n\nWe regularly review unused accounts for customer account security and data management.\n\nAs previously notified, accounts that have not logged in for over a year will be automatically deleted.\n\nRegrettably, your account has been automatically deleted because you have not logged in for a week since the notification a week ago.\n\nTherefore, it is not possible to recover any data.\n\nThank you once again for using Podo Korean.\n\nWe are committed to continually improving our service to offer a better experience.\n\nThank you.\n\nThe Podo Korean'
     };
   }
 
