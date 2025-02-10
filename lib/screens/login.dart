@@ -6,6 +6,7 @@ class Login extends StatelessWidget {
   Login({Key? key}) : super(key: key);
 
   final String adminEmail = 'admin@akorean.kr';
+  final int adminPass = 123123;
   late String email;
   late String pass;
 

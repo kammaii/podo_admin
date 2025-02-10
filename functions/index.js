@@ -9,13 +9,14 @@ const deepl = require('deepl-node');
 const deeplKey = functions.config().deepl.key;
 const translator = new deepl.Translator(deeplKey);
 const gmailKey = functions.config().gmail.key;
+const gmailKey_noReply = functions.config().gmail_noreply.key;
 const axios = require('axios');
 const revenueCatKey = functions.config().revenuecat.key;
 
 
 admin.initializeApp();
 
-// export GOOGLE_APPLICATION_CREDENTIALS="G:\keys\podo-49335-e6a47f70b42a.json"
+// export GOOGLE_APPLICATION_CREDENTIALS="D:\keys\podo-49335-e6a47f70b42a.json"
 
 var languages = ['es', 'fr', 'de', 'pt-BR', 'id', 'ru'];
 
@@ -37,6 +38,43 @@ const mailTransport = nodemailer.createTransport({
     pass: gmailKey,
   },
 });
+
+const mailTransportNoReply = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'noreply.podokorean@gmail.com',
+    pass: gmailKey_noReply,
+  },
+});
+
+async function onContactFunction(request, response) {
+    let body = request.body;
+    let name = body['name'];
+    let email = body['email'];
+    let subject = body['subject'];
+    let message = body['message'];
+
+  const mailOptions = {
+    from: 'Contact Us <' + email + '>',
+    to: 'akorean.help@gmail.com',
+    subject: subject,
+    text: message + "\n\n" + name+ "\n" + email,
+  };
+
+  return mailTransport.sendMail(mailOptions)
+    .then(() => {
+      console.log('이메일 전송 성공');
+      response.set('Access-Control-Allow-Origin', '*');
+      response.status(200).send('Email sent');
+      return null;
+    })
+    .catch((error) => {
+      console.error('이메일 전송 실패:', error);
+      response.set('Access-Control-Allow-Origin', '*');
+      response.status(500).send('ERROR');
+      return null;
+    });
+}
 
 function onFeedbackSent(snap, context) {
   const feedbackData = snap.data();
@@ -133,10 +171,11 @@ function onWritingReplied(change, context) {
         notification: {
           title: title,
           body: body
-        }
+        },
+        token: fcmToken,
       };
 
-      return admin.messaging().sendToDevice(fcmToken, payload)
+      return admin.messaging().send(payload)
         .then(function(response){
           console.log('Notification sent successfully:',response);
           return null;
@@ -148,73 +187,155 @@ function onWritingReplied(change, context) {
   }
 }
 
-async function userCountFunction(context) {
+//async function userCountFunction(context) {
+async function userCountFunction(request, response) {
     const db = admin.firestore();
     let today = new Date();
+    let premiumUsers = 0;
 
     // 구독자 상태 최신화
     let subscribers = await db.collection('Users').where('status', '==', 2).get();
-        for(let i=0; i<subscribers.docs.length; i++) {
-            let userId = subscribers.docs[i].get('id');
-            console.log(userId);
-            const url = "https://api.revenuecat.com/v1/subscribers/"+userId;
+    console.log('-----------------------------------------')
+    console.log('[Subscriber status update]')
+    for(let i=0; i<subscribers.docs.length; i++) {
+        let userId = subscribers.docs[i].get('id');
+        console.log('-----------------------------------------')
+        console.log(userId);
+        const url = "https://api.revenuecat.com/v1/subscribers/"+userId;
 
-            try {
-                const response = await axios.get(url, {
-                    headers: {
-                        'Authorization' : 'Bearer '+revenueCatKey,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                let data = response.data['subscriber']['subscriptions']['podo_premium'];
-                if(data == null) {
-                    data = response.data['subscriber']['subscriptions']['podo_premium_2m_999'];
+        try {
+            const response = await axios.get(url, {
+                headers: {
+                    'Authorization' : 'Bearer '+revenueCatKey,
+                    'Content-Type': 'application/json'
                 }
-
-                let premiumLastPurchase = data['purchase_date'];
-                let premiumStart = data['original_purchase_date'];
-                let premiumEnd = data['expires_date'];
-                let premiumUnsubscribeDetected = data['unsubscribe_detected_at'];
+            });
+            const subscriber = response.data?.subscriber;
+            const entitlement = subscriber.entitlements;
+            const premiumData = entitlement['premium'];
+            if(premiumData != null && !premiumData['product_identifier'].includes('rc_promo')) {
+                let premiumStart = premiumData['purchase_date'];
+                let premiumEnd = premiumData['expires_date'];
                 let status = 2;
                 let end = new Date(premiumEnd);
                 if(today > end) {
+                    console.log('Expired premium');
+                    let fcmToken = subscribers.docs[i].get('fcmToken');
+                    if(fcmToken) {
+                        try {
+                            await admin.messaging().unsubscribeFromTopic([fcmToken], 'premiumUsers');
+                            await admin.messaging().unsubscribeFromTopic([fcmToken], 'newUsers');
+                            await admin.messaging().unsubscribeFromTopic([fcmToken], 'trialUsers');
+                            await admin.messaging().unsubscribeFromTopic([fcmToken], 'trialExpiredUsers');
+                            await admin.messaging().subscribeToTopic([fcmToken], 'premiumExpiredUsers');
+                            await admin.messaging().subscribeToTopic([fcmToken], 'basicUsers');
+                        } catch (e) {
+                            console.error('Failed to update subscription for premiumExpiredUser', e);
+                        }
+                    }
                     status = 1;
+                } else {
+                    console.log('Valid premium')
+                    premiumUsers++;
                 }
-
                 await admin.firestore().collection('Users').doc(userId).update({
                     'premiumStart': premiumStart,
                     'premiumEnd': premiumEnd,
-                    'premiumLastPurchase': premiumLastPurchase,
-                    'premiumUnsubscribeDetected': premiumUnsubscribeDetected,
+                    'originalPurchaseDate': subscriber.original_purchase_date,
                     'status': status
                 });
-                console.log('Updated user premium date');
-
-            } catch (e) {
-                console.error('Error', e);
+                console.log('Updated premium status');
             }
+        } catch (e) {
+            console.error('Error', e);
         }
+    }
 
     // trial 유저 상태 최신화
     let trialEndUsers = await admin.firestore().collection('Users').where('status', '==', 3).where('trialEnd', '<', today).get();
+    console.log('-----------------------------------------')
+    console.log('[Trial expired users update]')
     for(let i=0; i<trialEndUsers.docs.length; i++) {
         let userId = trialEndUsers.docs[i].get('id');
+        console.log('-----------------------------------------')
+        console.log(userId);
+        let fcmToken = trialEndUsers.docs[i].get('fcmToken');
         await admin.firestore().collection('Users').doc(userId).update({'status': 1});
-        console.log('User state update: ' + userId);
+        if(fcmToken) {
+            try {
+                await admin.messaging().unsubscribeFromTopic([fcmToken], 'trialUsers');
+                await admin.messaging().unsubscribeFromTopic([fcmToken], 'newUsers');
+                await admin.messaging().subscribeToTopic([fcmToken], 'trialExpiredUsers');
+                await admin.messaging().subscribeToTopic([fcmToken], 'basicUsers');
+            } catch(e) {
+                console.error('Failed to update subscription for trialExpiredUser', e);
+            }
+
+        }
+        console.log('Updated trial status')
+    }
+
+    // 활성 유저 수
+    let activeNew = 0;
+    let activeBasic = 0;
+    let activeTrial = 0;
+    let activePremium = 0;
+
+    const now = new Date();
+
+    const koreaOffset = 9 * 60 * 60 * 1000; // 현재 시간을 UTC+9로 변환
+    const koreaNow = new Date(now.getTime() + koreaOffset);
+
+    const todayKorea = new Date(koreaNow);
+    todayKorea.setUTCHours(0, 0, 0, 0); // UTC 자정 기준으로 설정
+    const tomorrowKorea = new Date(todayKorea);
+    tomorrowKorea.setUTCDate(todayKorea.getUTCDate() + 1); // 다음 날 자정
+
+    const todayUTC = new Date(todayKorea.getTime() - koreaOffset); // UTC로 변환
+    const tomorrowUTC = new Date(tomorrowKorea.getTime() - koreaOffset);
+
+    const activeUsers = await admin.firestore().collection('Users')
+        .where('dateSignIn', '>=', admin.firestore.Timestamp.fromDate(todayUTC))
+        .where('dateSignIn', '<', admin.firestore.Timestamp.fromDate(tomorrowUTC))
+        .get();
+
+    console.log('-----------------------------------------')
+    console.log('[Active Users Counting]')
+    console.log('todayUTC: ' +todayUTC)
+    console.log('tomorrowUTC: '+tomorrowUTC)
+    console.log('Active Users: ' + activeUsers.length)
+    for(let i=0; i<activeUsers.docs.length; i++) {
+        let userId = activeUsers.docs[i].get('id');
+        let status = activeUsers.docs[i].get('status');
+        console.log('-----------------------------------------')
+        console.log(userId);
+        if(status === 0) {
+            activeNew++;
+        } else if(status === 1) {
+            activeBasic++;
+        } else if(status === 2) {
+            activePremium++;
+        } else if(status === 3) {
+            activeTrial++;
+        }
     }
 
     // userCount 저장
     let newUsers = await admin.firestore().collection('Users').where('status', '==', 0).get();
     let basicUsers = await admin.firestore().collection('Users').where('status', '==', 1).get();
-    let premiumUsers = await admin.firestore().collection('Users').where('status', '==', 2).get();
     let trialUsers = await admin.firestore().collection('Users').where('status', '==', 3).get();
     let data = {
         'date': today,
         'newUsers': newUsers.size,
         'basicUsers': basicUsers.size,
-        'premiumUsers': premiumUsers.size,
+        'premiumUsers': premiumUsers,
         'trialUsers': trialUsers.size,
-        'totalUsers': newUsers.size + basicUsers.size + premiumUsers.size + trialUsers.size,
+        'totalUsers': newUsers.size + basicUsers.size + premiumUsers + trialUsers.size,
+        'activeNew': activeNew,
+        'activeBasic': activeBasic,
+        'activeTrial': activeTrial,
+        'activePremium': activePremium,
+        'activeTotal' : activeNew + activeBasic + activeTrial + activePremium,
     }
     await db.collection('UserCounts').doc().set(data);
 }
@@ -268,23 +389,33 @@ async function userCleanUp(context) {
 
 async function sendEmail(userEmail, msgType) {
   let mailOptions;
-  if(msgType == 0) {
+  if(msgType == 0) {    // 계정 삭제 알림 1
       mailOptions = {
-        from: 'Podo Korean <akorean.help@gmail.com>',
+        from: 'Podo Korean <noreply.podokorean@gmail.com>',
         to: userEmail,
         subject: 'Account Deletion Notice',
-        text: 'Hello,\n\nThank you for using Podo Korean.\n\nYour activity is valuable to us and contributes greatly to the ongoing improvement of our service.\n\nWe want to inform you that if you haven\'t logged in for the past a year, your account will be deleted within the next 7 days.\n\nPlease be aware that once your account is deleted, you will lose access to any stored information or data, and account recovery will not be possible.\n\nHowever, if you log in before your account is deleted, it will automatically be transitioned to an active status.\n\nIf you have any questions or need assistance regarding your account, please feel free to contact us. We are here to help.\n\nThank you.\n\nPodo Korean',
+        html: `
+          <p>Hello,</p>
+          <p>Thank you for using Podo Korean.</p>
+          <p>Your activity is valuable to us and contributes greatly to the ongoing improvement of our service.</p>
+          <p>We want to inform you that if you haven’t logged in for the past year, your account will be deleted within the next 7 days.</p>
+          <p>Please be aware that once your account is deleted, you will lose access to any stored information or data, and account recovery will not be possible.</p>
+          <p>However, if you log in before your account is deleted, it will automatically be transitioned to an active status.</p>
+          <p>If you have any questions or need assistance regarding your account, please feel free to <a href="mailto:akorean.help@gmail.com">contact us</a>. We are here to help.</p>
+          <p>Thank you.</p>
+          <p>Podo Korean</p>
+        `,
       };
-  } else if (msgType == 1) {
+  } else if (msgType == 1) {    // 계정 삭제 알림 2
     mailOptions = {
-          from: 'Podo Korean <akorean.help@gmail.com>',
+          from: 'Podo Korean <noreply.podokorean@gmail.com>',
           to: userEmail,
           subject: 'Account Deletion Notice',
           text: 'Hello,\n\nThank you for using Podo Korean.\n\nWe regularly review unused accounts for customer account security and data management.\n\nAs previously notified, accounts that have not logged in for over a year will be automatically deleted.\n\nRegrettably, your account has been automatically deleted because you have not logged in for a week since the notification a week ago.\n\nTherefore, it is not possible to recover any data.\n\nThank you once again for using Podo Korean.\n\nWe are committed to continually improving our service to offer a better experience.\n\nThank you.\n\nThe Podo Korean'
     };
   }
 
-  return mailTransport.sendMail(mailOptions)
+  return mailTransportNoReply.sendMail(mailOptions)
     .then(() => {
       console.log('이메일 전송 성공');
       return null;
@@ -306,9 +437,11 @@ async function deleteSubCollection(path) {
 
 
 
-exports.onWritingReply = functions.firestore.document('Writings/{writingId}').onUpdate(onWritingReplied);
-exports.onPodoMsgActive = functions.firestore.document('PodoMessages/{podoMessageId}').onUpdate(onPodoMsgActivated);
-exports.onFeedbackSent = functions.firestore.document('Feedbacks/{feedbackId}').onCreate(onFeedbackSent);
-exports.onDeepl = onRequest(onDeeplFunction);
-exports.onUserCount = functions.pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun(userCountFunction);
-exports.onEmailSend = functions.pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun(userCleanUp);
+//exports.onWritingReply = functions.firestore.document('Writings/{writingId}').onUpdate(onWritingReplied);
+//exports.onPodoMsgActive = functions.firestore.document('PodoMessages/{podoMessageId}').onUpdate(onPodoMsgActivated);
+//exports.onFeedbackSent = functions.firestore.document('Feedbacks/{feedbackId}').onCreate(onFeedbackSent);
+//exports.onDeepl = onRequest(onDeeplFunction);
+//exports.onContact = onRequest(onContactFunction);
+//exports.onUserCount = functions.runWith({ timeoutSeconds: 540 }).pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun(userCountFunction);
+exports.onUserCounttt = functions.runWith({ timeoutSeconds: 540 }).onRequest(userCountFunction);
+//exports.onEmailSend = functions.pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun(userCleanUp);

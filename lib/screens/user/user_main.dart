@@ -400,7 +400,6 @@ class _UserMainState extends State<UserMain> {
                                         maxY: ((controller.maxActiveCount / 10).ceil()) * 10 + 10,
                                         lineTouchData: LineTouchData(
                                             touchTooltipData: LineTouchTooltipData(
-                                                tooltipBgColor: Colors.white,
                                                 getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
                                                   return touchedBarSpots.map((barSpot) {
                                                     String barTitle = 'Total';

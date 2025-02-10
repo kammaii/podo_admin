@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/feedback/feedback_main.dart';
 import 'package:podo_admin/research.dart';
+import 'package:podo_admin/screens/korean_bites/korean_bite_state_manager.dart';
+import 'package:podo_admin/screens/korean_bites/korean_bite_title_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_course_main.dart';
 import 'package:podo_admin/screens/loading_controller.dart';
 import 'package:podo_admin/screens/podo_message/podo_message_main.dart';
@@ -22,6 +24,7 @@ class _MainFrameState extends State<MainFrame> {
   final List<Widget> _buildScreens = [
     WritingMain(),
     FeedbackMain(),
+    const KoreanBiteTitleMain(),
     PodoMessageMain(),
     LessonCourseMain(),
     ReadingTitleMain(),
@@ -36,6 +39,7 @@ class _MainFrameState extends State<MainFrame> {
     Get.put(LoadingController());
     Get.put(UserStateManager());
     Get.put(ReadingStateManager());
+    Get.put(KoreanBiteStateManager());
     return Scaffold(
       body: Stack(
         children: [
@@ -58,6 +62,11 @@ class _MainFrameState extends State<MainFrame> {
                     icon: Icon(Icons.feedback_outlined),
                     selectedIcon: Icon(Icons.feedback),
                     label: Text('피드백'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.cookie_outlined),
+                    selectedIcon: Icon(Icons.cookie),
+                    label: Text('Korean Bites'),
                   ),
                   NavigationRailDestination(
                     icon: Icon(Icons.cloud_outlined),
@@ -103,8 +112,8 @@ class _MainFrameState extends State<MainFrame> {
           ),
           Obx(() => Offstage(
             offstage: !LoadingController.to.isLoading,
-            child: Stack(
-              children: const [
+            child: const Stack(
+              children: [
                 Opacity(opacity: 0.5, child: ModalBarrier(dismissible: false, color: Colors.black)),
                 Center(
                   child: CircularProgressIndicator(),

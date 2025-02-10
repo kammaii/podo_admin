@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import 'package:podo_admin/screens/korean_bites/korean_bite.dart';
+import 'package:podo_admin/screens/korean_bites/korean_bite_example.dart';
+import 'package:podo_admin/screens/korean_bites/korean_bite_state_manager.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 
 class Database {
@@ -42,6 +45,7 @@ class Database {
       {required String collection,
       dynamic field,
       dynamic equalTo,
+        dynamic arrayContains,
       required String orderBy,
       int? limit,
       bool descending = true}) async {
@@ -49,7 +53,11 @@ class Database {
     final ref = firestore.collection(collection);
     dynamic queryRef;
     if (field != null) {
-      queryRef = ref.where(field, isEqualTo: equalTo).orderBy(orderBy, descending: descending);
+      if(equalTo != null) {
+        queryRef = ref.where(field, isEqualTo: equalTo).orderBy(orderBy, descending: descending);
+      } else if(arrayContains != null) {
+        queryRef = ref.where(field, arrayContains: arrayContains).orderBy(orderBy, descending: descending);
+      }
     } else {
       queryRef = ref.orderBy(orderBy, descending: descending);
     }
@@ -160,6 +168,48 @@ class Database {
       controller.snapshots[collection] = [...docs[snapshotIndex]];
       Get.snackbar('$collection are saved', '', snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 1));
       print('$collection are saved');
+    }).catchError((e) {
+      print(e);
+      Get.snackbar('Error', e, snackPosition: SnackPosition.BOTTOM);
+    });
+  }
+
+  Future<void> runKoreanBiteBatch({required KoreanBite koreanBite}) async {
+    final batch = firestore.batch();
+    final controller = Get.find<KoreanBiteStateManager>();
+    final exampleCollection = 'KoreanBites/${koreanBite.id}/Examples';
+
+    // KoreanBite 설명 저장
+    final ref = firestore.collection('KoreanBites').doc(koreanBite.id);
+    final map = koreanBite.toJson();
+    batch.update(ref, {'explain': map['explain']});
+
+    // 기존에 저장된 Example ids
+    List<String> beforeIds = [];
+    for (dynamic doc in controller.fetchedExamples) {
+      beforeIds.add(doc.id);
+    }
+
+    // 현재 example을 저장
+    for (dynamic doc in controller.examples) {
+      final ref = firestore.collection(exampleCollection).doc(doc.id);
+      print("DOC: $doc");
+      batch.set(ref, doc.toJson());
+      if (beforeIds.contains(doc.id)) {
+        beforeIds.remove(doc.id);
+      }
+    }
+
+    // 삭제된 ids 가 있으면 DB 에서 제거
+    if (beforeIds.isNotEmpty) {
+      for (final id in beforeIds) {
+        final ref = firestore.collection(exampleCollection).doc(id);
+        batch.delete(ref);
+      }
+    }
+
+    await batch.commit().then((value) {
+      Get.snackbar('KoreanBite is saved', '', snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 1));
     }).catchError((e) {
       print(e);
       Get.snackbar('Error', e, snackPosition: SnackPosition.BOTTOM);

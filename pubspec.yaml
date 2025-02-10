@@ -30,26 +30,26 @@ dependencies:
   flutter:
     sdk: flutter
   get: ^4.6.5
-  flutter_html: ^2.2.1
-  html_editor_enhanced: ^2.5.1
+  flutter_html: ^3.0.0-beta.2
+  html_editor_enhanced: ^2.6.0
   data_table_2: ^2.3.7
-  country_icons: ^2.0.2
-  intl: ^0.17.0
-  uuid: ^3.0.6
+  country_icons: ^3.0.0
+  intl: ^0.19.0
+  uuid: ^4.5.1
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-  firebase_core: ^2.13.0
-  cloud_firestore: ^4.17.3
-  cloud_functions: ^4.7.4
-  firebase_storage: ^11.7.5
-  translator: ^0.1.7
-  firebase_auth: ^4.19.5
-  file_picker: ^5.2.10
-  dart_openai: ^1.9.91
-  http: ^0.13.6
-  fl_chart: ^0.64.0
+  firebase_core: ^3.8.0
+  cloud_firestore: ^5.5.0
+  cloud_functions: ^5.1.5
+  firebase_storage: ^12.3.6
+  translator: ^1.0.3+1
+  firebase_auth: ^5.3.3
+  file_picker: ^8.1.4
+  dart_openai: ^5.1.0
+  http: ^1.2.2
+  fl_chart: ^0.69.2
 
 dev_dependencies:
   flutter_test:
@@ -60,7 +60,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
+  flutter_lints: ^4.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

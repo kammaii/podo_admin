@@ -132,20 +132,18 @@ class _WritingDetailState extends State<WritingDetail> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('교정_상세')),
-      body: RawKeyboardListener(
+      body: KeyboardListener(
         focusNode: FocusNode(),
         autofocus: true,
-        onKey: (event) {
-          if (event is RawKeyDownEvent) {
-            if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-              setState(() {
-                controller.getWriting(isNext: false);
-              });
-            } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-              setState(() {
-                controller.getWriting(isNext: true);
-              });
-            }
+        onKeyEvent: (event) {
+          if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+            setState(() {
+              controller.getWriting(isNext: false);
+            });
+          } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+            setState(() {
+              controller.getWriting(isNext: true);
+            });
           }
         },
         child: Padding(
@@ -180,6 +178,8 @@ class _WritingDetailState extends State<WritingDetail> {
                             ),
                           )
                         : const SizedBox.shrink(),
+                    const SizedBox(width: 20),
+                    Text('${writing.userId.substring(0, 5)}: ${writing.userName}', textScaleFactor: 2),
                     Visibility(
                       visible: controller.statusRadio == '신규',
                       child: Expanded(
