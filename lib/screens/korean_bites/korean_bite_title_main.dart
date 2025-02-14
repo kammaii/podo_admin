@@ -1,18 +1,15 @@
 import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:data_table_2/data_table_2.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/common/deepl_translator.dart';
 import 'package:podo_admin/common/languages.dart';
 import 'package:podo_admin/common/my_radio_btn.dart';
-import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/screens/korean_bites/korean_bite.dart';
 import 'package:podo_admin/screens/korean_bites/korean_bite_detail.dart';
 import 'package:podo_admin/screens/korean_bites/korean_bite_state_manager.dart';
@@ -178,6 +175,7 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
                 DataColumn2(label: Text('상태'), size: ColumnSize.S),
                 DataColumn2(label: Text('삭제'), size: ColumnSize.S),
                 DataColumn2(label: Text(''), size: ColumnSize.S),
+                DataColumn2(label: Text(''), size: ColumnSize.S),
               ],
               rows: List<DataRow>.generate(koreanBites.length, (i) {
                 KoreanBite koreanBite = koreanBites[i];
@@ -330,6 +328,29 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
                     child: const Text('상세보기'),
                     onPressed: () {
                       Get.to(const KoreanBiteDetail(), arguments: koreanBite);
+                    },
+                  )),
+                  DataCell(ElevatedButton(
+                    child: const Text('FCM 보내기'),
+                    onPressed: () async {
+                      final body = {
+                        'koreanBiteId': koreanBite.id,
+                        'title': koreanBite.title['ko'],
+                        'content': koreanBite.title['en'],
+                        //todo: topic.appUser로 수정하기
+                        'token': 'cJGZhUVDTS6ymJ0CPvIT7Z:APA91bHJVbeAmJmlvMpQTi_lPTQMi3XifA2Reu9p8iAYe22f-mjY0rU4x33c6gyafvCVfEyLkUsaoKOTRrMejZg3k2zHsjEQQI4XTDv_5RE6Jtw1vgirmAw',
+                      };
+
+                      final response = await http.post(
+                        Uri.parse('https://us-central1-podo-49335.cloudfunctions.net/onKoreanBiteFcm'),
+                        body: body,
+                      );
+
+                      if (response.statusCode == 200) {
+                        print('fcm 전송 성공');
+                      } else {
+                        print('오류 발생: ${response.statusCode}');
+                      }
                     },
                   )),
                 ]);

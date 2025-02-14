@@ -435,13 +435,45 @@ async function deleteSubCollection(path) {
     }
 }
 
+function onKoreanBiteFunction(request, response) {
+    let body = request.body;
+    let koreanBiteId = body['koreanBiteId'];
+    let title = body['title'];
+    let content = body['content'];
+
+    let payload = {
+      data: {
+       'tag': 'koreanBite',
+       'koreanBiteId': koreanBiteId,
+      },
+      notification: {
+        title: title,
+        body: content,
+      },
+      token: body['token'],
+    };
+
+    //TODO: 수정하기
+    //admin.messaging().sendToTopic('allUsers', payload).then((response) => {
+    admin.messaging().send(payload).then((response) => {
+      console.log('알림 전송 성공:', response);
+    })
+    .catch((error) => {
+      console.log('알림 전송 실패:', error);
+    });
+
+    response.set('Access-Control-Allow-Origin', '*');
+    response.status(200).send('Succeed FCM sending');
+}
 
 
-//exports.onWritingReply = functions.firestore.document('Writings/{writingId}').onUpdate(onWritingReplied);
-//exports.onPodoMsgActive = functions.firestore.document('PodoMessages/{podoMessageId}').onUpdate(onPodoMsgActivated);
-//exports.onFeedbackSent = functions.firestore.document('Feedbacks/{feedbackId}').onCreate(onFeedbackSent);
-//exports.onDeepl = onRequest(onDeeplFunction);
-//exports.onContact = onRequest(onContactFunction);
+
+exports.onWritingReply = functions.firestore.document('Writings/{writingId}').onUpdate(onWritingReplied);
+exports.onPodoMsgActive = functions.firestore.document('PodoMessages/{podoMessageId}').onUpdate(onPodoMsgActivated);
+exports.onFeedbackSent = functions.firestore.document('Feedbacks/{feedbackId}').onCreate(onFeedbackSent);
+exports.onDeepl = onRequest(onDeeplFunction);
+exports.onContact = onRequest(onContactFunction);
+exports.onKoreanBiteFcm = onRequest(onKoreanBiteFunction);
 //exports.onUserCount = functions.runWith({ timeoutSeconds: 540 }).pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun(userCountFunction);
-exports.onUserCounttt = functions.runWith({ timeoutSeconds: 540 }).onRequest(userCountFunction);
-//exports.onEmailSend = functions.pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun(userCleanUp);
+//exports.onUserCounttt = functions.runWith({ timeoutSeconds: 540 }).onRequest(userCountFunction);
+exports.onEmailSend = functions.pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun(userCleanUp);
