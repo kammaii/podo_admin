@@ -450,12 +450,9 @@ function onKoreanBiteFunction(request, response) {
         title: title,
         body: content,
       },
-      token: body['token'],
     };
 
-    //TODO: 수정하기
-    //admin.messaging().sendToTopic('allUsers', payload).then((response) => {
-    admin.messaging().send(payload).then((response) => {
+    admin.messaging().sendToTopic('allUsers', payload).then((response) => {
       console.log('알림 전송 성공:', response);
     })
     .catch((error) => {

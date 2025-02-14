@@ -34,26 +34,27 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
   }
 
   getDataFromDb() {
-    if (controller.selectedCategory == 'All') {
-      controller.futureKoreanBite = Database().getDocs(collection: KOREAN_BITES, orderBy: 'date', descending: true);
+    if (controller.selectedTag == 'All') {
+      controller.futureKoreanBite =
+          Database().getDocs(collection: KOREAN_BITES, orderBy: 'date', descending: true);
     } else {
       controller.futureKoreanBite = Database().getDocs(
           collection: KOREAN_BITES,
           field: 'tags',
-          arrayContains: controller.selectedCategory,
+          arrayContains: controller.selectedTag,
           orderBy: 'date',
           descending: true);
     }
   }
 
-  Widget getCategoryRadioBtn(String value) {
+  Widget getTagRadioBtn(String value) {
     return Expanded(
       child: MyRadioBtn().getRadioButton(
         context: context,
         value: value,
-        groupValue: controller.selectedCategory,
+        groupValue: controller.selectedTag,
         f: (String? value) {
-          controller.selectedCategory = value!;
+          controller.selectedTag = value!;
           setState(() {
             getDataFromDb();
           });
@@ -295,7 +296,7 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
                                   final exampleRef = firestore.collection('KoreanBites/${koreanBite.id}/Examples');
                                   QuerySnapshot snapshot = await exampleRef.get();
                                   final batch = firestore.batch();
-                                  for(QueryDocumentSnapshot doc in snapshot.docs) {
+                                  for (QueryDocumentSnapshot doc in snapshot.docs) {
                                     batch.delete(doc.reference);
                                   }
                                   //TODO: 모든 댓글들 삭제 추가
@@ -305,7 +306,8 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
 
                                   batch.commit().then((_) {
                                     setState(() {
-                                      Get.snackbar('Korean Bite를 삭제했습니다.', koreanBite.id, snackPosition: SnackPosition.BOTTOM);
+                                      Get.snackbar('Korean Bite를 삭제했습니다.', koreanBite.id,
+                                          snackPosition: SnackPosition.BOTTOM);
                                       getDataFromDb();
                                     });
                                   });
@@ -330,29 +332,82 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
                       Get.to(const KoreanBiteDetail(), arguments: koreanBite);
                     },
                   )),
-                  DataCell(ElevatedButton(
-                    child: const Text('FCM 보내기'),
+                  DataCell(IconButton(
+                    icon: Icon(Icons.edit_notifications, color: Theme.of(context).primaryColor),
                     onPressed: () async {
-                      final body = {
-                        'koreanBiteId': koreanBite.id,
-                        'title': koreanBite.title['ko'],
-                        'content': koreanBite.title['en'],
-                        //todo: topic.appUser로 수정하기
-                        'token': 'cJGZhUVDTS6ymJ0CPvIT7Z:APA91bHJVbeAmJmlvMpQTi_lPTQMi3XifA2Reu9p8iAYe22f-mjY0rU4x33c6gyafvCVfEyLkUsaoKOTRrMejZg3k2zHsjEQQI4XTDv_5RE6Jtw1vgirmAw',
-                      };
+                      Get.dialog(GetBuilder<KoreanBiteStateManager>(
+                        builder: (controller) {
+                          List<String> splitMsg = controller.selectedNoticeMsg.split(' / ');
+                          String title = splitMsg[0].replaceFirst('%', koreanBite.title['ko']);
+                          String content = splitMsg[1].replaceFirst('%', koreanBite.title['ko']);
+                          TextEditingController titleCon = TextEditingController(text: title);
+                          TextEditingController contentCon = TextEditingController(text: content);
 
-                      final response = await http.post(
-                        Uri.parse('https://us-central1-podo-49335.cloudfunctions.net/onKoreanBiteFcm'),
-                        body: body,
-                      );
+                          return AlertDialog(
+                            title: const Text('알람 메시지'),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                TextField(
+                                  controller: titleCon,
+                                  onChanged: (text) {
+                                    title = text;
+                                  },
+                                ),
+                                const SizedBox(height: 10),
+                                TextField(
+                                  controller: contentCon,
+                                  onChanged: (text) {
+                                    content = text;
+                                  },
+                                ),
+                              ],
+                            ),
+                            actions: [
+                              Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: () async {
+                                          Get.back();
+                                          final body = {
+                                            'koreanBiteId': koreanBite.id,
+                                            'title': title,
+                                            'content': content,
+                                          };
 
-                      if (response.statusCode == 200) {
-                        print('fcm 전송 성공');
-                      } else {
-                        print('오류 발생: ${response.statusCode}');
-                      }
+                                          final response = await http.post(
+                                            Uri.parse(
+                                                'https://us-central1-podo-49335.cloudfunctions.net/onKoreanBiteFcm'),
+                                            body: body,
+                                          );
+
+                                          if (response.statusCode == 200) {
+                                            print('fcm 전송 성공');
+                                          } else {
+                                            print('오류 발생: ${response.statusCode}');
+                                          }
+                                        },
+                                        child: const Padding(
+                                          padding: EdgeInsets.all(10),
+                                          child: Text('보내기', style: TextStyle(fontSize: 20)),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 20),
+                                  ...List.generate(controller.noticeMsgs.length,
+                                      (index) => getMessageRadioBtn(controller.noticeMsgs[index])),
+                                ],
+                              )
+                            ],
+                          );
+                        },
+                      ));
                     },
-                  )),
+                  ))
                 ]);
               }),
             );
@@ -363,6 +418,21 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
           return const Center(child: CircularProgressIndicator());
         }
       },
+    );
+  }
+
+  Widget getMessageRadioBtn(String value) {
+    return ListTile(
+      title: Text(value),
+      leading: Radio(
+        value: value,
+        activeColor: Theme.of(context).colorScheme.primary,
+        groupValue: controller.selectedNoticeMsg,
+        onChanged: (String? value) {
+          controller.selectedNoticeMsg = value!;
+          controller.update();
+        },
+      ),
     );
   }
 
@@ -381,8 +451,8 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
               children: [
                 Expanded(
                   child: Row(children: [
-                    getCategoryRadioBtn('All'),
-                    ...controller.tags.map((item) => getCategoryRadioBtn(item)),
+                    getTagRadioBtn('All'),
+                    ...controller.tags.map((item) => getTagRadioBtn(item)),
                   ]),
                 ),
                 ElevatedButton(
