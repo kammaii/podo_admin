@@ -49,90 +49,6 @@ try {
 
 async function test2() {
       const db = admin.firestore();
-          let today = new Date();
-          let premiumUsers = 0;
-
-          // 구독자 상태 최신화
-          let subscribers = await db.collection('Users').where('status', '==', 2).get();
-          console.log('-----------------------------------------')
-          console.log('[Subscriber status update]')
-          for(let i=0; i<subscribers.docs.length; i++) {
-              let userId = subscribers.docs[i].get('id');
-              console.log('-----------------------------------------')
-              console.log(userId);
-              const url = "https://api.revenuecat.com/v1/subscribers/"+userId;
-
-              try {
-                  const response = await axios.get(url, {
-                      headers: {
-                          'Authorization' : 'Bearer '+revenueCatKey,
-                          'Content-Type': 'application/json'
-                      }
-                  });
-                  const subscriber = response.data?.subscriber;
-                  const entitlement = subscriber.entitlements;
-                  const premiumData = entitlement['premium'];
-                  if(premiumData != null && !premiumData['product_identifier'].includes('rc_promo')) {
-                      let premiumStart = premiumData['purchase_date'];
-                      let premiumEnd = premiumData['expires_date'];
-                      let status = 2;
-                      let end = new Date(premiumEnd);
-                      if(today > end) {
-                          console.log('Expired premium');
-                          let fcmToken = subscribers.docs[i].get('fcmToken');
-                          if(fcmToken) {
-                              try {
-                                  await admin.messaging().unsubscribeFromTopic([fcmToken], 'premiumUsers');
-                                  await admin.messaging().unsubscribeFromTopic([fcmToken], 'newUsers');
-                                  await admin.messaging().unsubscribeFromTopic([fcmToken], 'trialUsers');
-                                  await admin.messaging().unsubscribeFromTopic([fcmToken], 'trialExpiredUsers');
-                                  await admin.messaging().subscribeToTopic([fcmToken], 'premiumExpiredUsers');
-                                  await admin.messaging().subscribeToTopic([fcmToken], 'basicUsers');
-                              } catch (e) {
-                                  console.error('Failed to update subscription for premiumExpiredUser', e);
-                              }
-                          }
-                          status = 1;
-                      } else {
-                          console.log('Valid premium')
-                          premiumUsers++;
-                      }
-                      await admin.firestore().collection('Users').doc(userId).update({
-                          'premiumStart': premiumStart,
-                          'premiumEnd': premiumEnd,
-                          'originalPurchaseDate': subscriber.original_purchase_date,
-                          'status': status
-                      });
-                      console.log('Updated premium status');
-                  }
-              } catch (e) {
-                  console.error('Error', e);
-              }
-          }
-
-          // trial 유저 상태 최신화
-          let trialEndUsers = await admin.firestore().collection('Users').where('status', '==', 3).where('trialEnd', '<', today).get();
-          console.log('-----------------------------------------')
-          console.log('[Trial expired users update]')
-          for(let i=0; i<trialEndUsers.docs.length; i++) {
-              let userId = trialEndUsers.docs[i].get('id');
-              console.log('-----------------------------------------')
-              console.log(userId);
-              let fcmToken = trialEndUsers.docs[i].get('fcmToken');
-              await admin.firestore().collection('Users').doc(userId).update({'status': 1});
-              if(fcmToken) {
-                  try {
-                      await admin.messaging().unsubscribeFromTopic([fcmToken], 'trialUsers');
-                      await admin.messaging().unsubscribeFromTopic([fcmToken], 'newUsers');
-                      await admin.messaging().subscribeToTopic([fcmToken], 'trialExpiredUsers');
-                      await admin.messaging().subscribeToTopic([fcmToken], 'basicUsers');
-                  } catch(e) {
-                      console.error('Failed to update subscription for trialExpiredUser', e);
-                  }
-
-              }
-              console.log('Updated trial status')
-          }
 
           // 활성 유저 수
           let activeNew = 0;
@@ -140,26 +56,22 @@ async function test2() {
           let activeTrial = 0;
           let activePremium = 0;
 
-          const now = new Date();
+     const now = new Date();
+     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+     const yesterday = new Date(today);
+     yesterday.setDate(today.getDate()-1);
 
-          const koreaOffset = 9 * 60 * 60 * 1000; // 현재 시간을 UTC+9로 변환
-          const koreaNow = new Date(now.getTime() + koreaOffset);
-
-          const todayKorea = new Date(koreaNow);
-          todayKorea.setUTCHours(0, 0, 0, 0); // UTC 자정 기준으로 설정
-          const tomorrowKorea = new Date(todayKorea);
-          tomorrowKorea.setUTCDate(todayKorea.getUTCDate() + 1); // 다음 날 자정
-
-          const todayUTC = new Date(todayKorea.getTime() - koreaOffset); // UTC로 변환
-          const tomorrowUTC = new Date(tomorrowKorea.getTime() - koreaOffset);
 
           const activeUsers = await admin.firestore().collection('Users')
-              .where('dateSignIn', '>=', admin.firestore.Timestamp.fromDate(todayUTC))
-              .where('dateSignIn', '<', admin.firestore.Timestamp.fromDate(tomorrowUTC))
+              .where('dateSignIn', '<=', admin.firestore.Timestamp.fromDate(today))
+              .where('dateSignIn', '>', admin.firestore.Timestamp.fromDate(yesterday))
               .get();
 
           console.log('-----------------------------------------')
           console.log('[Active Users Counting]')
+          console.log('todayUTC: ' +today)
+          console.log('tomorrowUTC: '+yesterday)
+          console.log('Active Users: ' + activeUsers.docs.length)
           for(let i=0; i<activeUsers.docs.length; i++) {
               let userId = activeUsers.docs[i].get('id');
               let status = activeUsers.docs[i].get('status');
@@ -176,25 +88,13 @@ async function test2() {
               }
           }
 
-          // userCount 저장
-          let newUsers = await admin.firestore().collection('Users').where('status', '==', 0).get();
-          let basicUsers = await admin.firestore().collection('Users').where('status', '==', 1).get();
-          let trialUsers = await admin.firestore().collection('Users').where('status', '==', 3).get();
-          let data = {
-              'date': today,
-              'newUsers': newUsers.size,
-              'basicUsers': basicUsers.size,
-              'premiumUsers': premiumUsers,
-              'trialUsers': trialUsers.size,
-              'totalUsers': newUsers.size + basicUsers.size + premiumUsers + trialUsers.size,
-              'activeNew': activeNew,
-              'activeBasic': activeBasic,
-              'activeTrial': activeTrial,
-              'activePremium': activePremium,
-              'activeTotal' : activeNew + activeBasic + activeTrial + activePremium,
-          }
-          await db.collection('UserCounts').doc().set(data);
+          console.log('activeNew: '+ activeNew);
+          console.log('activeBasic: '+activeBasic);
+          console.log('activeTrial: '+activeTrial);
+          console.log('activePremium: '+ activePremium);
+
+
 
 }
 
-test();
+test2();

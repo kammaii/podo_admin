@@ -187,10 +187,9 @@ function onWritingReplied(change, context) {
   }
 }
 
-//async function userCountFunction(context) {
-async function userCountFunction(request, response) {
+async function userCountFunction(context) {
     const db = admin.firestore();
-    let today = new Date();
+    let now = new Date();
     let premiumUsers = 0;
 
     // 구독자 상태 최신화
@@ -218,7 +217,7 @@ async function userCountFunction(request, response) {
                 let premiumEnd = premiumData['expires_date'];
                 let status = 2;
                 let end = new Date(premiumEnd);
-                if(today > end) {
+                if(now > end) {
                     console.log('Expired premium');
                     let fcmToken = subscribers.docs[i].get('fcmToken');
                     if(fcmToken) {
@@ -252,7 +251,7 @@ async function userCountFunction(request, response) {
     }
 
     // trial 유저 상태 최신화
-    let trialEndUsers = await admin.firestore().collection('Users').where('status', '==', 3).where('trialEnd', '<', today).get();
+    let trialEndUsers = await admin.firestore().collection('Users').where('status', '==', 3).where('trialEnd', '<', now).get();
     console.log('-----------------------------------------')
     console.log('[Trial expired users update]')
     for(let i=0; i<trialEndUsers.docs.length; i++) {
@@ -281,34 +280,23 @@ async function userCountFunction(request, response) {
     let activeTrial = 0;
     let activePremium = 0;
 
-    const now = new Date();
-
-    const koreaOffset = 9 * 60 * 60 * 1000; // 현재 시간을 UTC+9로 변환
-    const koreaNow = new Date(now.getTime() + koreaOffset);
-
-    const todayKorea = new Date(koreaNow);
-    todayKorea.setUTCHours(0, 0, 0, 0); // UTC 자정 기준으로 설정
-    const tomorrowKorea = new Date(todayKorea);
-    tomorrowKorea.setUTCDate(todayKorea.getUTCDate() + 1); // 다음 날 자정
-
-    const todayUTC = new Date(todayKorea.getTime() - koreaOffset); // UTC로 변환
-    const tomorrowUTC = new Date(tomorrowKorea.getTime() - koreaOffset);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate()-1);
 
     const activeUsers = await admin.firestore().collection('Users')
-        .where('dateSignIn', '>=', admin.firestore.Timestamp.fromDate(todayUTC))
-        .where('dateSignIn', '<', admin.firestore.Timestamp.fromDate(tomorrowUTC))
+        .where('dateSignIn', '<=', admin.firestore.Timestamp.fromDate(today))
+        .where('dateSignIn', '>', admin.firestore.Timestamp.fromDate(yesterday))
         .get();
 
     console.log('-----------------------------------------')
     console.log('[Active Users Counting]')
-    console.log('todayUTC: ' +todayUTC)
-    console.log('tomorrowUTC: '+tomorrowUTC)
-    console.log('Active Users: ' + activeUsers.length)
+    console.log('todayUTC: ' +today)
+    console.log('yesterdayUTC: '+yesterday)
+    console.log('Active Users: ' + activeUsers.docs.length)
     for(let i=0; i<activeUsers.docs.length; i++) {
         let userId = activeUsers.docs[i].get('id');
         let status = activeUsers.docs[i].get('status');
-        console.log('-----------------------------------------')
-        console.log(userId);
         if(status === 0) {
             activeNew++;
         } else if(status === 1) {
@@ -325,7 +313,7 @@ async function userCountFunction(request, response) {
     let basicUsers = await admin.firestore().collection('Users').where('status', '==', 1).get();
     let trialUsers = await admin.firestore().collection('Users').where('status', '==', 3).get();
     let data = {
-        'date': today,
+        'date': now,
         'newUsers': newUsers.size,
         'basicUsers': basicUsers.size,
         'premiumUsers': premiumUsers,
@@ -450,17 +438,18 @@ function onKoreanBiteFunction(request, response) {
         title: title,
         body: content,
       },
+      topic: 'allUsers',
     };
 
-    admin.messaging().sendToTopic('allUsers', payload).then((response) => {
-      console.log('알림 전송 성공:', response);
+    response.set('Access-Control-Allow-Origin', '*');
+    admin.messaging().send(payload).then((res) => {
+      console.log('알림 전송 성공:', res);
+      response.status(200).send('알림 전송 성공');
     })
     .catch((error) => {
       console.log('알림 전송 실패:', error);
+      response.status(500).send('알림 전송 실패: '+ error);
     });
-
-    response.set('Access-Control-Allow-Origin', '*');
-    response.status(200).send('Succeed FCM sending');
 }
 
 
@@ -471,6 +460,5 @@ exports.onFeedbackSent = functions.firestore.document('Feedbacks/{feedbackId}').
 exports.onDeepl = onRequest(onDeeplFunction);
 exports.onContact = onRequest(onContactFunction);
 exports.onKoreanBiteFcm = onRequest(onKoreanBiteFunction);
-//exports.onUserCount = functions.runWith({ timeoutSeconds: 540 }).pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun(userCountFunction);
-//exports.onUserCounttt = functions.runWith({ timeoutSeconds: 540 }).onRequest(userCountFunction);
+exports.onUserCount = functions.pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun(userCountFunction);
 exports.onEmailSend = functions.pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun(userCleanUp);
