@@ -13,14 +13,14 @@ class KoreanBiteStateManager extends GetxController {
   final noticeMsgs = [
     '🎉 A New Korean Bite is Here! / Learn "%" and be the first to check it out!',
     '❓ How do you say "%" in your language? / Find the answer in today’s new Korean Bite!',
-    '💡 Don’t make this mistake! / Check out this Korean Bite on common Korean slip-ups!',
-    '⏳ Don’t miss this! / A popular Korean Bite just dropped!',
+    '💡 Don’t make this "%" mistake! / Check out this Korean Bite on common Korean slip-ups!',
+    '⏳ Don’t miss this! "%" / A popular Korean Bite just dropped!',
     '🚀 If you don’t know "%", you’re a beginner! / Learn the secret tip now!',
     '🏆 This phrase makes you sound like a native! / Discover "%" in the Korean Bite!',
     '😲 Koreans use this phrase every day / Do you know "%"? Learn it now!',
-    '🗣️ Want to speak Korean like a native? / Today’s Korean Bite will help!',
+    '🗣️ Want to speak Korean like a native? / Today’s Korean Bite "%" will help!',
     '🎬 "%" What does it really mean? / Learn from K-dramas in Korean Bite!', // 영상 첨부했을 때
-    '✈️ Traveling to Korea? / This Korean Bite is a must-learn!',
+    '✈️ Traveling to Korea? / This Korean Bite "%" is a must-learn!',
     '🎯 Learn "%" an easy Korean expression today! / Let’s go!',
     '🔥 Boost your Korean skills now! / Check out "%" in this Korean Bite!'
   ];
