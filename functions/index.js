@@ -45,6 +45,10 @@ const mailTransportNoReply = nodemailer.createTransport({
     user: 'noreply.podokorean@gmail.com',
     pass: gmailKey_noReply,
   },
+  pool: true,  // 여러 개의 메일을 같은 연결에서 보냄 (인증 요청 최소화)
+  rateLimit: true,  // 속도 제한 활성화
+  maxConnections: 1,  // 동시 연결 개수 제한
+  maxMessages: 5,  // 한 번에 보낼 최대 이메일 개수
 });
 
 async function onContactFunction(request, response) {
@@ -193,6 +197,7 @@ async function updateAndCountUserStatuses(context) {
 
     // 비활성 유저 계정 삭제 & 알림
     let deletedUsers = 0;
+    let emailSentUsers = 0;
     const aYearAgo = new Date();
     aYearAgo.setMonth(now.getMonth() - 12);
     const aWeekAgo = new Date();
@@ -212,27 +217,32 @@ async function updateAndCountUserStatuses(context) {
             if(dateEmailSend < aWeekAgo) {
                 console.log('REMOVE ACCOUNT');
                 let userId = userDoc.get('id');
-                deletedUsers++;
-                await sendEmail(email, 1); // 계정 삭제 이메일
-                await admin.auth()
-                  .deleteUser(userId)
-                  .then(() => {
-                    console.log('Successfully deleted user');
-                  })
-                  .catch((error) => {
-                    console.log('Error deleting user:', error);
-                  });
-                await deleteSubCollection('Users/'+userId+'/Histories');
-                await deleteSubCollection('Users/'+userId+'/FlashCards');
-                await deleteSubCollection('Users/'+userId+'/Readings');
-                userDoc.ref.delete();
+                let emailResult = await sendEmail(email, 1); // 계정 삭제 이메일
+                if(emailResult) {
+                    await admin.auth()
+                      .deleteUser(userId)
+                      .then(() => {
+                        console.log('Successfully deleted user');
+                        deletedUsers++;
+                      })
+                      .catch((error) => {
+                        console.log('Error deleting user:', error);
+                      });
+                    await deleteSubCollection('Users/'+userId+'/Histories');
+                    await deleteSubCollection('Users/'+userId+'/FlashCards');
+                    await deleteSubCollection('Users/'+userId+'/Readings');
+                    userDoc.ref.delete();
+                }
             } else {
                 console.log('Pending Account Deletion');
             }
         } else {
-            await sendEmail(email, 0); // 계정 삭제 경고 이메일
-            console.log('Email sent');
-            admin.firestore().collection('Users').doc(inactiveUsers.docs[i].id).update({'dateEmailSend': now});
+            let emailResult = await sendEmail(email, 0); // 계정 삭제 경고 이메일
+            if(emailResult) {
+                console.log('Email sent');
+                emailSentUsers++;
+                admin.firestore().collection('Users').doc(inactiveUsers.docs[i].id).update({'dateEmailSend': now});
+            }
         }
     }
 
@@ -282,10 +292,11 @@ async function updateAndCountUserStatuses(context) {
                     console.log('Valid premium')
                     premiumUsers++;
                 }
+                let firstKey = Object.keys(subscriber.subscriptions)[0];
                 await admin.firestore().collection('Users').doc(userId).update({
                     'premiumStart': premiumStart,
                     'premiumEnd': premiumEnd,
-                    'originalPurchaseDate': subscriber.original_purchase_date,
+                    'originalPurchaseDate': subscriber.subscriptions[firstKey].original_purchase_date,
                     'status': status
                 });
                 console.log('Updated premium status');
@@ -324,11 +335,10 @@ async function updateAndCountUserStatuses(context) {
     let activeBasic = 0;
     let activeTrial = 0;
     let activePremium = 0;
-    let newUsers = 0;
+    let signUpUsers = 0;
 
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate()-1);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0);
+    const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
 
     const activeUsers = await admin.firestore().collection('Users')
         .where('dateSignIn', '<=', admin.firestore.Timestamp.fromDate(today))
@@ -338,11 +348,13 @@ async function updateAndCountUserStatuses(context) {
     console.log('-----------------------------------------')
     console.log('[Active Users Counting]')
     console.log('Active Users: ' + activeUsers.docs.length)
+    console.log('Today: ' + today)
     for(let i=0; i<activeUsers.docs.length; i++) {
         let activeUser = activeUsers.docs[i];
         let userId = activeUser.get('id');
         let status = activeUser.get('status');
         let dateSignUp = activeUser.get('dateSignUp');
+        console.log(dateSignUp);
 
         if(status === 0) {
             activeNew++;
@@ -356,7 +368,8 @@ async function updateAndCountUserStatuses(context) {
 
         // 신규 가입자 수 계산
         if (dateSignUp.toDate() <= today && dateSignUp.toDate() > yesterday) {
-            newUsers++;
+            console.log('SignUp User');
+            signUpUsers++;
         }
     }
 
@@ -366,8 +379,9 @@ async function updateAndCountUserStatuses(context) {
     let statusTrial = await admin.firestore().collection('Users').where('status', '==', 3).get();
     let data = {
         'date': now,
-        'newUsers': newUsers,
+        'signUpUsers': signUpUsers,
         'deleteUsers': deletedUsers,
+        'emailSentUsers': emailSentUsers,
         'statusNew': statusNew.size,
         'statusBasic': statusBasic.size,
         'statusPremium': premiumUsers,
@@ -413,11 +427,11 @@ async function sendEmail(userEmail, msgType) {
   return mailTransportNoReply.sendMail(mailOptions)
     .then(() => {
       console.log('이메일 전송 성공');
-      return null;
+      return true;
     })
     .catch((error) => {
       console.error('이메일 전송 실패:', error);
-      return null;
+      return false;
     });
 }
 
