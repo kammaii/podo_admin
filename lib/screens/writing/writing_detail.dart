@@ -132,254 +132,239 @@ class _WritingDetailState extends State<WritingDetail> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('교정_상세')),
-      body: KeyboardListener(
-        focusNode: FocusNode(),
-        autofocus: true,
-        onKeyEvent: (event) {
-          if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-            setState(() {
-              controller.getWriting(isNext: false);
-            });
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-            setState(() {
-              controller.getWriting(isNext: true);
-            });
-          }
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: SizedBox(
-            width: boxSize,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    getCircle(controller.statusColor[writing.status]!),
-                    const SizedBox(width: 10),
-                    Text(controller.statusMap[writing.status]!, textScaleFactor: 2),
-                    const SizedBox(width: 20),
-                    Text(
-                      '(순서: ${controller.writingIndex + 1} / ${controller.writings.length})',
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                    const SizedBox(width: 20),
-                    writing.isPremiumUser
-                        ? Container(
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                color: Theme.of(context).colorScheme.primaryContainer),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                              child: Text(
-                                'Premium',
-                                style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer),
-                              ),
+      body: Padding(
+        padding: const EdgeInsets.all(10),
+        child: SizedBox(
+          width: boxSize,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  getCircle(controller.statusColor[writing.status]!),
+                  const SizedBox(width: 10),
+                  Text(controller.statusMap[writing.status]!, textScaleFactor: 2),
+                  const SizedBox(width: 20),
+                  Text(
+                    '(순서: ${controller.writingIndex + 1} / ${controller.writings.length})',
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  const SizedBox(width: 20),
+                  writing.isPremiumUser
+                      ? Container(
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: Theme.of(context).colorScheme.primaryContainer),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                            child: Text(
+                              'Premium',
+                              style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer),
                             ),
-                          )
-                        : const SizedBox.shrink(),
-                    const SizedBox(width: 20),
-                    Text('${writing.userId.substring(0, 5)}: ${writing.userName}', textScaleFactor: 2),
-                    Visibility(
-                      visible: controller.statusRadio == '신규',
-                      child: Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Text(checkIsCorrectedAll() ? '검토완료' : '검토중',
-                                style: const TextStyle(fontWeight: FontWeight.bold)),
-                            const SizedBox(width: 10),
-                            checkIsCorrectedAll() ? getCircle(Colors.green) : getCircle(Colors.red),
-                          ],
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                  const SizedBox(width: 20),
+                  Text('${writing.userId.substring(0, 5)}: ${writing.userName}', textScaleFactor: 2),
+                  Visibility(
+                    visible: controller.statusRadio == '신규',
+                    child: Expanded(
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          Text(writing.questionTitle, textScaleFactor: 2),
-                          const SizedBox(width: 20),
-                          Text('( ${writing.id.substring(0, 8)}... )'),
+                          Text(checkIsCorrectedAll() ? '검토완료' : '검토중',
+                              style: const TextStyle(fontWeight: FontWeight.bold)),
+                          const SizedBox(width: 10),
+                          checkIsCorrectedAll() ? getCircle(Colors.green) : getCircle(Colors.red),
                         ],
                       ),
                     ),
-                    Row(
+                  )
+                ],
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: Row(
                       children: [
-                        IconButton(
-                          onPressed: () {
-                            setState(() {
-                              controller.getWriting(isNext: false);
-                            });
-                          },
-                          icon: const Icon(Icons.arrow_circle_left_outlined),
-                          iconSize: 30,
-                          tooltip: '이전교정',
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            setState(() {
-                              controller.getWriting(isNext: true);
-                            });
-                          },
-                          icon: const Icon(Icons.arrow_circle_right_outlined),
-                          iconSize: 30,
-                          tooltip: '다음교정',
-                        ),
+                        Text(writing.questionTitle, textScaleFactor: 2),
+                        const SizedBox(width: 20),
+                        Text('( ${writing.id.substring(0, 8)}... )'),
                       ],
                     ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Expanded(
-                  child: Container(
-                    width: boxSize,
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      border: Border.all(),
-                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                    ),
-                    child: Text(writing.userWriting),
                   ),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(' 교정하기', textScaleFactor: 2),
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          writing.correction = MyStrings.perfect;
-                          writing.status = 2;
-                        });
-                      },
-                      child: const Text(
-                        'Perfect',
-                        style: TextStyle(color: Colors.blueAccent),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          writing.correction = MyStrings.noKorean;
-                          writing.status = 3;
-                        });
-                      },
-                      child: const Text(
-                        '한국어 아님',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          writing.correction = MyStrings.noTopic;
-                          writing.status = 3;
-                        });
-                      },
-                      child: const Text(
-                        '주제에 맞지 않는 글',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          writing.correction = MyStrings.cantUnderstand;
-                          writing.status = 3;
-                        });
-                      },
-                      child: const Text(
-                        '이해불가',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Expanded(
-                  child: Container(
-                    width: boxSize,
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      border: Border.all(),
-                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                    ),
-                    child: HtmlEditor(
-                      controller: htmlController,
-                      htmlEditorOptions: HtmlEditorOptions(
-                        initialText: (writing.correction.isEmpty) ? writing.userWriting : writing.correction,
-                      ),
-                      htmlToolbarOptions: HtmlToolbarOptions(
-                        defaultToolbarButtons: [
-                          const OtherButtons(
-                              fullscreen: false, undo: false, redo: false, copy: false, paste: false, help: false),
-                        ],
-                        customToolbarButtons: [
-                          MyHtmlColor().colorButton(controller: htmlController, color: MyStrings.red),
-                          MyHtmlColor().colorButton(controller: htmlController, color: MyStrings.blue),
-                          MyHtmlColor().colorButton(controller: htmlController, color: MyStrings.black),
-                        ],
-                      ),
-                      callbacks: Callbacks(onChangeContent: (String? content) {
-                        if (content != '<p><br></p>' &&
-                            writing.userWriting != content &&
-                            writing.correction == content) {
-                          isCorrectedList[controller.writingIndex] = true;
-                        }
-                        writing.correction = content!;
-                      }),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const Text(' 코멘트', textScaleFactor: 2),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: MyTextField().getTextField(
-                      controller: commentController,
-                      fn: (String? value) {
-                        writing.comments = value;
-                      }),
-                ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.all(30),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Row(
                     children: [
-                      ElevatedButton(
+                      IconButton(
                         onPressed: () {
-                          completeCorrection();
+                          setState(() {
+                            controller.getWriting(isNext: false);
+                          });
                         },
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          child: Text(
-                            '완료',
-                            style: TextStyle(fontSize: 20),
-                          ),
-                        ),
+                        icon: const Icon(Icons.arrow_circle_left_outlined),
+                        iconSize: 30,
+                        tooltip: '이전교정',
                       ),
-                      const SizedBox(width: 20),
-                      Obx(() {
-                        return Checkbox(
-                            value: controller.allCorrection.value,
-                            onChanged: (bool? b) {
-                              controller.allCorrection.value = b!;
-                            });
-                      }),
-                      const Text('전체 교정')
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            controller.getWriting(isNext: true);
+                          });
+                        },
+                        icon: const Icon(Icons.arrow_circle_right_outlined),
+                        iconSize: 30,
+                        tooltip: '다음교정',
+                      ),
                     ],
                   ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: Container(
+                  width: boxSize,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    border: Border.all(),
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                  ),
+                  child: Text(writing.userWriting),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(' 교정하기', textScaleFactor: 2),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        writing.correction = MyStrings.perfect;
+                        writing.status = 2;
+                      });
+                    },
+                    child: const Text(
+                      'Perfect',
+                      style: TextStyle(color: Colors.blueAccent),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        writing.correction = MyStrings.noKorean;
+                        writing.status = 3;
+                      });
+                    },
+                    child: const Text(
+                      '한국어 아님',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        writing.correction = MyStrings.noTopic;
+                        writing.status = 3;
+                      });
+                    },
+                    child: const Text(
+                      '주제에 맞지 않는 글',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        writing.correction = MyStrings.cantUnderstand;
+                        writing.status = 3;
+                      });
+                    },
+                    child: const Text(
+                      '이해불가',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: Container(
+                  width: boxSize,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    border: Border.all(),
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                  ),
+                  child: HtmlEditor(
+                    controller: htmlController,
+                    htmlEditorOptions: HtmlEditorOptions(
+                      initialText: (writing.correction.isEmpty) ? writing.userWriting : writing.correction,
+                    ),
+                    htmlToolbarOptions: HtmlToolbarOptions(
+                      defaultToolbarButtons: [
+                        const OtherButtons(
+                            fullscreen: false, undo: false, redo: false, copy: false, paste: false, help: false),
+                      ],
+                      customToolbarButtons: [
+                        MyHtmlColor().colorButton(controller: htmlController, color: MyStrings.red),
+                        MyHtmlColor().colorButton(controller: htmlController, color: MyStrings.blue),
+                        MyHtmlColor().colorButton(controller: htmlController, color: MyStrings.black),
+                      ],
+                    ),
+                    callbacks: Callbacks(onChangeContent: (String? content) {
+                      if (content != '<p><br></p>' &&
+                          writing.userWriting != content &&
+                          writing.correction == content) {
+                        isCorrectedList[controller.writingIndex] = true;
+                      }
+                      writing.correction = content!;
+                    }),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(' 코멘트', textScaleFactor: 2),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5),
+                child: MyTextField().getTextField(
+                    controller: commentController,
+                    fn: (String? value) {
+                      writing.comments = value;
+                    }),
+              ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.all(30),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        completeCorrection();
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        child: Text(
+                          '완료',
+                          style: TextStyle(fontSize: 20),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Obx(() {
+                      return Checkbox(
+                          value: controller.allCorrection.value,
+                          onChanged: (bool? b) {
+                            controller.allCorrection.value = b!;
+                          });
+                    }),
+                    const Text('전체 교정')
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

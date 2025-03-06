@@ -191,60 +191,9 @@ function onWritingReplied(change, context) {
   }
 }
 
-async function updateAndCountUserStatuses(context) {
+async function userCount(context) {
     const db = admin.firestore();
     let now = new Date();
-
-    // 비활성 유저 계정 삭제 & 알림
-    let deletedUsers = 0;
-    let emailSentUsers = 0;
-    const aYearAgo = new Date();
-    aYearAgo.setMonth(now.getMonth() - 12);
-    const aWeekAgo = new Date();
-    aWeekAgo.setDate(aWeekAgo.getDate() - 7)
-    let inactiveUsers = await admin.firestore().collection('Users')
-        .where('dateSignIn', '<=', aYearAgo)
-        .where('status', '!=', 2)
-        .get();
-    for(let i=0; i<inactiveUsers.docs.length; i++) {
-        let userDoc = inactiveUsers.docs[i];
-        let email = userDoc.get('email');
-        console.log('------------------------------');
-        console.log('InActiveUser: ' + email);
-        let dateEmailSendTimestamp = userDoc.get('dateEmailSend');
-        if(dateEmailSendTimestamp) {
-            let dateEmailSend = dateEmailSendTimestamp.toDate();
-            if(dateEmailSend < aWeekAgo) {
-                console.log('REMOVE ACCOUNT');
-                let userId = userDoc.get('id');
-                let emailResult = await sendEmail(email, 1); // 계정 삭제 이메일
-                if(emailResult) {
-                    await admin.auth()
-                      .deleteUser(userId)
-                      .then(() => {
-                        console.log('Successfully deleted user');
-                        deletedUsers++;
-                      })
-                      .catch((error) => {
-                        console.log('Error deleting user:', error);
-                      });
-                    await deleteSubCollection('Users/'+userId+'/Histories');
-                    await deleteSubCollection('Users/'+userId+'/FlashCards');
-                    await deleteSubCollection('Users/'+userId+'/Readings');
-                    userDoc.ref.delete();
-                }
-            } else {
-                console.log('Pending Account Deletion');
-            }
-        } else {
-            let emailResult = await sendEmail(email, 0); // 계정 삭제 경고 이메일
-            if(emailResult) {
-                console.log('Email sent');
-                emailSentUsers++;
-                admin.firestore().collection('Users').doc(inactiveUsers.docs[i].id).update({'dateEmailSend': now});
-            }
-        }
-    }
 
     // 구독자 상태 최신화
     let premiumUsers = 0;
@@ -354,7 +303,6 @@ async function updateAndCountUserStatuses(context) {
         let userId = activeUser.get('id');
         let status = activeUser.get('status');
         let dateSignUp = activeUser.get('dateSignUp');
-        console.log(dateSignUp);
 
         if(status === 0) {
             activeNew++;
@@ -368,7 +316,6 @@ async function updateAndCountUserStatuses(context) {
 
         // 신규 가입자 수 계산
         if (dateSignUp.toDate() <= today && dateSignUp.toDate() > yesterday) {
-            console.log('SignUp User');
             signUpUsers++;
         }
     }
@@ -380,8 +327,6 @@ async function updateAndCountUserStatuses(context) {
     let data = {
         'date': now,
         'signUpUsers': signUpUsers,
-        'deleteUsers': deletedUsers,
-        'emailSentUsers': emailSentUsers,
         'statusNew': statusNew.size,
         'statusBasic': statusBasic.size,
         'statusPremium': premiumUsers,
@@ -393,7 +338,21 @@ async function updateAndCountUserStatuses(context) {
         'activePremium': activePremium,
         'activeTotal' : activeNew + activeBasic + activeTrial + activePremium,
     }
-    await db.collection('UserCounts').doc().set(data);
+
+    let aHourAgo = new Date();
+    aHourAgo.setHours(aHourAgo.getHours() - 1);
+
+    let snapshot = await admin.firestore().collection('UserCounts')
+        .where('userCleanUpDate', '>=', aHourAgo)
+        .orderBy('userCleanUpDate', 'desc')
+        .limit(1)
+        .get();
+    if(snapshot.empty) {
+        console.log('Doc is not exists');
+        return;
+    }
+    await snapshot.docs[0].ref.update(data);
+    console.log('User Count Update Completed');
 }
 
 async function sendEmail(userEmail, msgType) {
@@ -433,6 +392,68 @@ async function sendEmail(userEmail, msgType) {
       console.error('이메일 전송 실패:', error);
       return false;
     });
+}
+
+// 비활성 유저 계정 삭제 알림 코드
+async function userCleanUp(context) {
+   const db = admin.firestore();
+   let now = new Date();
+
+   let deletedUsers = 0;
+   let emailSentUsers = 0;
+   const aYearAgo = new Date();
+   aYearAgo.setMonth(now.getMonth() - 12);
+   const aWeekAgo = new Date();
+   aWeekAgo.setDate(aWeekAgo.getDate() - 7)
+   let inactiveUsers = await admin.firestore().collection('Users')
+       .where('dateSignIn', '<=', aYearAgo)
+       .where('status', '!=', 2)
+       .get();
+   for(let i=0; i<inactiveUsers.docs.length; i++) {
+       let userDoc = inactiveUsers.docs[i];
+       let email = userDoc.get('email');
+       console.log('------------------------------');
+       console.log('InActiveUser: ' + email);
+       let dateEmailSendTimestamp = userDoc.get('dateEmailSend');
+       if(dateEmailSendTimestamp) {
+           let dateEmailSend = dateEmailSendTimestamp.toDate();
+           if(dateEmailSend < aWeekAgo) {
+               console.log('REMOVE ACCOUNT');
+               let userId = userDoc.get('id');
+               let emailResult = await sendEmail(email, 1); // 계정 삭제 이메일
+               if(emailResult) {
+                   await admin.auth()
+                     .deleteUser(userId)
+                     .then(() => {
+                       console.log('Successfully deleted user');
+                       deletedUsers++;
+                     })
+                     .catch((error) => {
+                       console.log('Error deleting user:', error);
+                     });
+                   await deleteSubCollection('Users/'+userId+'/Histories');
+                   await deleteSubCollection('Users/'+userId+'/FlashCards');
+                   await deleteSubCollection('Users/'+userId+'/Readings');
+                   userDoc.ref.delete();
+               }
+           } else {
+               console.log('Pending Account Deletion');
+           }
+       } else {
+           let emailResult = await sendEmail(email, 0); // 계정 삭제 경고 이메일
+           if(emailResult) {
+               console.log('Email sent');
+               emailSentUsers++;
+               admin.firestore().collection('Users').doc(inactiveUsers.docs[i].id).update({'dateEmailSend': now});
+           }
+       }
+   }
+   let data = {
+       'userCleanUpDate': now,
+       'deletedUsers': deletedUsers,
+       'emailSentUsers': emailSentUsers,
+   }
+   await db.collection('UserCounts').doc().set(data);
 }
 
 async function deleteSubCollection(path) {
@@ -481,4 +502,6 @@ exports.onFeedbackSent = functions.firestore.document('Feedbacks/{feedbackId}').
 exports.onDeepl = onRequest(onDeeplFunction);
 exports.onContact = onRequest(onContactFunction);
 exports.onKoreanBiteFcm = onRequest(onKoreanBiteFunction);
-exports.onUpdateAndCountUserStatuses = functions.pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun(updateAndCountUserStatuses);
+exports.onUserCount = functions.runWith({timeoutSeconds: 540}).pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun(userCount);
+exports.onUserCleanUp = functions.runWith({timeoutSeconds: 540}).pubsub.schedule('30 23 * * *').timeZone('Asia/Seoul').onRun(userCleanUp);
+

@@ -58,47 +58,20 @@ async function test2() {
     let activePremium = 0;
     let signUpUsers = 0;
 
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0);
-    const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+    let aHourAgo = new Date();
+    aHourAgo.setHours(aHourAgo.getHours() - 1);
 
-    //const yesterday = new Date(today);
-   // yesterday.setDate(today.getDate()-1);
-    console.log('today: '+ today);
-    console.log('yesterday: '+ yesterday);
-
-
-//    const activeUsers = await admin.firestore().collection('Users')
-//        .where('dateSignIn', '<=', admin.firestore.Timestamp.fromDate(today))
-//        .where('dateSignIn', '>', admin.firestore.Timestamp.fromDate(yesterday))
-//        .get();
-//
-//    console.log('-----------------------------------------')
-//    console.log('[Active Users Counting]')
-//    console.log('Active Users: ' + activeUsers.docs.length)
-//    console.log('Today: ' + today)
-//    for(let i=0; i<activeUsers.docs.length; i++) {
-//        let activeUser = activeUsers.docs[i];
-//        let userId = activeUser.get('id');
-//        let status = activeUser.get('status');
-//        let dateSignUp = activeUser.get('dateSignUp');
-//        console.log(dateSignUp);
-//
-//        if(status === 0) {
-//            activeNew++;
-//        } else if(status === 1) {
-//            activeBasic++;
-//        } else if(status === 2) {
-//            activePremium++;
-//        } else if(status === 3) {
-//            activeTrial++;
-//        }
-//
-//        // 신규 가입자 수 계산
-//        if (dateSignUp.toDate() <= today && dateSignUp.toDate() > yesterday) {
-//            console.log('SignUp User');
-//            signUpUsers++;
-//        }
-//    }
+    let snapshot = await admin.firestore().collection('UserCounts')
+        .where('userCleanUpDate', '>=', aHourAgo)
+        .orderBy('userCleanUpDate', 'desc')
+        .limit(1)
+        .get();
+    if(snapshot.empty) {
+        console.log('Doc is not exists');
+        return;
+    }
+    await snapshot.docs[0].ref.update({'data': 'Good'});
+    console.log('User Count Update Completed');
 }
 
 test2();
