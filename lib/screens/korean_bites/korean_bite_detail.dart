@@ -254,7 +254,12 @@ class _KoreanBiteDetailState extends State<KoreanBiteDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Korean Bite Detail  ( ${koreanBite.title[KO]} : ${koreanBite.id.substring(0, 8)})'),
+        title: GestureDetector(
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: koreanBite.id));
+              Get.snackbar('아이디가 클립보드에 저장되었습니다.', koreanBite.id, snackPosition: SnackPosition.BOTTOM);
+            },
+            child: Text('Korean Bite Detail  ( ${koreanBite.title[KO]} : ${koreanBite.id.substring(0, 8)})')),
       ),
       body: isLoaded
           ? Padding(

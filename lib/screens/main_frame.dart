@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/feedback/feedback_main.dart';
-import 'package:podo_admin/research.dart';
+import 'package:podo_admin/screens/dashboard/dashboard_main.dart';
 import 'package:podo_admin/screens/korean_bites/korean_bite_state_manager.dart';
 import 'package:podo_admin/screens/korean_bites/korean_bite_title_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_course_main.dart';
@@ -10,7 +10,6 @@ import 'package:podo_admin/screens/podo_message/podo_message_main.dart';
 import 'package:podo_admin/screens/reading/reading_state_manager.dart';
 import 'package:podo_admin/screens/reading/reading_title_main.dart';
 import 'package:podo_admin/screens/user/user_main.dart';
-import 'package:podo_admin/screens/user/user_state_manager.dart';
 import 'package:podo_admin/screens/writing/writing_main.dart';
 
 class MainFrame extends StatefulWidget {
@@ -22,6 +21,7 @@ class MainFrame extends StatefulWidget {
 
 class _MainFrameState extends State<MainFrame> {
   final List<Widget> _buildScreens = [
+    const DashboardMain(),
     WritingMain(),
     FeedbackMain(),
     const KoreanBiteTitleMain(),
@@ -37,7 +37,6 @@ class _MainFrameState extends State<MainFrame> {
   @override
   Widget build(BuildContext context) {
     Get.put(LoadingController());
-    Get.put(UserStateManager());
     Get.put(ReadingStateManager());
     Get.put(KoreanBiteStateManager());
     return Scaffold(
@@ -53,6 +52,11 @@ class _MainFrameState extends State<MainFrame> {
                 minWidth: 100,
                 labelType: NavigationRailLabelType.all,
                 destinations: const [
+                  NavigationRailDestination(
+                    icon: Icon(Icons.home_outlined),
+                    selectedIcon: Icon(Icons.home),
+                    label: Text('대시보드'),
+                  ),
                   NavigationRailDestination(
                     icon: Icon(Icons.message_outlined),
                     selectedIcon: Icon(Icons.message_rounded),
