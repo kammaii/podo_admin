@@ -11,6 +11,7 @@ import 'package:podo_admin/screens/korean_bites/korean_bite.dart';
 import 'package:podo_admin/screens/korean_bites/korean_bite_example.dart';
 import 'package:podo_admin/screens/korean_bites/korean_bite_state_manager.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class KoreanBiteDetail extends StatefulWidget {
   const KoreanBiteDetail({super.key});
@@ -262,60 +263,119 @@ class _KoreanBiteDetailState extends State<KoreanBiteDetail> {
             child: Text('Korean Bite Detail  ( ${koreanBite.title[KO]} : ${koreanBite.id.substring(0, 8)})')),
       ),
       body: isLoaded
-          ? Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        getExplainCard(),
-                        const VerticalDivider(),
-                        Expanded(
-                            child: Scrollbar(
-                          controller: scrollController,
-                          child: ReorderableListView(
-                            scrollController: scrollController,
-                            padding: const EdgeInsets.all(20),
-                            scrollDirection: Axis.horizontal,
-                            onReorder: (int oldIndex, int newIndex) {
-                              setState(() {
-                                _controller.reorderExampleCardItem(oldIndex, newIndex);
-                              });
-                            },
-                            children: getExampleCards(),
-                          ),
-                        )),
-                        IconButton(
-                          icon: const Icon(Icons.add_circle_outline_rounded),
-                          color: Colors.purple,
-                          onPressed: () {
-                            setState(() {
-                              _controller.examples.add(KoreanBiteExample(_controller.examples.length));
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(30),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Database().runKoreanBiteBatch(koreanBite: koreanBite);
-                      },
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                        child: Text(
-                          '저장',
-                          style: TextStyle(fontSize: 20),
+          ? ResponsiveBreakpoints.of(context).largerThan(TABLET)
+              ? Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            getExplainCard(),
+                            const VerticalDivider(),
+                            Expanded(
+                                child: Scrollbar(
+                              controller: scrollController,
+                              child: ReorderableListView(
+                                scrollController: scrollController,
+                                padding: const EdgeInsets.all(20),
+                                scrollDirection: Axis.horizontal,
+                                onReorder: (int oldIndex, int newIndex) {
+                                  setState(() {
+                                    _controller.reorderExampleCardItem(oldIndex, newIndex);
+                                  });
+                                },
+                                children: getExampleCards(),
+                              ),
+                            )),
+                            IconButton(
+                              icon: const Icon(Icons.add_circle_outline_rounded),
+                              color: Colors.purple,
+                              onPressed: () {
+                                setState(() {
+                                  _controller.examples.add(KoreanBiteExample(_controller.examples.length));
+                                });
+                              },
+                            ),
+                          ],
                         ),
                       ),
-                    ),
+                      Padding(
+                        padding: const EdgeInsets.all(30),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Database().runKoreanBiteBatch(koreanBite: koreanBite);
+                          },
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            child: Text(
+                              '저장',
+                              style: TextStyle(fontSize: 20),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            )
+                )
+              : Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              getExplainCard(),
+                              const VerticalDivider(),
+                              SizedBox(
+                                  width: 800,
+                                  child: Scrollbar(
+                                    controller: scrollController,
+                                    child: ReorderableListView(
+                                      scrollController: scrollController,
+                                      padding: const EdgeInsets.all(20),
+                                      scrollDirection: Axis.horizontal,
+                                      onReorder: (int oldIndex, int newIndex) {
+                                        setState(() {
+                                          _controller.reorderExampleCardItem(oldIndex, newIndex);
+                                        });
+                                      },
+                                      children: getExampleCards(),
+                                    ),
+                                  )),
+                              IconButton(
+                                icon: const Icon(Icons.add_circle_outline_rounded),
+                                color: Colors.purple,
+                                onPressed: () {
+                                  setState(() {
+                                    _controller.examples.add(KoreanBiteExample(_controller.examples.length));
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(30),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Database().runKoreanBiteBatch(koreanBite: koreanBite);
+                          },
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            child: Text(
+                              '저장',
+                              style: TextStyle(fontSize: 20),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
           : const Center(child: CircularProgressIndicator()),
     );
   }

@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/common/database.dart';
-import 'package:podo_admin/feedback/trans_feedback.dart';
+import 'package:podo_admin/screens/feedback/trans_feedback.dart';
 
 class FeedbackStateManager extends GetxController {
   String statusRadio = '신규';

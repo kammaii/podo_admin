@@ -10,6 +10,7 @@ import 'package:podo_admin/screens/podo_message/podo_message.dart';
 import 'package:podo_admin/screens/podo_message/podo_message_reply_main.dart';
 import 'package:podo_admin/screens/podo_message/podo_message_state_manager.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class PodoMessageMain extends StatelessWidget {
   PodoMessageMain({Key? key}) : super(key: key);
@@ -34,109 +35,189 @@ class PodoMessageMain extends StatelessWidget {
       ),
       appBar: AppBar(
         title: const Text('포도 메시지'),
+        automaticallyImplyLeading: false,
       ),
       body: GetBuilder<PodoMessageStateManager>(
         builder: (controller) {
           if (_controller.messages.isNotEmpty) {
-            return DataTable2(
-              columns: const [
-                DataColumn2(label: Text('No'), size: ColumnSize.S),
-                DataColumn2(label: Text('제목'), size: ColumnSize.L),
-                DataColumn2(label: Text('시작'), size: ColumnSize.S),
-                DataColumn2(label: Text('종료'), size: ColumnSize.S),
-                DataColumn2(label: Text('상태'), size: ColumnSize.S),
-                DataColumn2(label: Text('게시'), size: ColumnSize.S),
-                DataColumn2(label: Text('삭제'), size: ColumnSize.S),
-                DataColumn2(label: Text(''), size: ColumnSize.S),
-              ],
-              rows: List<DataRow>.generate(controller.messages.length, (index) {
-                PodoMessage message = controller.messages[index];
-                String status = '';
-                if(message.dateStart != null && message.dateEnd != null) {
-                  if(now.isAfter(message.dateStart!) && now.isBefore(message.dateEnd!)) {
-                    status = '진행중';
-                  } else if(now.isAfter(message.dateEnd!)) {
-                    status = '답변선정대기중';
+            if (ResponsiveBreakpoints.of(context).largerThan(TABLET)) {
+              return DataTable2(
+                columns: const [
+                  DataColumn2(label: Text('No'), size: ColumnSize.S),
+                  DataColumn2(label: Text('제목'), size: ColumnSize.L),
+                  DataColumn2(label: Text('시작'), size: ColumnSize.S),
+                  DataColumn2(label: Text('종료'), size: ColumnSize.S),
+                  DataColumn2(label: Text('상태'), size: ColumnSize.S),
+                  DataColumn2(label: Text('게시'), size: ColumnSize.S),
+                  DataColumn2(label: Text('삭제'), size: ColumnSize.S),
+                  DataColumn2(label: Text(''), size: ColumnSize.S),
+                ],
+                rows: List<DataRow>.generate(controller.messages.length, (index) {
+                  PodoMessage message = controller.messages[index];
+                  String status = '';
+                  if (message.dateStart != null && message.dateEnd != null) {
+                    if (now.isAfter(message.dateStart!) && now.isBefore(message.dateEnd!)) {
+                      status = '진행중';
+                    } else if (now.isAfter(message.dateEnd!)) {
+                      status = '답변선정대기중';
+                    }
                   }
-                }
-                if(message.hasBestReply) {
-                  status = '종료';
-                }
-                return DataRow(cells: [
-                  DataCell(Text((controller.messages.length - index).toString())),
-                  DataCell(Text(message.title['ko'] ?? ''), onTap: () {
-                    selectedMsg = message;
-                    getMessageDialog(context, isNew: false);
-                  }),
-                  message.dateStart != null
-                      ? DataCell(Text(MyDateFormat().getDateOnlyFormat(message.dateStart!)))
-                      : const DataCell(Text('-')),
-                  message.dateEnd != null
-                      ? DataCell(Text(MyDateFormat().getDateOnlyFormat(message.dateEnd!)))
-                      : const DataCell(Text('-')),
-                  DataCell(Text(status)),
-                  DataCell(Checkbox(
-                    value: message.isActive,
-                    onChanged: (bool? value) {
-                      String title = value! ? '메시지 활성화' : '메시지 비활성화';
-                      String content = value ? '이 메시지를 활성화 하겠습니까?' : '이 메시지를 비활성화 하겠습니까?';
-                      getDialog(
-                        title: title,
-                        content: content,
-                        functionNo: () {
-                          Get.back();
-                        },
-                        functionYes: () {
-                          Get.back();
-                          if (value) {
-                            bool hasActiveMessage = false;
-                            for (PodoMessage message in _controller.messages) {
-                              if (message.isActive) {
-                                hasActiveMessage = true;
+                  if (message.hasBestReply) {
+                    status = '종료';
+                  }
+                  return DataRow(cells: [
+                    DataCell(Text((controller.messages.length - index).toString())),
+                    DataCell(Text(message.title['ko'] ?? ''), onTap: () {
+                      selectedMsg = message;
+                      getMessageDialog(context, isNew: false);
+                    }),
+                    message.dateStart != null
+                        ? DataCell(Text(MyDateFormat().getDateOnlyFormat(message.dateStart!)))
+                        : const DataCell(Text('-')),
+                    message.dateEnd != null
+                        ? DataCell(Text(MyDateFormat().getDateOnlyFormat(message.dateEnd!)))
+                        : const DataCell(Text('-')),
+                    DataCell(Text(status)),
+                    DataCell(Checkbox(
+                      value: message.isActive,
+                      onChanged: (bool? value) {
+                        String title = value! ? '메시지 활성화' : '메시지 비활성화';
+                        String content = value ? '이 메시지를 활성화 하겠습니까?' : '이 메시지를 비활성화 하겠습니까?';
+                        getDialog(
+                          title: title,
+                          content: content,
+                          functionNo: () {
+                            Get.back();
+                          },
+                          functionYes: () {
+                            Get.back();
+                            if (value) {
+                              bool hasActiveMessage = false;
+                              for (PodoMessage message in _controller.messages) {
+                                if (message.isActive) {
+                                  hasActiveMessage = true;
+                                }
                               }
-                            }
-                            if (hasActiveMessage) {
-                              Get.dialog(const AlertDialog(
-                                title: Text('에러'),
-                                content: Text('이미 게시된 메시지가 있습니다.'),
-                              ));
+                              if (hasActiveMessage) {
+                                Get.dialog(const AlertDialog(
+                                  title: Text('에러'),
+                                  content: Text('이미 게시된 메시지가 있습니다.'),
+                                ));
+                              } else {
+                                controller.setMessageActive(index, value);
+                              }
                             } else {
                               controller.setMessageActive(index, value);
                             }
-                          } else {
-                            controller.setMessageActive(index, value);
-                          }
-                        },
-                      );
-                    },
-                  )),
-                  DataCell(IconButton(
-                    icon: const Icon(Icons.delete),
-                    color: Colors.red,
-                    onPressed: () {
-                      getDialog(
-                        title: '메시지삭제',
-                        content: '이 메시지를 삭제하겠습니까?',
-                        functionNo: () {
-                          Get.back();
-                        },
-                        functionYes: () {
-                          Get.back();
-                          controller.deleteMessage(index);
-                        },
-                      );
-                    },
-                  )),
-                  DataCell(ElevatedButton(
-                    child: const Text('답변보기'),
-                    onPressed: () {
+                          },
+                        );
+                      },
+                    )),
+                    DataCell(IconButton(
+                      icon: const Icon(Icons.delete),
+                      color: Colors.red,
+                      onPressed: () {
+                        getDialog(
+                          title: '메시지삭제',
+                          content: '이 메시지를 삭제하겠습니까?',
+                          functionNo: () {
+                            Get.back();
+                          },
+                          functionYes: () {
+                            Get.back();
+                            controller.deleteMessage(index);
+                          },
+                        );
+                      },
+                    )),
+                    DataCell(ElevatedButton(
+                      child: const Text('답변보기'),
+                      onPressed: () {
+                        controller.selectedMessageId = message.id;
+                        Get.to(CloudMessageReplyMain(), arguments: message.title['ko']);
+                      },
+                    ))
+                  ]);
+                }),
+              );
+            } else {
+              return DataTable2(
+                columns: const [
+                  DataColumn2(label: Text('No'), size: ColumnSize.S),
+                  DataColumn2(label: Text('제목'), size: ColumnSize.L),
+                  DataColumn2(label: Text('시작'), size: ColumnSize.S),
+                  DataColumn2(label: Text('종료'), size: ColumnSize.S),
+                  DataColumn2(label: Text('상태'), size: ColumnSize.S),
+                  DataColumn2(label: Text('게시'), size: ColumnSize.S),
+                ],
+                rows: List<DataRow>.generate(controller.messages.length, (index) {
+                  PodoMessage message = controller.messages[index];
+                  String status = '';
+                  if (message.dateStart != null && message.dateEnd != null) {
+                    if (now.isAfter(message.dateStart!) && now.isBefore(message.dateEnd!)) {
+                      status = '진행중';
+                    } else if (now.isAfter(message.dateEnd!)) {
+                      status = '답변선정대기중';
+                    }
+                  }
+                  if (message.hasBestReply) {
+                    status = '종료';
+                  }
+                  return DataRow(cells: [
+                    DataCell(Text((controller.messages.length - index).toString()), onTap: () {
                       controller.selectedMessageId = message.id;
                       Get.to(CloudMessageReplyMain(), arguments: message.title['ko']);
-                    },
-                  ))
-                ]);
-              }),
-            );
+                    }),
+                    DataCell(Text(message.title['ko'] ?? ''), onTap: () {
+                      selectedMsg = message;
+                      getMessageDialog(context, isNew: false);
+                    }),
+                    message.dateStart != null
+                        ? DataCell(Text(MyDateFormat().getDateOnlyFormat(message.dateStart!)))
+                        : const DataCell(Text('-')),
+                    message.dateEnd != null
+                        ? DataCell(Text(MyDateFormat().getDateOnlyFormat(message.dateEnd!)))
+                        : const DataCell(Text('-')),
+                    DataCell(Text(status)),
+                    DataCell(Checkbox(
+                      value: message.isActive,
+                      onChanged: (bool? value) {
+                        String title = value! ? '메시지 활성화' : '메시지 비활성화';
+                        String content = value ? '이 메시지를 활성화 하겠습니까?' : '이 메시지를 비활성화 하겠습니까?';
+                        getDialog(
+                          title: title,
+                          content: content,
+                          functionNo: () {
+                            Get.back();
+                          },
+                          functionYes: () {
+                            Get.back();
+                            if (value) {
+                              bool hasActiveMessage = false;
+                              for (PodoMessage message in _controller.messages) {
+                                if (message.isActive) {
+                                  hasActiveMessage = true;
+                                }
+                              }
+                              if (hasActiveMessage) {
+                                Get.dialog(const AlertDialog(
+                                  title: Text('에러'),
+                                  content: Text('이미 게시된 메시지가 있습니다.'),
+                                ));
+                              } else {
+                                controller.setMessageActive(index, value);
+                              }
+                            } else {
+                              controller.setMessageActive(index, value);
+                            }
+                          },
+                        );
+                      },
+                    )),
+                  ]);
+                }),
+              );
+            }
           } else {
             return const Center(child: Text('검색된 클라우드 메시지가 없습니다.'));
           }

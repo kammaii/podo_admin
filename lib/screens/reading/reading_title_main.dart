@@ -13,6 +13,7 @@ import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/screens/reading/reading_title.dart';
 import 'package:podo_admin/screens/reading/reading_detail.dart';
 import 'package:podo_admin/screens/reading/reading_state_manager.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class ReadingTitleMain extends StatefulWidget {
   ReadingTitleMain({Key? key}) : super(key: key);
@@ -67,6 +68,7 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
             getDataFromDb();
           });
         },
+        width: 200,
       ),
     );
   }
@@ -254,6 +256,7 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('읽기 타이틀'),
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -262,18 +265,42 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      getCategoryRadioBtn(controller.categories[0]),
-                      getCategoryRadioBtn(controller.categories[1]),
-                      getCategoryRadioBtn(controller.categories[2]),
-                      getCategoryRadioBtn(controller.categories[3]),
-                      getCategoryRadioBtn(controller.categories[4]),
-                      getCategoryRadioBtn(controller.categories[5]),
-                    ],
-                  ),
-                ),
+                ResponsiveBreakpoints.of(context).largerThan(TABLET)
+                    ? Expanded(
+                        child: Row(
+                          children: [
+                            getCategoryRadioBtn(controller.categories[0]),
+                            getCategoryRadioBtn(controller.categories[1]),
+                            getCategoryRadioBtn(controller.categories[2]),
+                            getCategoryRadioBtn(controller.categories[3]),
+                            getCategoryRadioBtn(controller.categories[4]),
+                            getCategoryRadioBtn(controller.categories[5]),
+                          ],
+                        ),
+                      )
+                    : SizedBox(
+                        height: 150,
+                        child: Row(
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                getCategoryRadioBtn(controller.categories[0]),
+                                getCategoryRadioBtn(controller.categories[1]),
+                                getCategoryRadioBtn(controller.categories[2]),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                getCategoryRadioBtn(controller.categories[3]),
+                                getCategoryRadioBtn(controller.categories[4]),
+                                getCategoryRadioBtn(controller.categories[5]),
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
                 ElevatedButton(
                   onPressed: () {
                     selectedReadingTitle = ReadingTitle();
@@ -312,204 +339,310 @@ class _ReadingTitleMainState extends State<ReadingTitleMain> {
           if (readingTitles.isEmpty) {
             return const Center(child: Text('검색된 읽기 타이틀이 없습니다.'));
           } else {
-            return DataTable2(
-              columns: const [
-                DataColumn2(label: Text('순서ID'), size: ColumnSize.S),
-                DataColumn2(label: Text('아이디'), size: ColumnSize.S),
-                DataColumn2(label: Text('타이틀'), size: ColumnSize.L),
-                DataColumn2(label: Text('레벨'), size: ColumnSize.S),
-                DataColumn2(label: Text('태그'), size: ColumnSize.S),
-                DataColumn2(label: Text('상태'), size: ColumnSize.S),
-                DataColumn2(label: Text('무료'), size: ColumnSize.S),
-                DataColumn2(label: Text('순서변경'), size: ColumnSize.S),
-                DataColumn2(label: Text('삭제'), size: ColumnSize.S),
-                DataColumn2(label: Text(''), size: ColumnSize.S),
-              ],
-              rows: List<DataRow>.generate(readingTitles.length, (i) {
-                int index = readingTitles.length - 1 - i;
-                ReadingTitle readingTitle = readingTitles[index];
-                return DataRow(cells: [
-                  DataCell(readingTitle.orderId != null ? Text(readingTitle.orderId.toString()) : const Text('-')),
-                  DataCell(Text(readingTitle.id.substring(0, 8)), onTap: () {
-                    Clipboard.setData(ClipboardData(text: readingTitle.id));
-                    Get.snackbar('아이디가 클립보드에 저장되었습니다.', readingTitle.id, snackPosition: SnackPosition.BOTTOM);
-                  }),
-                  DataCell(Text(readingTitle.title['ko'] ?? ''), onTap: () {
-                    selectedReadingTitle = readingTitle;
-                    openReadingTitleDialog();
-                  }),
-                  DataCell(Text(controller.readingLevel[readingTitle.level])),
-                  DataCell(Text(readingTitle.tag.isNotEmpty ? readingTitle.tag.toString() : ''), onTap: () {
-                    Get.dialog(
-                      AlertDialog(
-                        title: const Text('태그를 입력하세요'),
-                        content: MyTextField().getTextField(
-                            controller: TextEditingController(text: readingTitle.tag),
-                            fn: (String? value) {
-                              readingTitle.tag = value!;
-                            }),
-                        actions: [
-                          TextButton(
-                              onPressed: () {
-                                updateDB(
-                                    collection: READING_TITLES,
-                                    docId: readingTitle.id,
-                                    value: {'tag': readingTitle.tag});
-                              },
-                              child: const Text('저장'))
-                        ],
-                      ),
-                    );
-                  }),
-                  DataCell(Icon(Icons.circle, color: readingTitle.isReleased ? Colors.green : Colors.red),
-                      onTap: readingTitle.category == 'Lesson'
-                          ? null
-                          : () {
-                              Get.dialog(AlertDialog(
-                                content: const Text('상태를 변경하겠습니까?'),
-                                actions: [
-                                  TextButton(
-                                      onPressed: () {
-                                        updateDB(
-                                            collection: READING_TITLES,
-                                            docId: readingTitle.id,
-                                            value: {'isReleased': true});
-                                      },
-                                      child: const Text('게시중')),
-                                  TextButton(
-                                      onPressed: () {
-                                        updateDB(
-                                            collection: READING_TITLES,
-                                            docId: readingTitle.id,
-                                            value: {'isReleased': false});
-                                      },
-                                      child: const Text('입력중')),
-                                ],
-                              ));
-                            }),
-                  DataCell(
-                      Icon(readingTitle.isFree ? CupertinoIcons.check_mark_circled : CupertinoIcons.xmark_circle,
-                          color: readingTitle.isFree ? Colors.green : Colors.red),
-                      onTap: readingTitle.category == 'Lesson'
-                          ? null
-                          : () {
-                              Get.dialog(AlertDialog(
-                                content: const Text('상태를 변경하겠습니까?'),
-                                actions: [
-                                  TextButton(
-                                      onPressed: () {
-                                        updateDB(
-                                            collection: READING_TITLES,
-                                            docId: readingTitle.id,
-                                            value: {'isFree': true});
-                                      },
-                                      child: const Text('무료')),
-                                  TextButton(
-                                      onPressed: () {
-                                        updateDB(
-                                            collection: READING_TITLES,
-                                            docId: readingTitle.id,
-                                            value: {'isFree': false});
-                                      },
-                                      child: const Text('유료')),
-                                ],
-                              ));
-                            }),
-                  readingTitle.category == 'Lesson'
-                      ? const DataCell(Text('-'))
-                      : DataCell(
-                          Row(
-                            children: [
-                              Expanded(
-                                child: IconButton(
-                                    onPressed: () async {
-                                      if (index != 0) {
-                                        int newIndex = index - 1;
-                                        ReadingTitle thatReading = readingTitles[newIndex];
-                                        await Database().switchOrderTransaction(
-                                            collection: READING_TITLES,
-                                            docId1: readingTitle.id,
-                                            docId2: thatReading.id);
-                                        setState(() {
-                                          getDataFromDb();
-                                        });
-                                      } else {
-                                        Get.dialog(const AlertDialog(
-                                          title: Text('첫번째 읽기입니다.'),
-                                        ));
-                                      }
-                                    },
-                                    icon: const Icon(Icons.arrow_drop_up_outlined)),
-                              ),
-                              Expanded(
-                                child: IconButton(
-                                    onPressed: () async {
-                                      if (index != readingTitles.length - 1) {
-                                        int newIndex = index + 1;
-                                        ReadingTitle thatReading = readingTitles[newIndex];
-                                        await Database().switchOrderTransaction(
-                                            collection: READING_TITLES,
-                                            docId1: readingTitle.id,
-                                            docId2: thatReading.id);
-                                        setState(() {
-                                          getDataFromDb();
-                                        });
-                                      } else {
-                                        Get.dialog(const AlertDialog(
-                                          title: Text('마지막 레슨입니다.'),
-                                        ));
-                                      }
-                                    },
-                                    icon: const Icon(Icons.arrow_drop_down_outlined)),
-                              ),
-                            ],
-                          ),
+            if (ResponsiveBreakpoints.of(context).largerThan(TABLET)) {
+              return DataTable2(
+                columns: const [
+                  DataColumn2(label: Text('순서ID'), size: ColumnSize.S),
+                  DataColumn2(label: Text('아이디'), size: ColumnSize.S),
+                  DataColumn2(label: Text('타이틀'), size: ColumnSize.L),
+                  DataColumn2(label: Text('레벨'), size: ColumnSize.S),
+                  DataColumn2(label: Text('태그'), size: ColumnSize.S),
+                  DataColumn2(label: Text('상태'), size: ColumnSize.S),
+                  DataColumn2(label: Text('무료'), size: ColumnSize.S),
+                  DataColumn2(label: Text('순서변경'), size: ColumnSize.S),
+                  DataColumn2(label: Text('삭제'), size: ColumnSize.S),
+                  DataColumn2(label: Text(''), size: ColumnSize.S),
+                ],
+                rows: List<DataRow>.generate(readingTitles.length, (i) {
+                  int index = readingTitles.length - 1 - i;
+                  ReadingTitle readingTitle = readingTitles[index];
+                  return DataRow(cells: [
+                    DataCell(
+                        readingTitle.orderId != null ? Text(readingTitle.orderId.toString()) : const Text('-')),
+                    DataCell(Text(readingTitle.id.substring(0, 8)), onTap: () {
+                      Clipboard.setData(ClipboardData(text: readingTitle.id));
+                      Get.snackbar('아이디가 클립보드에 저장되었습니다.', readingTitle.id, snackPosition: SnackPosition.BOTTOM);
+                    }),
+                    DataCell(Text(readingTitle.title['ko'] ?? ''), onTap: () {
+                      selectedReadingTitle = readingTitle;
+                      openReadingTitleDialog();
+                    }),
+                    DataCell(Text(controller.readingLevel[readingTitle.level])),
+                    DataCell(Text(readingTitle.tag.isNotEmpty ? readingTitle.tag.toString() : ''), onTap: () {
+                      Get.dialog(
+                        AlertDialog(
+                          title: const Text('태그를 입력하세요'),
+                          content: MyTextField().getTextField(
+                              controller: TextEditingController(text: readingTitle.tag),
+                              fn: (String? value) {
+                                readingTitle.tag = value!;
+                              }),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  updateDB(
+                                      collection: READING_TITLES,
+                                      docId: readingTitle.id,
+                                      value: {'tag': readingTitle.tag});
+                                },
+                                child: const Text('저장'))
+                          ],
                         ),
-                  readingTitle.category == 'Lesson'
-                      ? const DataCell(Text('-'))
-                      : DataCell(
-                          IconButton(
-                            icon: const Icon(
-                              Icons.delete,
-                              color: Colors.red,
-                            ),
-                            onPressed: () {
-                              Get.dialog(AlertDialog(
-                                title: const Text('정말 삭제하겠습니까?'),
-                                actions: [
-                                  TextButton(
+                      );
+                    }),
+                    DataCell(Icon(Icons.circle, color: readingTitle.isReleased ? Colors.green : Colors.red),
+                        onTap: readingTitle.category == 'Lesson'
+                            ? null
+                            : () {
+                                Get.dialog(AlertDialog(
+                                  content: const Text('상태를 변경하겠습니까?'),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          updateDB(
+                                              collection: READING_TITLES,
+                                              docId: readingTitle.id,
+                                              value: {'isReleased': true});
+                                        },
+                                        child: const Text('게시중')),
+                                    TextButton(
+                                        onPressed: () {
+                                          updateDB(
+                                              collection: READING_TITLES,
+                                              docId: readingTitle.id,
+                                              value: {'isReleased': false});
+                                        },
+                                        child: const Text('입력중')),
+                                  ],
+                                ));
+                              }),
+                    DataCell(
+                        Icon(readingTitle.isFree ? CupertinoIcons.check_mark_circled : CupertinoIcons.xmark_circle,
+                            color: readingTitle.isFree ? Colors.green : Colors.red),
+                        onTap: readingTitle.category == 'Lesson'
+                            ? null
+                            : () {
+                                Get.dialog(AlertDialog(
+                                  content: const Text('상태를 변경하겠습니까?'),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          updateDB(
+                                              collection: READING_TITLES,
+                                              docId: readingTitle.id,
+                                              value: {'isFree': true});
+                                        },
+                                        child: const Text('무료')),
+                                    TextButton(
+                                        onPressed: () {
+                                          updateDB(
+                                              collection: READING_TITLES,
+                                              docId: readingTitle.id,
+                                              value: {'isFree': false});
+                                        },
+                                        child: const Text('유료')),
+                                  ],
+                                ));
+                              }),
+                    readingTitle.category == 'Lesson'
+                        ? const DataCell(Text('-'))
+                        : DataCell(
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: IconButton(
                                       onPressed: () async {
-                                        Get.back();
-                                        await Database().deleteListAndReorderBatch(
-                                            collection: READING_TITLES, index: index, list: readingTitles);
-                                        controller.getTotalLength();
-                                        setState(() {
-                                          getDataFromDb();
-                                        });
+                                        if (index != 0) {
+                                          int newIndex = index - 1;
+                                          ReadingTitle thatReading = readingTitles[newIndex];
+                                          await Database().switchOrderTransaction(
+                                              collection: READING_TITLES,
+                                              docId1: readingTitle.id,
+                                              docId2: thatReading.id);
+                                          setState(() {
+                                            getDataFromDb();
+                                          });
+                                        } else {
+                                          Get.dialog(const AlertDialog(
+                                            title: Text('첫번째 읽기입니다.'),
+                                          ));
+                                        }
                                       },
-                                      child: const Text(
-                                        '네',
-                                        style: TextStyle(color: Colors.red),
-                                      )),
-                                  TextButton(
-                                      onPressed: () {
-                                        Get.back();
+                                      icon: const Icon(Icons.arrow_drop_up_outlined)),
+                                ),
+                                Expanded(
+                                  child: IconButton(
+                                      onPressed: () async {
+                                        if (index != readingTitles.length - 1) {
+                                          int newIndex = index + 1;
+                                          ReadingTitle thatReading = readingTitles[newIndex];
+                                          await Database().switchOrderTransaction(
+                                              collection: READING_TITLES,
+                                              docId1: readingTitle.id,
+                                              docId2: thatReading.id);
+                                          setState(() {
+                                            getDataFromDb();
+                                          });
+                                        } else {
+                                          Get.dialog(const AlertDialog(
+                                            title: Text('마지막 레슨입니다.'),
+                                          ));
+                                        }
                                       },
-                                      child: const Text('아니오')),
-                                ],
-                              ));
-                            },
+                                      icon: const Icon(Icons.arrow_drop_down_outlined)),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                  DataCell(ElevatedButton(
-                    child: const Text('상세보기'),
-                    onPressed: () {
+                    readingTitle.category == 'Lesson'
+                        ? const DataCell(Text('-'))
+                        : DataCell(
+                            IconButton(
+                              icon: const Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                              ),
+                              onPressed: () {
+                                Get.dialog(AlertDialog(
+                                  title: const Text('정말 삭제하겠습니까?'),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () async {
+                                          Get.back();
+                                          await Database().deleteListAndReorderBatch(
+                                              collection: READING_TITLES, index: index, list: readingTitles);
+                                          controller.getTotalLength();
+                                          setState(() {
+                                            getDataFromDb();
+                                          });
+                                        },
+                                        child: const Text(
+                                          '네',
+                                          style: TextStyle(color: Colors.red),
+                                        )),
+                                    TextButton(
+                                        onPressed: () {
+                                          Get.back();
+                                        },
+                                        child: const Text('아니오')),
+                                  ],
+                                ));
+                              },
+                            ),
+                          ),
+                    DataCell(ElevatedButton(
+                      child: const Text('상세보기'),
+                      onPressed: () {
+                        Get.to(const ReadingDetail(), arguments: readingTitle);
+                      },
+                    ))
+                  ]);
+                }),
+              );
+            } else {
+              return DataTable2(
+                columns: const [
+                  DataColumn2(label: Text('순서'), size: ColumnSize.S),
+                  DataColumn2(label: Text('타이틀'), size: ColumnSize.L),
+                  DataColumn2(label: Text('레벨'), size: ColumnSize.S),
+                  DataColumn2(label: Text('태그'), size: ColumnSize.S),
+                  DataColumn2(label: Text('상태'), size: ColumnSize.S),
+                  DataColumn2(label: Text('무료'), size: ColumnSize.S),
+                ],
+                rows: List<DataRow>.generate(readingTitles.length, (i) {
+                  int index = readingTitles.length - 1 - i;
+                  ReadingTitle readingTitle = readingTitles[index];
+                  return DataRow(cells: [
+                    DataCell(
+                        readingTitle.orderId != null ? Text(readingTitle.orderId.toString()) : const Text('-'),
+                        onTap: () {
                       Get.to(const ReadingDetail(), arguments: readingTitle);
-                    },
-                  ))
-                ]);
-              }),
-            );
+                    }),
+                    DataCell(Text(readingTitle.title['ko'] ?? ''), onTap: () {
+                      selectedReadingTitle = readingTitle;
+                      openReadingTitleDialog();
+                    }),
+                    DataCell(Text(controller.readingLevel[readingTitle.level])),
+                    DataCell(Text(readingTitle.tag.isNotEmpty ? readingTitle.tag.toString() : ''), onTap: () {
+                      Get.dialog(
+                        AlertDialog(
+                          title: const Text('태그를 입력하세요'),
+                          content: MyTextField().getTextField(
+                              controller: TextEditingController(text: readingTitle.tag),
+                              fn: (String? value) {
+                                readingTitle.tag = value!;
+                              }),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  updateDB(
+                                      collection: READING_TITLES,
+                                      docId: readingTitle.id,
+                                      value: {'tag': readingTitle.tag});
+                                },
+                                child: const Text('저장'))
+                          ],
+                        ),
+                      );
+                    }),
+                    DataCell(Icon(Icons.circle, color: readingTitle.isReleased ? Colors.green : Colors.red),
+                        onTap: readingTitle.category == 'Lesson'
+                            ? null
+                            : () {
+                                Get.dialog(AlertDialog(
+                                  content: const Text('상태를 변경하겠습니까?'),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          updateDB(
+                                              collection: READING_TITLES,
+                                              docId: readingTitle.id,
+                                              value: {'isReleased': true});
+                                        },
+                                        child: const Text('게시중')),
+                                    TextButton(
+                                        onPressed: () {
+                                          updateDB(
+                                              collection: READING_TITLES,
+                                              docId: readingTitle.id,
+                                              value: {'isReleased': false});
+                                        },
+                                        child: const Text('입력중')),
+                                  ],
+                                ));
+                              }),
+                    DataCell(
+                        Icon(readingTitle.isFree ? CupertinoIcons.check_mark_circled : CupertinoIcons.xmark_circle,
+                            color: readingTitle.isFree ? Colors.green : Colors.red),
+                        onTap: readingTitle.category == 'Lesson'
+                            ? null
+                            : () {
+                                Get.dialog(AlertDialog(
+                                  content: const Text('상태를 변경하겠습니까?'),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          updateDB(
+                                              collection: READING_TITLES,
+                                              docId: readingTitle.id,
+                                              value: {'isFree': true});
+                                        },
+                                        child: const Text('무료')),
+                                    TextButton(
+                                        onPressed: () {
+                                          updateDB(
+                                              collection: READING_TITLES,
+                                              docId: readingTitle.id,
+                                              value: {'isFree': false});
+                                        },
+                                        child: const Text('유료')),
+                                  ],
+                                ));
+                              }),
+                  ]);
+                }),
+              );
+            }
           }
         } else if (snapshot.hasError) {
           return Text('에러: ${snapshot.error}');
