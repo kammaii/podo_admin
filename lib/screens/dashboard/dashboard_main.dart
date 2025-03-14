@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:podo_admin/common/database.dart';
 import 'package:podo_admin/screens/dashboard/user_count.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class DashboardMain extends StatefulWidget {
   const DashboardMain({super.key});
@@ -13,7 +14,7 @@ class DashboardMain extends StatefulWidget {
 
 class _DashboardMainState extends State<DashboardMain> {
   late Future<List<dynamic>> futureUserCounts;
-  int days = 5;
+  int days = 10;
   final NEW = 'New';
   final BASIC = 'Basic';
   final PREMIUM = 'Premium';
@@ -110,6 +111,7 @@ class _DashboardMainState extends State<DashboardMain> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('대시보드'),
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -165,7 +167,8 @@ class _DashboardMainState extends State<DashboardMain> {
                       getBar(activeNewList, Colors.yellow),
                       getBar(activeBasicList, Colors.blueAccent),
                       getBar(activePremiumList, Colors.purple),
-                      getBar(activeTotalList, Colors.green),
+                      getBar(activeTrialList, Colors.green),
+                      getBar(activeTotalList, Colors.red),
                     ];
                     int activeMax = activeTotalList.reduce((a, b) => a > b ? a : b).round();
 
@@ -173,6 +176,7 @@ class _DashboardMainState extends State<DashboardMain> {
                       getBar(ratioNewList, Colors.yellow),
                       getBar(ratioBasicList, Colors.blueAccent),
                       getBar(ratioPremiumList, Colors.purple),
+                      getBar(ratioTrialList, Colors.green),
                     ];
 
                     return Column(
@@ -190,37 +194,62 @@ class _DashboardMainState extends State<DashboardMain> {
                             child: Text('($statusPremium / $goal)',
                                 style: const TextStyle(fontWeight: FontWeight.bold))),
                         const SizedBox(height: 20),
-                        Column(
-                          children: [
-                            Row(
-                              children: [
-                                getGraph(
-                                    title: 'Total Users',
-                                    bars: totalUserBars,
-                                    maxCount: totalUserMax,
-                                    addMaxY: 3000),
-                                const SizedBox(width: 30),
-                                getGraph(
-                                    title: 'Status Ratio',
-                                    bars: statusRatioBars,
-                                    maxCount: 100,
-                                    barTitles: [NEW, BASIC, PREMIUM]),
-                              ],
-                            ),
-                            const SizedBox(height: 20),
-                            Row(
-                              children: [
-                                getGraph(title: 'SignUp Users', bars: signUpUserBars, maxCount: signUpUserMax),
-                                const SizedBox(width: 30),
-                                getGraph(
-                                    title: 'Active Users',
-                                    bars: activeUserBars,
-                                    maxCount: activeMax,
-                                    barTitles: [NEW, BASIC, PREMIUM, TRIAL, TOTAL]),
-                              ],
-                            ),
-                          ],
-                        )
+                        ResponsiveBreakpoints.of(context).largerThan(TABLET)
+                            ? Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      getGraph(
+                                          title: 'Total Users',
+                                          bars: totalUserBars,
+                                          maxCount: totalUserMax,
+                                          addMaxY: 3000),
+                                      const SizedBox(width: 30),
+                                      getGraph(
+                                          title: 'Status Ratio',
+                                          bars: statusRatioBars,
+                                          maxCount: 100,
+                                          barTitles: [NEW, BASIC, PREMIUM, TRIAL]),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Row(
+                                    children: [
+                                      getGraph(
+                                          title: 'SignUp Users', bars: signUpUserBars, maxCount: signUpUserMax),
+                                      const SizedBox(width: 30),
+                                      getGraph(
+                                          title: 'Active Users',
+                                          bars: activeUserBars,
+                                          maxCount: activeMax,
+                                          barTitles: [NEW, BASIC, PREMIUM, TRIAL, TOTAL]),
+                                    ],
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                children: [
+                                  getGraph(
+                                      title: 'Total Users',
+                                      bars: totalUserBars,
+                                      maxCount: totalUserMax,
+                                      addMaxY: 3000),
+                                  const SizedBox(width: 30),
+                                  getGraph(
+                                      title: 'Status Ratio',
+                                      bars: statusRatioBars,
+                                      maxCount: 100,
+                                      barTitles: [NEW, BASIC, PREMIUM]),
+                                  const SizedBox(width: 30),
+                                  getGraph(title: 'SignUp Users', bars: signUpUserBars, maxCount: signUpUserMax),
+                                  const SizedBox(width: 30),
+                                  getGraph(
+                                      title: 'Active Users',
+                                      bars: activeUserBars,
+                                      maxCount: activeMax,
+                                      barTitles: [NEW, BASIC, PREMIUM, TRIAL, TOTAL]),
+                                ],
+                              )
                       ],
                     );
                   }

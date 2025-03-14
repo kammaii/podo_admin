@@ -14,6 +14,7 @@ import 'package:podo_admin/screens/lesson/lesson_list_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:podo_admin/screens/lesson/workbook_main.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class LessonCourseMain extends StatefulWidget {
   LessonCourseMain({Key? key}) : super(key: key);
@@ -137,7 +138,9 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
   courseDialog({LessonCourse? course}) async {
     LessonCourse lessonCourse = course ?? LessonCourse();
     String title;
-    isTopicMode ? title = 'Topic Mode (${lessonCourse.id.substring(0, 8)})' : title = 'Grammar Mode (${lessonCourse.id.substring(0, 8)})';
+    isTopicMode
+        ? title = 'Topic Mode (${lessonCourse.id.substring(0, 8)})'
+        : title = 'Grammar Mode (${lessonCourse.id.substring(0, 8)})';
     workbookToggle[0] = lessonCourse.hasWorkbook == true;
     workbookToggle[1] = lessonCourse.hasWorkbook == false;
 
@@ -213,8 +216,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                         borderRadius: const BorderRadius.all(Radius.circular(10)),
                         children: const [
                           Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('있음')),
-                          Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 10), child: Text("없음")),
+                          Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text("없음")),
                         ],
                       ),
                       const SizedBox(width: 20),
@@ -270,6 +272,7 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('레슨코스'),
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -312,171 +315,229 @@ class _LessonCourseMainState extends State<LessonCourseMain> {
                     if (courses.isEmpty) {
                       return const Center(child: Text('검색된 코스가 없습니다.'));
                     } else {
-                      return DataTable2(
-                        columns: const [
-                          DataColumn2(label: Text('순서ID'), size: ColumnSize.S),
-                          DataColumn2(label: Text('아이디'), size: ColumnSize.S),
-                          DataColumn2(label: Text('코스'), size: ColumnSize.S),
-                          DataColumn2(label: Text('레슨개수'), size: ColumnSize.S),
-                          DataColumn2(label: Text('태그'), size: ColumnSize.S),
-                          DataColumn2(label: Text('상태'), size: ColumnSize.S),
-                          DataColumn2(label: Text('순서변경'), size: ColumnSize.S),
-                          DataColumn2(label: Text('삭제'), size: ColumnSize.S),
-                          DataColumn2(label: Text('레슨보기'), size: ColumnSize.S),
-                        ],
-                        rows: List<DataRow>.generate(courses.length, (index) {
-                          LessonCourse course = courses[index];
-                          int lessonLength = 0;
-                          for (dynamic lesson in course.lessons) {
-                            if (lesson is Map) {
-                              lessonLength++;
+                      if (ResponsiveBreakpoints.of(context).largerThan(TABLET)) {
+                        return DataTable2(
+                          columns: const [
+                            DataColumn2(label: Text('순서ID'), size: ColumnSize.S),
+                            DataColumn2(label: Text('아이디'), size: ColumnSize.S),
+                            DataColumn2(label: Text('코스'), size: ColumnSize.S),
+                            DataColumn2(label: Text('레슨개수'), size: ColumnSize.S),
+                            DataColumn2(label: Text('태그'), size: ColumnSize.S),
+                            DataColumn2(label: Text('상태'), size: ColumnSize.S),
+                            DataColumn2(label: Text('순서변경'), size: ColumnSize.S),
+                            DataColumn2(label: Text('삭제'), size: ColumnSize.S),
+                            DataColumn2(label: Text('레슨보기'), size: ColumnSize.S),
+                          ],
+                          rows: List<DataRow>.generate(courses.length, (index) {
+                            LessonCourse course = courses[index];
+                            int lessonLength = 0;
+                            for (dynamic lesson in course.lessons) {
+                              if (lesson is Map) {
+                                lessonLength++;
+                              }
                             }
-                          }
-                          return DataRow(cells: [
-                            DataCell(Text(course.orderId.toString())),
-                            DataCell(Text(course.id.substring(0, 8)), onTap: () {
-                              Clipboard.setData(ClipboardData(text: course.id));
-                              Get.snackbar('아이디가 클립보드에 저장되었습니다.', course.id, snackPosition: SnackPosition.BOTTOM);
-                            }),
-                            DataCell(Text(course.title['en']!), onTap: () {
-                              courseDialog(course: course);
-                            }),
-                            DataCell(Text(lessonLength.toString())),
-                            DataCell(Text(course.tag != null ? course.tag.toString() : ''), onTap: () {
-                              Get.dialog(
-                                AlertDialog(
-                                  title: const Text('태그를 입력하세요'),
-                                  content: MyTextField().getTextField(
-                                      controller: TextEditingController(text: course.tag),
-                                      fn: (String? value) {
-                                        course.tag = value!;
-                                      }),
+                            return DataRow(cells: [
+                              DataCell(Text(course.orderId.toString())),
+                              DataCell(Text(course.id.substring(0, 8)), onTap: () {
+                                Clipboard.setData(ClipboardData(text: course.id));
+                                Get.snackbar('아이디가 클립보드에 저장되었습니다.', course.id,
+                                    snackPosition: SnackPosition.BOTTOM);
+                              }),
+                              DataCell(Text(course.title['en']!), onTap: () {
+                                courseDialog(course: course);
+                              }),
+                              DataCell(Text(lessonLength.toString())),
+                              DataCell(Text(course.tag != null ? course.tag.toString() : ''), onTap: () {
+                                Get.dialog(
+                                  AlertDialog(
+                                    title: const Text('태그를 입력하세요'),
+                                    content: MyTextField().getTextField(
+                                        controller: TextEditingController(text: course.tag),
+                                        fn: (String? value) {
+                                          course.tag = value!;
+                                        }),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            updateDB(
+                                                collection: LESSON_COURSES,
+                                                docId: course.id,
+                                                value: {TAG: course.tag});
+                                          },
+                                          child: const Text('저장'))
+                                    ],
+                                  ),
+                                );
+                              }),
+                              DataCell(Icon(Icons.circle, color: course.isReleased ? Colors.green : Colors.red),
+                                  onTap: () {
+                                Get.dialog(AlertDialog(
+                                  content: const Text('상태를 변경하겠습니까?'),
                                   actions: [
                                     TextButton(
                                         onPressed: () {
                                           updateDB(
                                               collection: LESSON_COURSES,
                                               docId: course.id,
-                                              value: {TAG: course.tag});
+                                              value: {IS_RELEASED: true});
                                         },
-                                        child: const Text('저장'))
+                                        child: const Text('게시중')),
+                                    TextButton(
+                                        onPressed: () {
+                                          updateDB(
+                                              collection: LESSON_COURSES,
+                                              docId: course.id,
+                                              value: {IS_RELEASED: false});
+                                        },
+                                        child: const Text('입력중')),
+                                  ],
+                                ));
+                              }),
+                              DataCell(
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: IconButton(
+                                          onPressed: () async {
+                                            if (index != 0) {
+                                              int newIndex = index - 1;
+                                              LessonCourse thatCourse = courses[newIndex];
+                                              await Database().switchOrderTransaction(
+                                                  collection: LESSON_COURSES,
+                                                  docId1: course.id,
+                                                  docId2: thatCourse.id);
+                                              getDataFromDb();
+                                              Get.back();
+                                              setState(() {});
+                                            } else {
+                                              Get.dialog(const AlertDialog(
+                                                title: Text('첫번째 레슨입니다.'),
+                                              ));
+                                            }
+                                          },
+                                          icon: const Icon(Icons.arrow_drop_up_outlined)),
+                                    ),
+                                    Expanded(
+                                      child: IconButton(
+                                          onPressed: () async {
+                                            if (index != courses.length - 1) {
+                                              int newIndex = index + 1;
+                                              LessonCourse thatCourse = courses[newIndex];
+                                              await Database().switchOrderTransaction(
+                                                  collection: LESSON_COURSES,
+                                                  docId1: course.id,
+                                                  docId2: thatCourse.id);
+                                              getDataFromDb();
+                                              Get.back();
+                                              setState(() {});
+                                            } else {
+                                              Get.dialog(const AlertDialog(
+                                                title: Text('마지막 레슨입니다.'),
+                                              ));
+                                            }
+                                          },
+                                          icon: const Icon(Icons.arrow_drop_down_outlined)),
+                                    ),
                                   ],
                                 ),
-                              );
-                            }),
-                            DataCell(Icon(Icons.circle, color: course.isReleased ? Colors.green : Colors.red),
-                                onTap: () {
-                              Get.dialog(AlertDialog(
-                                content: const Text('상태를 변경하겠습니까?'),
-                                actions: [
-                                  TextButton(
-                                      onPressed: () {
-                                        updateDB(
-                                            collection: LESSON_COURSES,
-                                            docId: course.id,
-                                            value: {IS_RELEASED: true});
-                                      },
-                                      child: const Text('게시중')),
-                                  TextButton(
-                                      onPressed: () {
-                                        updateDB(
-                                            collection: LESSON_COURSES,
-                                            docId: course.id,
-                                            value: {IS_RELEASED: false});
-                                      },
-                                      child: const Text('입력중')),
-                                ],
-                              ));
-                            }),
-                            DataCell(
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: IconButton(
-                                        onPressed: () async {
-                                          if (index != 0) {
-                                            int newIndex = index - 1;
-                                            LessonCourse thatCourse = courses[newIndex];
-                                            await Database().switchOrderTransaction(
-                                                collection: LESSON_COURSES,
-                                                docId1: course.id,
-                                                docId2: thatCourse.id);
-                                            getDataFromDb();
-                                            Get.back();
-                                            setState(() {});
-                                          } else {
-                                            Get.dialog(const AlertDialog(
-                                              title: Text('첫번째 레슨입니다.'),
-                                            ));
-                                          }
-                                        },
-                                        icon: const Icon(Icons.arrow_drop_up_outlined)),
-                                  ),
-                                  Expanded(
-                                    child: IconButton(
-                                        onPressed: () async {
-                                          if (index != courses.length - 1) {
-                                            int newIndex = index + 1;
-                                            LessonCourse thatCourse = courses[newIndex];
-                                            await Database().switchOrderTransaction(
-                                                collection: LESSON_COURSES,
-                                                docId1: course.id,
-                                                docId2: thatCourse.id);
-                                            getDataFromDb();
-                                            Get.back();
-                                            setState(() {});
-                                          } else {
-                                            Get.dialog(const AlertDialog(
-                                              title: Text('마지막 레슨입니다.'),
-                                            ));
-                                          }
-                                        },
-                                        icon: const Icon(Icons.arrow_drop_down_outlined)),
-                                  ),
-                                ],
                               ),
-                            ),
-                            DataCell(
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.delete,
-                                  color: Colors.red,
+                              DataCell(
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () {
+                                    Get.dialog(AlertDialog(
+                                      title: const Text('정말 삭제하겠습니까?'),
+                                      actions: [
+                                        TextButton(
+                                            onPressed: () async {
+                                              Get.back();
+                                              await Database().deleteListAndReorderBatch(
+                                                  collection: LESSON_COURSES, index: index, list: courses);
+                                              setState(() {
+                                                getDataFromDb();
+                                              });
+                                            },
+                                            child: const Text(
+                                              '네',
+                                              style: TextStyle(color: Colors.red),
+                                            )),
+                                        TextButton(
+                                            onPressed: () {
+                                              Get.back();
+                                            },
+                                            child: const Text('아니오')),
+                                      ],
+                                    ));
+                                  },
                                 ),
-                                onPressed: () {
-                                  Get.dialog(AlertDialog(
-                                    title: const Text('정말 삭제하겠습니까?'),
-                                    actions: [
-                                      TextButton(
-                                          onPressed: () async {
-                                            Get.back();
-                                            await Database().deleteListAndReorderBatch(
-                                                collection: LESSON_COURSES, index: index, list: courses);
-                                            setState(() {
-                                              getDataFromDb();
-                                            });
-                                          },
-                                          child: const Text(
-                                            '네',
-                                            style: TextStyle(color: Colors.red),
-                                          )),
-                                      TextButton(
-                                          onPressed: () {
-                                            Get.back();
-                                          },
-                                          child: const Text('아니오')),
-                                    ],
-                                  ));
-                                },
                               ),
-                            ),
-                            DataCell(ElevatedButton(
-                                onPressed: () {
-                                  Get.to(const LessonListMain(), arguments: course);
-                                },
-                                child: const Text('보기'))),
-                          ]);
-                        }),
-                      );
+                              DataCell(ElevatedButton(
+                                  onPressed: () {
+                                    Get.to(const LessonListMain(), arguments: course);
+                                  },
+                                  child: const Text('보기'))),
+                            ]);
+                          }),
+                        );
+                      } else {
+                        return DataTable2(
+                          columns: const [
+                            DataColumn2(label: Text('순서'), size: ColumnSize.S),
+                            DataColumn2(label: Text('코스'), size: ColumnSize.S),
+                            DataColumn2(label: Text('레슨개수'), size: ColumnSize.S),
+                            DataColumn2(label: Text('상태'), size: ColumnSize.S),
+                            DataColumn2(label: Text('레슨보기'), size: ColumnSize.S),
+                          ],
+                          rows: List<DataRow>.generate(courses.length, (index) {
+                            LessonCourse course = courses[index];
+                            int lessonLength = 0;
+                            for (dynamic lesson in course.lessons) {
+                              if (lesson is Map) {
+                                lessonLength++;
+                              }
+                            }
+                            return DataRow(cells: [
+                              DataCell(Text(course.orderId.toString())),
+                              DataCell(Text(course.title['en']!), onTap: () {
+                                courseDialog(course: course);
+                              }),
+                              DataCell(Text(lessonLength.toString())),
+                              DataCell(Icon(Icons.circle, color: course.isReleased ? Colors.green : Colors.red),
+                                  onTap: () {
+                                Get.dialog(AlertDialog(
+                                  content: const Text('상태를 변경하겠습니까?'),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          updateDB(
+                                              collection: LESSON_COURSES,
+                                              docId: course.id,
+                                              value: {IS_RELEASED: true});
+                                        },
+                                        child: const Text('게시중')),
+                                    TextButton(
+                                        onPressed: () {
+                                          updateDB(
+                                              collection: LESSON_COURSES,
+                                              docId: course.id,
+                                              value: {IS_RELEASED: false});
+                                        },
+                                        child: const Text('입력중')),
+                                  ],
+                                ));
+                              }),
+                              DataCell(ElevatedButton(
+                                  onPressed: () {
+                                    Get.to(const LessonListMain(), arguments: course);
+                                  },
+                                  child: const Text('보기'))),
+                            ]);
+                          }),
+                        );
+                      }
                     }
                   } else if (snapshot.hasError) {
                     return Text('에러: ${snapshot.error}');

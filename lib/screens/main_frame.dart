@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:podo_admin/feedback/feedback_main.dart';
 import 'package:podo_admin/screens/dashboard/dashboard_main.dart';
+import 'package:podo_admin/screens/feedback/feedback_main.dart';
 import 'package:podo_admin/screens/korean_bites/korean_bite_state_manager.dart';
 import 'package:podo_admin/screens/korean_bites/korean_bite_title_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_course_main.dart';
@@ -21,7 +21,6 @@ class MainFrame extends StatefulWidget {
 
 class _MainFrameState extends State<MainFrame> {
   final List<Widget> _buildScreens = [
-    const DashboardMain(),
     WritingMain(),
     FeedbackMain(),
     const KoreanBiteTitleMain(),
@@ -29,6 +28,7 @@ class _MainFrameState extends State<MainFrame> {
     LessonCourseMain(),
     ReadingTitleMain(),
     UserMain(),
+    const DashboardMain(),
     // const Research(),
   ];
 
@@ -52,11 +52,6 @@ class _MainFrameState extends State<MainFrame> {
                 minWidth: 100,
                 labelType: NavigationRailLabelType.all,
                 destinations: const [
-                  NavigationRailDestination(
-                    icon: Icon(Icons.home_outlined),
-                    selectedIcon: Icon(Icons.home),
-                    label: Text('대시보드'),
-                  ),
                   NavigationRailDestination(
                     icon: Icon(Icons.message_outlined),
                     selectedIcon: Icon(Icons.message_rounded),
@@ -92,6 +87,12 @@ class _MainFrameState extends State<MainFrame> {
                     selectedIcon: Icon(Icons.people_rounded),
                     label: Text('유저'),
                   ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.home_outlined),
+                    selectedIcon: Icon(Icons.home),
+                    label: Text('대시보드'),
+                  ),
+
                   // NavigationRailDestination(
                   //   icon: Icon(Icons.check_circle_outline),
                   //   selectedIcon: Icon(Icons.check_circle),

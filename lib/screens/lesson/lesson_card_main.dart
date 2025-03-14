@@ -24,6 +24,7 @@ import 'package:podo_admin/screens/writing/writing_question.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:responsive_framework/responsive_framework.dart';
 
 class LessonCardMain extends StatefulWidget {
   const LessonCardMain({Key? key}) : super(key: key);
@@ -819,9 +820,9 @@ class _LessonCardMainState extends State<LessonCardMain> {
       readingTitle = ReadingTitle.fromJson(snapshot.data() as Map<String, dynamic>);
     } else {
       readingTitle = ReadingTitle(isLesson: true);
-      if(course.id == '56034e93-6374-489b-a6c2-59e8ce42d83f') {
+      if (course.id == '56034e93-6374-489b-a6c2-59e8ce42d83f') {
         readingTitle.level = 0;
-      } else if(course.id == '27b73188-998d-4124-b604-177a8921d9df') {
+      } else if (course.id == '27b73188-998d-4124-b604-177a8921d9df') {
         readingTitle.level = 1;
       } else {
         readingTitle.level = 2;
@@ -834,35 +835,43 @@ class _LessonCardMainState extends State<LessonCardMain> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text('읽기 타이틀 추가하기'),
-            TextButton(onPressed: (){
-              Get.dialog(AlertDialog(
-                title: const Text('읽기를 삭제하겠습니까?'),
-                actions: [
-                  TextButton(onPressed: () async {
-                    Get.back();
-                    List<dynamic> lessons = course.lessons;
-                    lessons[lessonIndex].remove('readingId');
+            TextButton(
+                onPressed: () {
+                  Get.dialog(AlertDialog(
+                    title: const Text('읽기를 삭제하겠습니까?'),
+                    actions: [
+                      TextButton(
+                          onPressed: () async {
+                            Get.back();
+                            List<dynamic> lessons = course.lessons;
+                            lessons[lessonIndex].remove('readingId');
 
-                    FirebaseFirestore firestore = FirebaseFirestore.instance;
-                    DocumentReference readingTitleRef = firestore.collection('ReadingTitles').doc(readingTitle.id);
-                    DocumentReference lessonCourseRef = firestore.collection('LessonCourses').doc(course.id);
-                    QuerySnapshot subReadingsSnapshot = await readingTitleRef.collection('Readings').get();
-                    WriteBatch batch = firestore.batch();
-                    for (QueryDocumentSnapshot doc in subReadingsSnapshot.docs) {
-                      batch.delete(doc.reference);
-                    }
-                    batch.delete(readingTitleRef);
-                    batch.update(lessonCourseRef, {'lessons': lessons});
-                    await batch.commit();
-                    lesson.readingId = null;
-                    Get.back();
-                  }, child: const Text('네')),
-                  TextButton(onPressed: (){
-                    Get.back();
-                  }, child: const Text('아니오'))
-                ],
-              ));
-            }, child: const Text('삭제'))
+                            FirebaseFirestore firestore = FirebaseFirestore.instance;
+                            DocumentReference readingTitleRef =
+                                firestore.collection('ReadingTitles').doc(readingTitle.id);
+                            DocumentReference lessonCourseRef =
+                                firestore.collection('LessonCourses').doc(course.id);
+                            QuerySnapshot subReadingsSnapshot = await readingTitleRef.collection('Readings').get();
+                            WriteBatch batch = firestore.batch();
+                            for (QueryDocumentSnapshot doc in subReadingsSnapshot.docs) {
+                              batch.delete(doc.reference);
+                            }
+                            batch.delete(readingTitleRef);
+                            batch.update(lessonCourseRef, {'lessons': lessons});
+                            await batch.commit();
+                            lesson.readingId = null;
+                            Get.back();
+                          },
+                          child: const Text('네')),
+                      TextButton(
+                          onPressed: () {
+                            Get.back();
+                          },
+                          child: const Text('아니오'))
+                    ],
+                  ));
+                },
+                child: const Text('삭제'))
           ],
         ),
         content: SingleChildScrollView(
@@ -966,9 +975,7 @@ class _LessonCardMainState extends State<LessonCardMain> {
                                   List<dynamic> lessons = course.lessons;
                                   lessons[lessonIndex]['readingId'] = readingTitle.id;
                                   await Database().updateField(
-                                      collection: 'LessonCourses',
-                                      docId: course.id,
-                                      map: {'lessons': lessons});
+                                      collection: 'LessonCourses', docId: course.id, map: {'lessons': lessons});
                                 },
                                 child: const Padding(
                                   padding: EdgeInsets.all(10),
@@ -1034,91 +1041,93 @@ class _LessonCardMainState extends State<LessonCardMain> {
           padding: const EdgeInsets.all(10),
           child: Column(
             children: [
-              GetBuilder<LessonStateManager>(
-                builder: (_) {
-                  return Row(
-                    children: [
-                      MyRadioBtn().getRadioButton(
-                          context: context,
-                          value: MyStrings.subject,
-                          groupValue: _controller.cardType,
-                          f: _controller.changeCardTypeRadio()),
-                      MyRadioBtn().getRadioButton(
-                          context: context,
-                          value: MyStrings.mention,
-                          groupValue: _controller.cardType,
-                          f: _controller.changeCardTypeRadio()),
-                      MyRadioBtn().getRadioButton(
-                          context: context,
-                          value: MyStrings.repeat,
-                          groupValue: _controller.cardType,
-                          f: _controller.changeCardTypeRadio()),
-                      MyRadioBtn().getRadioButton(
-                          context: context,
-                          value: MyStrings.tip,
-                          groupValue: _controller.cardType,
-                          f: _controller.changeCardTypeRadio()),
-                      MyRadioBtn().getRadioButton(
-                          context: context,
-                          value: MyStrings.explain,
-                          groupValue: _controller.cardType,
-                          f: _controller.changeCardTypeRadio()),
-                      MyRadioBtn().getRadioButton(
-                          context: context,
-                          value: MyStrings.quiz,
-                          groupValue: _controller.cardType,
-                          f: _controller.changeCardTypeRadio()),
-                      const SizedBox(width: 20),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            _controller.cards.add(LessonCard());
-                          });
-                        },
-                        child: const Row(
+              ResponsiveBreakpoints.of(context).largerThan(TABLET)
+                  ? GetBuilder<LessonStateManager>(
+                      builder: (_) {
+                        return Row(
                           children: [
-                            Icon(Icons.add),
-                            SizedBox(width: 10),
-                            Text('카드추가'),
-                          ],
-                        ),
-                      ),
-                      const Expanded(child: SizedBox.shrink()),
-                      Visibility(
-                        visible: lesson.hasOptions,
-                        child: Row(
-                          children: [
-                            ElevatedButton(
-                              onPressed: () {
-                                Get.dialog(AlertDialog(
-                                  content: getSummaryDialog(),
-                                ));
-                              },
-                              child: const Text('요약보기'),
-                            ),
+                            MyRadioBtn().getRadioButton(
+                                context: context,
+                                value: MyStrings.subject,
+                                groupValue: _controller.cardType,
+                                f: _controller.changeCardTypeRadio()),
+                            MyRadioBtn().getRadioButton(
+                                context: context,
+                                value: MyStrings.mention,
+                                groupValue: _controller.cardType,
+                                f: _controller.changeCardTypeRadio()),
+                            MyRadioBtn().getRadioButton(
+                                context: context,
+                                value: MyStrings.repeat,
+                                groupValue: _controller.cardType,
+                                f: _controller.changeCardTypeRadio()),
+                            MyRadioBtn().getRadioButton(
+                                context: context,
+                                value: MyStrings.tip,
+                                groupValue: _controller.cardType,
+                                f: _controller.changeCardTypeRadio()),
+                            MyRadioBtn().getRadioButton(
+                                context: context,
+                                value: MyStrings.explain,
+                                groupValue: _controller.cardType,
+                                f: _controller.changeCardTypeRadio()),
+                            MyRadioBtn().getRadioButton(
+                                context: context,
+                                value: MyStrings.quiz,
+                                groupValue: _controller.cardType,
+                                f: _controller.changeCardTypeRadio()),
                             const SizedBox(width: 20),
                             ElevatedButton(
                               onPressed: () {
-                                Get.dialog(AlertDialog(
-                                  content: getWritingDialog(),
-                                ));
+                                setState(() {
+                                  _controller.cards.add(LessonCard());
+                                });
                               },
-                              child: const Text('쓰기보기'),
+                              child: const Row(
+                                children: [
+                                  Icon(Icons.add),
+                                  SizedBox(width: 10),
+                                  Text('카드추가'),
+                                ],
+                              ),
                             ),
-                            const SizedBox(width: 20),
-                            ElevatedButton(
-                              onPressed: () {
-                                openReadingTitleDialog();
-                              },
-                              child: const Text('읽기보기'),
-                            ),
+                            const Expanded(child: SizedBox.shrink()),
+                            Visibility(
+                              visible: lesson.hasOptions,
+                              child: Row(
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Get.dialog(AlertDialog(
+                                        content: getSummaryDialog(),
+                                      ));
+                                    },
+                                    child: const Text('요약보기'),
+                                  ),
+                                  const SizedBox(width: 20),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Get.dialog(AlertDialog(
+                                        content: getWritingDialog(),
+                                      ));
+                                    },
+                                    child: const Text('쓰기보기'),
+                                  ),
+                                  const SizedBox(width: 20),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      openReadingTitleDialog();
+                                    },
+                                    child: const Text('읽기보기'),
+                                  ),
+                                ],
+                              ),
+                            )
                           ],
-                        ),
-                      )
-                    ],
-                  );
-                },
-              ),
+                        );
+                      },
+                    )
+                  : const SizedBox.shrink(),
               Expanded(
                 child: FutureBuilder(
                   future: _controller.futureList,

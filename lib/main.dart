@@ -6,6 +6,8 @@ import 'package:podo_admin/screens/main_frame.dart';
 import 'package:podo_admin/screens/value/color_schemes.g.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:responsive_framework/responsive_framework.dart';
+
 
 
 void main() async {
@@ -33,6 +35,14 @@ class MyApp extends StatelessWidget {
       }
     });
     return GetMaterialApp(
+      builder: (context, child) => ResponsiveBreakpoints.builder(
+        child: child!,
+        breakpoints: [
+          const Breakpoint(start: 0, end: 450, name: MOBILE),
+          const Breakpoint(start: 451, end: 800, name: TABLET),
+          const Breakpoint(start: 801, end: 1920, name: DESKTOP),
+        ]
+      ),
       title: 'Flutter Demo',
       theme: ThemeData(
         useMaterial3: false,

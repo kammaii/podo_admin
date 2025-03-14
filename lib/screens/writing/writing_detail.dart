@@ -151,21 +151,13 @@ class _WritingDetailState extends State<WritingDetail> {
                   ),
                   const SizedBox(width: 20),
                   writing.isPremiumUser
-                      ? Container(
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: Theme.of(context).colorScheme.primaryContainer),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                            child: Text(
-                              'Premium',
-                              style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer),
-                            ),
-                          ),
-                        )
+                      ? const Icon(
+                    Icons.workspace_premium,
+                    color: Colors.deepPurple,
+                  )
                       : const SizedBox.shrink(),
-                  const SizedBox(width: 20),
-                  Text('${writing.userId.substring(0, 5)}: ${writing.userName}', textScaleFactor: 2),
+                  const SizedBox(width: 10),
+                  Text('${writing.userName} | ${writing.userId.substring(0, 8)}', textScaleFactor: 1.5),
                   Visibility(
                     visible: controller.statusRadio == '신규',
                     child: Expanded(
@@ -182,18 +174,12 @@ class _WritingDetailState extends State<WritingDetail> {
                   )
                 ],
               ),
-              const SizedBox(height: 20),
+              const Divider(height: 20),
+              //Text('ID: ${writing.id}'),
+              //const SizedBox(height: 10),
               Row(
                 children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Text(writing.questionTitle, textScaleFactor: 2),
-                        const SizedBox(width: 20),
-                        Text('( ${writing.id.substring(0, 8)}... )'),
-                      ],
-                    ),
-                  ),
+                  Expanded(child: Text(writing.questionTitle, textScaleFactor: 2)),
                   Row(
                     children: [
                       IconButton(
@@ -202,7 +188,7 @@ class _WritingDetailState extends State<WritingDetail> {
                             controller.getWriting(isNext: false);
                           });
                         },
-                        icon: const Icon(Icons.arrow_circle_left_outlined),
+                        icon: const Icon(Icons.arrow_circle_left_outlined, color: Colors.deepPurple,),
                         iconSize: 30,
                         tooltip: '이전교정',
                       ),
@@ -212,7 +198,7 @@ class _WritingDetailState extends State<WritingDetail> {
                             controller.getWriting(isNext: true);
                           });
                         },
-                        icon: const Icon(Icons.arrow_circle_right_outlined),
+                        icon: const Icon(Icons.arrow_circle_right_outlined, color: Colors.deepPurple),
                         iconSize: 30,
                         tooltip: '다음교정',
                       ),
@@ -247,6 +233,17 @@ class _WritingDetailState extends State<WritingDetail> {
                     child: const Text(
                       'Perfect',
                       style: TextStyle(color: Colors.blueAccent),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        writing.comments = MyStrings.greeting;
+                      });
+                    },
+                    child: const Text(
+                      '반가워요',
+                      style: TextStyle(color: Colors.deepPurple),
                     ),
                   ),
                   TextButton(

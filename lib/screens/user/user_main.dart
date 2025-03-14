@@ -43,6 +43,7 @@ class _UserMainState extends State<UserMain> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('유저'),
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),

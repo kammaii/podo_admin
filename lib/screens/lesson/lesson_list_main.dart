@@ -12,6 +12,7 @@ import 'package:podo_admin/screens/lesson/lesson.dart';
 import 'package:podo_admin/screens/lesson/lesson_card_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_course.dart';
 import 'package:podo_admin/screens/lesson/lesson_state_manager.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class LessonListMain extends StatefulWidget {
   const LessonListMain({Key? key}) : super(key: key);
@@ -102,88 +103,186 @@ class _LessonListMainState extends State<LessonListMain> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        const Text('타입', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        const SizedBox(width: 20),
-                        ToggleButtons(
-                          isSelected: typeToggle,
-                          onPressed: (int index) {
-                            typeToggle[0] = index == 0;
-                            typeToggle[1] = index == 1;
-                            if (index == 1) {
-                              lesson.type = TYPE_PRACTICE;
-                              lesson.hasOptions = false;
-                              optionsToggle[0] = false;
-                              optionsToggle[1] = true;
-                              lesson.isFree = false;
-                              isFreeToggle[0] = false;
-                              isFreeToggle[1] = true;
-                            } else {
-                              lesson.type = TYPE_LESSON;
-                            }
-                            controller.update();
-                          },
-                          borderRadius: const BorderRadius.all(Radius.circular(10)),
-                          children: [
-                            Padding(padding: const EdgeInsets.symmetric(horizontal: 10), child: Text(TYPE_LESSON)),
-                            Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 10), child: Text(TYPE_PRACTICE)),
-                          ],
-                        ),
-                        const SizedBox(width: 20),
-                        const Text('요약/쓰기 유무', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        const SizedBox(width: 20),
-                        ToggleButtons(
-                          isSelected: optionsToggle,
-                          onPressed: (int index) {
-                            optionsToggle[0] = index == 0;
-                            optionsToggle[1] = index == 1;
-                            index == 0 ? lesson.hasOptions = true : lesson.hasOptions = false;
-                            controller.update();
-                          },
-                          borderRadius: const BorderRadius.all(Radius.circular(10)),
-                          children: const [
-                            Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('있음')),
-                            Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('없음')),
-                          ],
-                        ),
-                        const SizedBox(width: 20),
-                        const Text('레슨무료', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        const SizedBox(width: 20),
-                        ToggleButtons(
-                          isSelected: isFreeToggle,
-                          onPressed: (int index) {
-                            isFreeToggle[0] = index == 0;
-                            isFreeToggle[1] = index == 1;
-                            index == 0 ? lesson.isFree = true : lesson.isFree = false;
-                            controller.update();
-                          },
-                          borderRadius: const BorderRadius.all(Radius.circular(10)),
-                          children: const [
-                            Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('O')),
-                            Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('X')),
-                          ],
-                        ),
-                        const SizedBox(width: 20),
-                        const Text('옵션무료', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        const SizedBox(width: 20),
-                        ToggleButtons(
-                          isSelected: isFreeOptionToggle,
-                          onPressed: (int index) async {
-                            isFreeOptionToggle[0] = index == 0;
-                            isFreeOptionToggle[1] = index == 1;
-                            index == 0 ? lesson.isFreeOptions = true : lesson.isFreeOptions = false;
-                            controller.update();
-                          },
-                          borderRadius: const BorderRadius.all(Radius.circular(10)),
-                          children: const [
-                            Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('O')),
-                            Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('X')),
-                          ],
-                        ),
-                      ],
-                    ),
+                    ResponsiveBreakpoints.of(context).largerThan(TABLET)
+                        ? Row(
+                            children: [
+                              const Text('타입', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              const SizedBox(width: 20),
+                              ToggleButtons(
+                                isSelected: typeToggle,
+                                onPressed: (int index) {
+                                  typeToggle[0] = index == 0;
+                                  typeToggle[1] = index == 1;
+                                  if (index == 1) {
+                                    lesson.type = TYPE_PRACTICE;
+                                    lesson.hasOptions = false;
+                                    optionsToggle[0] = false;
+                                    optionsToggle[1] = true;
+                                    lesson.isFree = false;
+                                    isFreeToggle[0] = false;
+                                    isFreeToggle[1] = true;
+                                  } else {
+                                    lesson.type = TYPE_LESSON;
+                                  }
+                                  controller.update();
+                                },
+                                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                children: [
+                                  Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                                      child: Text(TYPE_LESSON)),
+                                  Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                                      child: Text(TYPE_PRACTICE)),
+                                ],
+                              ),
+                              const SizedBox(width: 20),
+                              const Text('요약/쓰기 유무', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              const SizedBox(width: 20),
+                              ToggleButtons(
+                                isSelected: optionsToggle,
+                                onPressed: (int index) {
+                                  optionsToggle[0] = index == 0;
+                                  optionsToggle[1] = index == 1;
+                                  index == 0 ? lesson.hasOptions = true : lesson.hasOptions = false;
+                                  controller.update();
+                                },
+                                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                children: const [
+                                  Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('있음')),
+                                  Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('없음')),
+                                ],
+                              ),
+                              const SizedBox(width: 20),
+                              const Text('레슨무료', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              const SizedBox(width: 20),
+                              ToggleButtons(
+                                isSelected: isFreeToggle,
+                                onPressed: (int index) {
+                                  isFreeToggle[0] = index == 0;
+                                  isFreeToggle[1] = index == 1;
+                                  index == 0 ? lesson.isFree = true : lesson.isFree = false;
+                                  controller.update();
+                                },
+                                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                children: const [
+                                  Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('O')),
+                                  Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('X')),
+                                ],
+                              ),
+                              const SizedBox(width: 20),
+                              const Text('옵션무료', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              const SizedBox(width: 20),
+                              ToggleButtons(
+                                isSelected: isFreeOptionToggle,
+                                onPressed: (int index) async {
+                                  isFreeOptionToggle[0] = index == 0;
+                                  isFreeOptionToggle[1] = index == 1;
+                                  index == 0 ? lesson.isFreeOptions = true : lesson.isFreeOptions = false;
+                                  controller.update();
+                                },
+                                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                children: const [
+                                  Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('O')),
+                                  Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('X')),
+                                ],
+                              ),
+                            ],
+                          )
+                        : Column(
+                            children: [
+                              Row(
+                                children: [
+                                  const Text('타입', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                  const SizedBox(width: 20),
+                                  ToggleButtons(
+                                    isSelected: typeToggle,
+                                    onPressed: (int index) {
+                                      typeToggle[0] = index == 0;
+                                      typeToggle[1] = index == 1;
+                                      if (index == 1) {
+                                        lesson.type = TYPE_PRACTICE;
+                                        lesson.hasOptions = false;
+                                        optionsToggle[0] = false;
+                                        optionsToggle[1] = true;
+                                        lesson.isFree = false;
+                                        isFreeToggle[0] = false;
+                                        isFreeToggle[1] = true;
+                                      } else {
+                                        lesson.type = TYPE_LESSON;
+                                      }
+                                      controller.update();
+                                    },
+                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                    children: [
+                                      Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                                          child: Text(TYPE_LESSON)),
+                                      Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                                          child: Text(TYPE_PRACTICE)),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 20),
+                                  const Text('요약/쓰기 유무',
+                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                  const SizedBox(width: 20),
+                                  ToggleButtons(
+                                    isSelected: optionsToggle,
+                                    onPressed: (int index) {
+                                      optionsToggle[0] = index == 0;
+                                      optionsToggle[1] = index == 1;
+                                      index == 0 ? lesson.hasOptions = true : lesson.hasOptions = false;
+                                      controller.update();
+                                    },
+                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                    children: const [
+                                      Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('있음')),
+                                      Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('없음')),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  const Text('레슨무료', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                  const SizedBox(width: 20),
+                                  ToggleButtons(
+                                    isSelected: isFreeToggle,
+                                    onPressed: (int index) {
+                                      isFreeToggle[0] = index == 0;
+                                      isFreeToggle[1] = index == 1;
+                                      index == 0 ? lesson.isFree = true : lesson.isFree = false;
+                                      controller.update();
+                                    },
+                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                    children: const [
+                                      Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('O')),
+                                      Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('X')),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 20),
+                                  const Text('옵션무료', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                  const SizedBox(width: 20),
+                                  ToggleButtons(
+                                    isSelected: isFreeOptionToggle,
+                                    onPressed: (int index) async {
+                                      isFreeOptionToggle[0] = index == 0;
+                                      isFreeOptionToggle[1] = index == 1;
+                                      index == 0 ? lesson.isFreeOptions = true : lesson.isFreeOptions = false;
+                                      controller.update();
+                                    },
+                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                    children: const [
+                                      Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('O')),
+                                      Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('X')),
+                                    ],
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
                     const SizedBox(height: 20),
                     Row(
                       children: [
@@ -357,178 +456,120 @@ class _LessonListMainState extends State<LessonListMain> {
             if (course.lessons.isEmpty) {
               return const Center(child: Text('연결된 레슨이 없습니다.'));
             } else {
-              return DataTable2(
-                  columns: const [
-                    DataColumn2(label: Text('순서'), size: ColumnSize.S),
-                    DataColumn2(label: Text('아이디'), size: ColumnSize.S),
-                    DataColumn2(label: Text('타입'), size: ColumnSize.S),
-                    DataColumn2(label: Text('레슨무료'), size: ColumnSize.S),
-                    DataColumn2(label: Text('옵션'), size: ColumnSize.S),
-                    DataColumn2(label: Text('옵션무료'), size: ColumnSize.S),
-                    DataColumn2(label: Text('타이틀'), size: ColumnSize.L),
-                    DataColumn2(label: Text('상태'), size: ColumnSize.S),
-                    DataColumn2(label: Text('태그'), size: ColumnSize.S),
-                    DataColumn2(label: Text('순서변경'), size: ColumnSize.S),
-                    DataColumn2(label: Text('삭제'), size: ColumnSize.S),
-                    DataColumn2(label: Text('레슨입력'), size: ColumnSize.S),
-                  ],
-                  rows: List<DataRow>.generate(course.lessons.length, (i) {
-                    int index = course.lessons.length - 1 - i;
-                    if (course.lessons[index] is Map) {
-                      Lesson lesson = Lesson.fromJson(course.lessons[index]);
-                      List<Widget> optionsIcon = [];
-                      if (lesson.hasOptions) {
-                        optionsIcon.add(const Icon(CupertinoIcons.pen, color: Colors.deepPurpleAccent));
-                      }
-                      if (lesson.readingId != null) {
-                        Color iconColor = lesson.isReadingReleased! ? Colors.deepPurpleAccent : Colors.grey;
-                        optionsIcon.add(
-                            GestureDetector(onTap: () {
-                              String titleMsg = lesson.isReadingReleased! ? '읽기를 비공개 하겠습니까?' : '읽기를 공개하겠습니까?';
-                              Get.dialog(AlertDialog(
-                                title: Text(titleMsg),
-                                actions: [
-                                  TextButton(onPressed: (){
-                                    Get.back();
-                                  }, child: const Text('아니오')),
-                                  TextButton(onPressed: (){
-                                    lesson.isReadingReleased = !lesson.isReadingReleased!;
-                                    course.lessons[index] = lesson.toJson();
-                                    updateLessons();
-                                    Database().updateField(collection: 'ReadingTitles', docId: lesson.readingId!, map: {'isReleased': lesson.isReadingReleased});
-                                  }, child: const Text('네')),
-                                ],
-                              ));
-                            }, child: Icon(CupertinoIcons.book, color: iconColor)));
-                      }
-                      if (lesson.speakingId != null) {
-                        Color iconColor = lesson.isSpeakingReleased! ? Colors.deepPurpleAccent : Colors.grey;
-                        optionsIcon.add(Icon(CupertinoIcons.text_bubble, color: iconColor));
-                      }
-                      return DataRow(cells: [
-                        DataCell(Text(index.toString())),
-                        DataCell(Text(lesson.id.substring(0, 8)), onTap: () {
-                          Clipboard.setData(ClipboardData(text: lesson.id));
-                          Get.snackbar('아이디가 클립보드에 저장되었습니다.', lesson.id, snackPosition: SnackPosition.BOTTOM);
-                        }),
-                        DataCell(Text(lesson.type)),
-                        DataCell(Text(lesson.isFree ? 'O' : 'X')),
-                        DataCell(Row(children: optionsIcon)),
-                        DataCell(Text(lesson.isFreeOptions != null && lesson.isFreeOptions! ? 'O' : 'X')),
-                        DataCell(Text(lesson.title[KO]), onTap: () {
-                          lessonDialog(index: index);
-                        }),
-                        DataCell(Icon(Icons.circle, color: lesson.isReleased ? Colors.green : Colors.red),
-                            onTap: () {
-                          Get.dialog(AlertDialog(
-                            content: const Text('상태를 변경하겠습니까?'),
-                            actions: [
-                              TextButton(
-                                  onPressed: () {
-                                    lesson.isReleased = true;
-                                    course.lessons[index] = lesson.toJson();
-                                    updateLessons();
-                                  },
-                                  child: const Text('게시중')),
-                              TextButton(
-                                  onPressed: () {
-                                    lesson.isReleased = false;
-                                    course.lessons[index] = lesson.toJson();
-                                    updateLessons();
-                                  },
-                                  child: const Text('입력중')),
-                            ],
-                          ));
-                        }),
-                        DataCell(Text(lesson.tag != null ? lesson.tag.toString() : ''), onTap: () {
-                          Get.dialog(
-                            AlertDialog(
-                              title: const Text('태그를 입력하세요'),
-                              content: MyTextField().getTextField(
-                                  controller: TextEditingController(text: lesson.tag),
-                                  fn: (String? value) {
-                                    lesson.tag = value!;
-                                  }),
+              if (ResponsiveBreakpoints.of(context).largerThan(TABLET)) {
+                return DataTable2(
+                    columns: const [
+                      DataColumn2(label: Text('순서'), size: ColumnSize.S),
+                      DataColumn2(label: Text('아이디'), size: ColumnSize.S),
+                      DataColumn2(label: Text('타입'), size: ColumnSize.S),
+                      DataColumn2(label: Text('레슨무료'), size: ColumnSize.S),
+                      DataColumn2(label: Text('옵션'), size: ColumnSize.S),
+                      DataColumn2(label: Text('옵션무료'), size: ColumnSize.S),
+                      DataColumn2(label: Text('타이틀'), size: ColumnSize.L),
+                      DataColumn2(label: Text('상태'), size: ColumnSize.S),
+                      DataColumn2(label: Text('태그'), size: ColumnSize.S),
+                      DataColumn2(label: Text('순서변경'), size: ColumnSize.S),
+                      DataColumn2(label: Text('삭제'), size: ColumnSize.S),
+                      DataColumn2(label: Text('레슨입력'), size: ColumnSize.S),
+                    ],
+                    rows: List<DataRow>.generate(course.lessons.length, (i) {
+                      int index = course.lessons.length - 1 - i;
+                      if (course.lessons[index] is Map) {
+                        Lesson lesson = Lesson.fromJson(course.lessons[index]);
+                        List<Widget> optionsIcon = [];
+                        if (lesson.hasOptions) {
+                          optionsIcon.add(const Icon(CupertinoIcons.pen, color: Colors.deepPurpleAccent));
+                        }
+                        if (lesson.readingId != null) {
+                          Color iconColor = lesson.isReadingReleased! ? Colors.deepPurpleAccent : Colors.grey;
+                          optionsIcon.add(GestureDetector(
+                              onTap: () {
+                                String titleMsg = lesson.isReadingReleased! ? '읽기를 비공개 하겠습니까?' : '읽기를 공개하겠습니까?';
+                                Get.dialog(AlertDialog(
+                                  title: Text(titleMsg),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          Get.back();
+                                        },
+                                        child: const Text('아니오')),
+                                    TextButton(
+                                        onPressed: () {
+                                          lesson.isReadingReleased = !lesson.isReadingReleased!;
+                                          course.lessons[index] = lesson.toJson();
+                                          updateLessons();
+                                          Database().updateField(
+                                              collection: 'ReadingTitles',
+                                              docId: lesson.readingId!,
+                                              map: {'isReleased': lesson.isReadingReleased});
+                                        },
+                                        child: const Text('네')),
+                                  ],
+                                ));
+                              },
+                              child: Icon(CupertinoIcons.book, color: iconColor)));
+                        }
+                        if (lesson.speakingId != null) {
+                          Color iconColor = lesson.isSpeakingReleased! ? Colors.deepPurpleAccent : Colors.grey;
+                          optionsIcon.add(Icon(CupertinoIcons.text_bubble, color: iconColor));
+                        }
+                        return DataRow(cells: [
+                          DataCell(Text(index.toString())),
+                          DataCell(Text(lesson.id.substring(0, 8)), onTap: () {
+                            Clipboard.setData(ClipboardData(text: lesson.id));
+                            Get.snackbar('아이디가 클립보드에 저장되었습니다.', lesson.id, snackPosition: SnackPosition.BOTTOM);
+                          }),
+                          DataCell(Text(lesson.type)),
+                          DataCell(Text(lesson.isFree ? 'O' : 'X')),
+                          DataCell(Row(children: optionsIcon)),
+                          DataCell(Text(lesson.isFreeOptions != null && lesson.isFreeOptions! ? 'O' : 'X')),
+                          DataCell(Text(lesson.title[KO]), onTap: () {
+                            lessonDialog(index: index);
+                          }),
+                          DataCell(Icon(Icons.circle, color: lesson.isReleased ? Colors.green : Colors.red),
+                              onTap: () {
+                            Get.dialog(AlertDialog(
+                              content: const Text('상태를 변경하겠습니까?'),
                               actions: [
                                 TextButton(
                                     onPressed: () {
+                                      lesson.isReleased = true;
                                       course.lessons[index] = lesson.toJson();
                                       updateLessons();
                                     },
-                                    child: const Text('저장'))
+                                    child: const Text('게시중')),
+                                TextButton(
+                                    onPressed: () {
+                                      lesson.isReleased = false;
+                                      course.lessons[index] = lesson.toJson();
+                                      updateLessons();
+                                    },
+                                    child: const Text('입력중')),
                               ],
-                            ),
-                          );
-                        }),
-                        DataCell(_orderArrow(index)),
-                        DataCell(
-                          IconButton(
-                            icon: const Icon(
-                              Icons.delete,
-                              color: Colors.red,
-                            ),
-                            onPressed: () {
-                              Get.dialog(AlertDialog(
-                                title: const Text('정말 삭제하겠습니까?'),
-                                actions: [
-                                  TextButton(
-                                      onPressed: () {
-                                        Database().deleteDoc(collection: LESSON_COLLECTION, doc: lesson);
-                                        course.lessons.removeAt(index);
-                                        updateLessons();
-                                      },
-                                      child: const Text(
-                                        '네',
-                                        style: TextStyle(color: Colors.red),
-                                      )),
-                                  TextButton(
-                                      onPressed: () {
-                                        Get.back();
-                                      },
-                                      child: const Text('아니오')),
-                                ],
-                              ));
-                            },
-                          ),
-                        ),
-                        DataCell(ElevatedButton(
-                          child: const Text('보기'),
-                          onPressed: () {
-                            Get.to(const LessonCardMain(), arguments: {'course': course, 'index': index});
-                          },
-                        )),
-                      ]);
-                    } else {
-                      String category = course.lessons[index];
-                      return DataRow(
-                          cells: List<DataCell>.generate(9, (idx) {
-                        if (idx == 0) {
-                          return DataCell(Text(index.toString()));
-                        } else if (idx == 3) {
-                          return DataCell(Text(category), onTap: () {
+                            ));
+                          }),
+                          DataCell(Text(lesson.tag != null ? lesson.tag.toString() : ''), onTap: () {
                             Get.dialog(
                               AlertDialog(
-                                title: const Text('카테고리를 입력하세요'),
+                                title: const Text('태그를 입력하세요'),
                                 content: MyTextField().getTextField(
-                                    controller: TextEditingController(text: category),
+                                    controller: TextEditingController(text: lesson.tag),
                                     fn: (String? value) {
-                                      category = value!;
+                                      lesson.tag = value!;
                                     }),
                                 actions: [
                                   TextButton(
                                       onPressed: () {
-                                        course.lessons[index] = category;
+                                        course.lessons[index] = lesson.toJson();
                                         updateLessons();
                                       },
                                       child: const Text('저장'))
                                 ],
                               ),
                             );
-                          });
-                        } else if (idx == 6) {
-                          return DataCell(_orderArrow(index));
-                        } else if (idx == 8) {
-                          return DataCell(
+                          }),
+                          DataCell(_orderArrow(index)),
+                          DataCell(
                             IconButton(
                               icon: const Icon(
                                 Icons.delete,
@@ -540,6 +581,7 @@ class _LessonListMainState extends State<LessonListMain> {
                                   actions: [
                                     TextButton(
                                         onPressed: () {
+                                          Database().deleteDoc(collection: LESSON_COLLECTION, doc: lesson);
                                           course.lessons.removeAt(index);
                                           updateLessons();
                                         },
@@ -556,13 +598,227 @@ class _LessonListMainState extends State<LessonListMain> {
                                 ));
                               },
                             ),
-                          );
-                        } else {
-                          return const DataCell(SizedBox.shrink());
+                          ),
+                          DataCell(ElevatedButton(
+                            child: const Text('보기'),
+                            onPressed: () {
+                              Get.to(const LessonCardMain(), arguments: {'course': course, 'index': index});
+                            },
+                          )),
+                        ]);
+                      } else {
+                        String category = course.lessons[index];
+                        return DataRow(
+                            cells: List<DataCell>.generate(9, (idx) {
+                          if (idx == 0) {
+                            return DataCell(Text(index.toString()));
+                          } else if (idx == 3) {
+                            return DataCell(Text(category), onTap: () {
+                              Get.dialog(
+                                AlertDialog(
+                                  title: const Text('카테고리를 입력하세요'),
+                                  content: MyTextField().getTextField(
+                                      controller: TextEditingController(text: category),
+                                      fn: (String? value) {
+                                        category = value!;
+                                      }),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          course.lessons[index] = category;
+                                          updateLessons();
+                                        },
+                                        child: const Text('저장'))
+                                  ],
+                                ),
+                              );
+                            });
+                          } else if (idx == 6) {
+                            return DataCell(_orderArrow(index));
+                          } else if (idx == 8) {
+                            return DataCell(
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () {
+                                  Get.dialog(AlertDialog(
+                                    title: const Text('정말 삭제하겠습니까?'),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            course.lessons.removeAt(index);
+                                            updateLessons();
+                                          },
+                                          child: const Text(
+                                            '네',
+                                            style: TextStyle(color: Colors.red),
+                                          )),
+                                      TextButton(
+                                          onPressed: () {
+                                            Get.back();
+                                          },
+                                          child: const Text('아니오')),
+                                    ],
+                                  ));
+                                },
+                              ),
+                            );
+                          } else {
+                            return const DataCell(SizedBox.shrink());
+                          }
+                        }));
+                      }
+                    }));
+              } else {
+                return DataTable2(
+                    columns: const [
+                      DataColumn2(label: Text('순서'), size: ColumnSize.S),
+                      DataColumn2(label: Text('타입'), size: ColumnSize.L),
+                      DataColumn2(label: Text('옵션'), size: ColumnSize.S),
+                      DataColumn2(label: Text('타이틀'), size: ColumnSize.L),
+                      DataColumn2(label: Text('상태'), size: ColumnSize.S),
+                    ],
+                    rows: List<DataRow>.generate(course.lessons.length, (i) {
+                      int index = course.lessons.length - 1 - i;
+                      if (course.lessons[index] is Map) {
+                        Lesson lesson = Lesson.fromJson(course.lessons[index]);
+                        List<Widget> optionsIcon = [];
+                        if (lesson.hasOptions) {
+                          optionsIcon.add(const Icon(CupertinoIcons.pen, color: Colors.deepPurpleAccent));
                         }
-                      }));
-                    }
-                  }));
+                        if (lesson.readingId != null) {
+                          Color iconColor = lesson.isReadingReleased! ? Colors.deepPurpleAccent : Colors.grey;
+                          optionsIcon.add(GestureDetector(
+                              onTap: () {
+                                String titleMsg = lesson.isReadingReleased! ? '읽기를 비공개 하겠습니까?' : '읽기를 공개하겠습니까?';
+                                Get.dialog(AlertDialog(
+                                  title: Text(titleMsg),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          Get.back();
+                                        },
+                                        child: const Text('아니오')),
+                                    TextButton(
+                                        onPressed: () {
+                                          lesson.isReadingReleased = !lesson.isReadingReleased!;
+                                          course.lessons[index] = lesson.toJson();
+                                          updateLessons();
+                                          Database().updateField(
+                                              collection: 'ReadingTitles',
+                                              docId: lesson.readingId!,
+                                              map: {'isReleased': lesson.isReadingReleased});
+                                        },
+                                        child: const Text('네')),
+                                  ],
+                                ));
+                              },
+                              child: Icon(CupertinoIcons.book, color: iconColor)));
+                        }
+                        if (lesson.speakingId != null) {
+                          Color iconColor = lesson.isSpeakingReleased! ? Colors.deepPurpleAccent : Colors.grey;
+                          optionsIcon.add(Icon(CupertinoIcons.text_bubble, color: iconColor));
+                        }
+                        return DataRow(cells: [
+                          DataCell(Text(index.toString()), onTap: () {
+                            Get.to(const LessonCardMain(), arguments: {'course': course, 'index': index});
+                          }),
+                          DataCell(Text(lesson.type)),
+                          DataCell(Row(children: optionsIcon)),
+                          DataCell(Text(lesson.title[KO]), onTap: () {
+                            lessonDialog(index: index);
+                          }),
+                          DataCell(Icon(Icons.circle, color: lesson.isReleased ? Colors.green : Colors.red),
+                              onTap: () {
+                            Get.dialog(AlertDialog(
+                              content: const Text('상태를 변경하겠습니까?'),
+                              actions: [
+                                TextButton(
+                                    onPressed: () {
+                                      lesson.isReleased = true;
+                                      course.lessons[index] = lesson.toJson();
+                                      updateLessons();
+                                    },
+                                    child: const Text('게시중')),
+                                TextButton(
+                                    onPressed: () {
+                                      lesson.isReleased = false;
+                                      course.lessons[index] = lesson.toJson();
+                                      updateLessons();
+                                    },
+                                    child: const Text('입력중')),
+                              ],
+                            ));
+                          }),
+                        ]);
+                      } else {
+                        String category = course.lessons[index];
+                        return DataRow(
+                            cells: List<DataCell>.generate(9, (idx) {
+                          if (idx == 0) {
+                            return DataCell(Text(index.toString()));
+                          } else if (idx == 3) {
+                            return DataCell(Text(category), onTap: () {
+                              Get.dialog(
+                                AlertDialog(
+                                  title: const Text('카테고리를 입력하세요'),
+                                  content: MyTextField().getTextField(
+                                      controller: TextEditingController(text: category),
+                                      fn: (String? value) {
+                                        category = value!;
+                                      }),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          course.lessons[index] = category;
+                                          updateLessons();
+                                        },
+                                        child: const Text('저장'))
+                                  ],
+                                ),
+                              );
+                            });
+                          } else if (idx == 6) {
+                            return DataCell(_orderArrow(index));
+                          } else if (idx == 8) {
+                            return DataCell(
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () {
+                                  Get.dialog(AlertDialog(
+                                    title: const Text('정말 삭제하겠습니까?'),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            course.lessons.removeAt(index);
+                                            updateLessons();
+                                          },
+                                          child: const Text(
+                                            '네',
+                                            style: TextStyle(color: Colors.red),
+                                          )),
+                                      TextButton(
+                                          onPressed: () {
+                                            Get.back();
+                                          },
+                                          child: const Text('아니오')),
+                                    ],
+                                  ));
+                                },
+                              ),
+                            );
+                          } else {
+                            return const DataCell(SizedBox.shrink());
+                          }
+                        }));
+                      }
+                    }));
+              }
             }
           })),
         ]),

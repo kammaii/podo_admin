@@ -7,6 +7,7 @@ import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/screens/podo_message/podo_message_state_manager.dart';
 import 'package:podo_admin/screens/podo_message/podo_message_reply.dart';
 import 'package:podo_admin/screens/user/user_main.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class CloudMessageReplyMain extends StatefulWidget {
   CloudMessageReplyMain({Key? key}) : super(key: key);
@@ -26,11 +27,6 @@ class _CloudMessageReplyMainState extends State<CloudMessageReplyMain> {
 
   @override
   Widget build(BuildContext context) {
-    List<bool> selector = [true, false];
-    const List<Widget> selectorWidget = [
-      SizedBox(width: 60, child: Center(child: Text('미선정'))),
-      SizedBox(width: 60, child: Center(child: Text('선정')))
-    ];
     controller.getReplies(isSelected: false);
 
     Widget getRadioBtn(String title) {
@@ -71,7 +67,6 @@ class _CloudMessageReplyMainState extends State<CloudMessageReplyMain> {
                       ],
                       rows: List<DataRow>.generate(controller.replies.length, (index) {
                         PodoMessageReply reply = controller.replies[index];
-                        reply.isSelected ? selector = [false, true] : selector = [true, false];
 
                         return DataRow(cells: [
                           DataCell(Text((controller.replies.length - index).toString())),
@@ -79,11 +74,11 @@ class _CloudMessageReplyMainState extends State<CloudMessageReplyMain> {
                             Get.dialog(AlertDialog(
                               content: Text(reply.reply),
                             ));
-                          }, onDoubleTap: () {
+                          }),
+                          DataCell(Text(reply.originalReply != null ? reply.reply! : ' '), onTap: (){
                             final originalReply = reply.originalReply ?? reply.reply;
                             String newReply = '';
                             final tec = TextEditingController(text: originalReply);
-
                             Get.dialog(AlertDialog(
                               content: Row(
                                 children: [
@@ -114,7 +109,7 @@ class _CloudMessageReplyMainState extends State<CloudMessageReplyMain> {
                                                 reply.reply = newReply;
                                                 await Database().updateField(
                                                   collection:
-                                                      'PodoMessages/${controller.selectedMessageId}/Replies',
+                                                  'PodoMessages/${controller.selectedMessageId}/Replies',
                                                   docId: reply.id,
                                                   map: {'originalReply': originalReply, 'reply': newReply},
                                                 );
@@ -130,25 +125,26 @@ class _CloudMessageReplyMainState extends State<CloudMessageReplyMain> {
                               ),
                             ));
                           }),
-                          DataCell(Text(reply.originalReply != null ? reply.reply! : '')),
                           DataCell(Text(reply.userName), onDoubleTap: () {
                             Get.to(UserMain(userId: reply.userId));
                           }),
-                          DataCell(
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 5),
-                              child: ToggleButtons(
-                                  onPressed: (int toggleIndex) {
-                                    toggleIndex == 0 ? selector = [true, false] : selector = [false, true];
-                                    controller.setReplySelection(replyId: reply.id, selection: selector[1]);
-                                    controller.replies[index].isSelected = selector[1];
+                          DataCell(controller.replies[index].isSelected
+                              ? IconButton(
+                                  icon: const Icon(Icons.check_circle, color: Colors.greenAccent),
+                                  onPressed: () {
+                                    controller.setReplySelection(replyId: reply.id, selection: false);
+                                    controller.replies[index].isSelected = false;
                                     controller.update();
                                   },
-                                  isSelected: selector,
-                                  borderRadius: const BorderRadius.all(Radius.circular(20)),
-                                  children: selectorWidget),
-                            ),
-                          ),
+                                )
+                              : IconButton(
+                                  icon: const Icon(Icons.circle_outlined, color: Colors.grey),
+                                  onPressed: () {
+                                    controller.setReplySelection(replyId: reply.id, selection: true);
+                                    controller.replies[index].isSelected = true;
+                                    controller.update();
+                                  },
+                                )),
                         ]);
                       }),
                     );
