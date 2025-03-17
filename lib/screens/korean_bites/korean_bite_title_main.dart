@@ -175,6 +175,7 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
                   DataColumn2(label: Text('제목'), size: ColumnSize.L),
                   DataColumn2(label: Text('부제목'), size: ColumnSize.L),
                   DataColumn2(label: Text('태그'), size: ColumnSize.S),
+                  DataColumn2(label: Text('좋아요'), size: ColumnSize.S),
                   DataColumn2(label: Text('상태'), size: ColumnSize.S),
                   DataColumn2(label: Text('삭제'), size: ColumnSize.S),
                   DataColumn2(label: Text(''), size: ColumnSize.S),
@@ -260,6 +261,7 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
                         }),
                       );
                     }),
+                    DataCell(Text(koreanBite.like.toString())),
                     DataCell(Icon(Icons.circle, color: koreanBite.isReleased ? Colors.green : Colors.red),
                         onTap: () {
                       Get.dialog(AlertDialog(
@@ -420,6 +422,7 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
                   DataColumn2(label: Text('순서'), size: ColumnSize.S),
                   DataColumn2(label: Text('제목'), size: ColumnSize.L),
                   DataColumn2(label: Text('태그'), size: ColumnSize.S),
+                  DataColumn2(label: Text('좋아요'), size: ColumnSize.S),
                   DataColumn2(label: Text('상태'), size: ColumnSize.S),
                   DataColumn2(label: Text('알림'), size: ColumnSize.S),
                 ],
@@ -497,6 +500,7 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
                         }),
                       );
                     }),
+                    DataCell(Text(koreanBite.like.toString())),
                     DataCell(Icon(Icons.circle, color: koreanBite.isReleased ? Colors.green : Colors.red),
                         onTap: () {
                       Get.dialog(AlertDialog(

@@ -11,6 +11,7 @@ class KoreanBite {
   late DateTime date;
   late Map<String, dynamic> explain;
   bool isReleased = false;
+  late int like;
 
   KoreanBite(int index) {
     id = const Uuid().v4();
@@ -29,6 +30,7 @@ class KoreanBite {
   static const String DATE = 'date';
   static const String EXPLAIN = 'explain';
   static const String IS_RELEASED = 'isReleased';
+  static const String LIKE = 'like';
 
   KoreanBite.fromJson(Map<String, dynamic> json) {
     id = json[ID];
@@ -41,6 +43,7 @@ class KoreanBite {
     date = stamp.toDate();
     explain = json[EXPLAIN];
     isReleased = json[IS_RELEASED];
+    like = json[LIKE] ?? 0;
   }
 
   Map<String, dynamic> toJson() => {
