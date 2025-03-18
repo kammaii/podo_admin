@@ -140,6 +140,7 @@ class _DashboardMainState extends State<DashboardMain> {
                     List<double> activeTrialList = [];
                     List<double> activeTotalList = [];
                     List<double> signUpUserList = [];
+                    List<double> deletedUserList = [];
 
                     // Date의 역순으로 각 field의 List 생성
                     for (UserCount userCount in userCounts) {
@@ -155,13 +156,19 @@ class _DashboardMainState extends State<DashboardMain> {
                       activeTrialList.insert(0, userCount.activeTrial.toDouble());
                       activeTotalList.insert(0, userCount.activeTotal.toDouble());
                       signUpUserList.insert(0, userCount.signUpUsers.toDouble());
+                      deletedUserList.insert(0, userCount.deletedUsers.toDouble());
                     }
 
                     List<LineChartBarData> totalUserBars = [getBar(totalUserList, Colors.red)];
                     int totalUserMax = totalUserList.reduce((a, b) => a > b ? a : b).round();
 
-                    List<LineChartBarData> signUpUserBars = [getBar(signUpUserList, Colors.red)];
-                    int signUpUserMax = signUpUserList.reduce((a, b) => a > b ? a : b).round();
+                    List<LineChartBarData> userChangeBars = [
+                      getBar(signUpUserList, Colors.blueAccent),
+                      getBar(deletedUserList, Colors.red),
+                    ];
+
+                    int userChangeMax = signUpUserList.reduce((a, b) => a > b ? a : b).round();
+                    userChangeMax = deletedUserList.reduce((a, b) => a > b ? a : b).round();
 
                     List<LineChartBarData> activeUserBars = [
                       getBar(activeNewList, Colors.yellow),
@@ -203,12 +210,12 @@ class _DashboardMainState extends State<DashboardMain> {
                                           title: 'Total Users',
                                           bars: totalUserBars,
                                           maxCount: totalUserMax,
-                                          addMaxY: 3000),
+                                          addMaxY: 2900),
                                       const SizedBox(width: 30),
                                       getGraph(
                                           title: 'Status Ratio',
                                           bars: statusRatioBars,
-                                          maxCount: 100,
+                                          maxCount: 90,
                                           barTitles: [NEW, BASIC, PREMIUM, TRIAL]),
                                     ],
                                   ),
@@ -216,7 +223,11 @@ class _DashboardMainState extends State<DashboardMain> {
                                   Row(
                                     children: [
                                       getGraph(
-                                          title: 'SignUp Users', bars: signUpUserBars, maxCount: signUpUserMax),
+                                        title: 'User Change',
+                                        bars: userChangeBars,
+                                        maxCount: userChangeMax,
+                                        barTitles: ['SignUp', 'Deleted'],
+                                      ),
                                       const SizedBox(width: 30),
                                       getGraph(
                                           title: 'Active Users',
@@ -241,7 +252,12 @@ class _DashboardMainState extends State<DashboardMain> {
                                       maxCount: 100,
                                       barTitles: [NEW, BASIC, PREMIUM]),
                                   const SizedBox(width: 30),
-                                  getGraph(title: 'SignUp Users', bars: signUpUserBars, maxCount: signUpUserMax),
+                                  getGraph(
+                                    title: 'SignUp Users',
+                                    bars: userChangeBars,
+                                    maxCount: userChangeMax,
+                                    barTitles: ['SignUp', 'Deleted'],
+                                  ),
                                   const SizedBox(width: 30),
                                   getGraph(
                                       title: 'Active Users',

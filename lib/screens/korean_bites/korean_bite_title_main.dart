@@ -391,8 +391,10 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
 
                                             if (response.statusCode == 200) {
                                               print('fcm 전송 성공');
+                                              Get.snackbar('알람을 전송했습니다.', koreanBite.id, snackPosition: SnackPosition.BOTTOM);
                                             } else {
                                               print('오류 발생: ${response.statusCode}');
+                                              Get.snackbar('알람을 전송을 실패 했습니다.', response.statusCode.toString(), snackPosition: SnackPosition.BOTTOM);
                                             }
                                           },
                                           child: const Padding(
@@ -575,8 +577,11 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
 
                                             if (response.statusCode == 200) {
                                               print('fcm 전송 성공');
+                                              Get.snackbar('알람을 전송했습니다.', koreanBite.id, snackPosition: SnackPosition.BOTTOM);
+
                                             } else {
                                               print('오류 발생: ${response.statusCode}');
+                                              Get.snackbar('알람을 전송을 실패 했습니다.', response.statusCode.toString(), snackPosition: SnackPosition.BOTTOM);
                                             }
                                           },
                                           child: const Padding(
