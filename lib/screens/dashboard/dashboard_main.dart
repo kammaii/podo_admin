@@ -189,7 +189,7 @@ class _DashboardMainState extends State<DashboardMain> {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('목표 달성률: ${statusPremium / goal * 100}%',
+                        Text('목표 달성률: ${(statusPremium / goal * 100).toStringAsFixed(1)}%',
                             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 10),
                         LinearProgressIndicator(
