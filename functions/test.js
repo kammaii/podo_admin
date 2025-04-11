@@ -13,65 +13,132 @@ const revenueCatKey = 'sk_wFBDSaBEJaZWeecTyfYKNqHQmnIwT';
 
 admin.initializeApp();
 
+const mailTransport = nodemailer.createTransport({
+    host: "mail.podokorean.com",
+    port: 465,
+    secure: true,
+    auth: {
+        user: 'contact@podokorean.com',
+        pass: 'gabman84!',
+    },
+});
+
 async function test(context) {
-    const db = admin.firestore();
-try {
-        const en = await db.collection("Users").where("language", "==", "en").get();
-        const fr = await db.collection("Users").where("language", "==", "fr").get();
-        const de = await db.collection("Users").where("language", "==", "de").get();
-        const es = await db.collection("Users").where("language", "==", "es").get();
-        const id = await db.collection("Users").where("language", "==", "id").get();
-        const pt = await db.collection("Users").where("language", "==", "pt").get();
-        const ru = await db.collection("Users").where("language", "==", "ru").get();
 
-        const enUserCount = en.size;
-        const frUserCount = fr.size;
-        const deUserCount = de.size;
-        const esUserCount = es.size;
-        const idUserCount = id.size;
-        const ptUserCount = pt.size;
-        const ruUserCount = ru.size;
+  let payload = {
+    data: {
+     'tag': 'koreanBite',
+     'koreanBiteId': '6f23ea0d-960e-4db6-ba60-74f1eb9d0561',
+    },
+    notification: {
+      title: 'title',
+      body: 'content',
+    },
+    token: 'flOsINyaT1-iO-bDtUnIvu:APA91bGSC8vmswJRCQnXxsA9BP5urYQR0Vr_b_foaVVxRnwye4duBCLbS9XCsjG6pSmpTq5H1U9mJnU_PmLT-4kKsu2gLgRVA-nyZRL-JJw4bj2dNUB8dnE',
+  };
 
-        console.log(`Users with language "en": ${enUserCount}`);
-        console.log(`Users with language "fr": ${frUserCount}`);
-        console.log(`Users with language "de": ${deUserCount}`);
-        console.log(`Users with language "es": ${esUserCount}`);
-        console.log(`Users with language "id": ${idUserCount}`);
-        console.log(`Users with language "pt": ${ptUserCount}`);
-        console.log(`Users with language "ru": ${ruUserCount}`);
-
-        return { enUserCount, frUserCount };
-    } catch (error) {
-        console.error("Error counting users:", error);
-        throw error;
-    }
+  admin.messaging().send(payload).then((res) => {
+    console.log('알림 전송 성공:', res);
+  })
+  .catch((error) => {
+    console.log('알림 전송 실패:', error);
+  });
 }
+
 
 
 async function test2() {
-      let now = new Date();
-      const db = admin.firestore();
-    // 활성 유저 수
-    let activeNew = 0;
-    let activeBasic = 0;
-    let activeTrial = 0;
-    let activePremium = 0;
-    let signUpUsers = 0;
+  let userEmail = 'gabmanpark@gmail.com';
+  let displayName = 'park' || "there";
 
-    let aHourAgo = new Date();
-    aHourAgo.setHours(aHourAgo.getHours() - 1);
+  let mailOptions = {
+      from: '"Podo Korean" <contact@podokorean.com>' ,
+      to: 'kammaii@naver.com',
+      subject: '[Podo Korean] Welcome! Let’s Start Your Korean Journey Together 🌸',
+      html: `
+<head>
+  <meta charset="UTF-8" />
+  <title>Personal Thank‑You</title>
+  <style>
+    body { margin:0; padding:0; font-family: Georgia, 'Times New Roman', serif; background:#faf7ff; }
+    .wrapper { max-width:620px; margin:0 auto; background:#ffffff; padding:32px 28px; border-radius:10px; }
+    h1   { color:#6633cc; font-size:26px; margin:0 0 18px; }
+    p    { color:#4a4a4a; font-size:16px; line-height:1.6; margin:14px 0; }
+    em   { color:#6633cc; font-style:normal; font-weight:bold; }
+    .perks { background:#f3eeff; padding:18px 22px; border-radius:8px; }
+    .perks li { margin:8px 0; }
+    .footer { font-size:12px; color:#999999; margin-top:32px; text-align:center; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <!-- 인사말 -->
+    <h1>Hi&nbsp;<span style="color:#6633cc;">[Name]</span>,</h1>
 
-    let snapshot = await admin.firestore().collection('UserCounts')
-        .where('userCleanUpDate', '>=', aHourAgo)
-        .orderBy('userCleanUpDate', 'desc')
-        .limit(1)
-        .get();
-    if(snapshot.empty) {
-        console.log('Doc is not exists');
-        return;
-    }
-    await snapshot.docs[0].ref.update({'data': 'Good'});
-    console.log('User Count Update Completed');
+    <!-- 개인적 감사 -->
+    <p>
+      I’m <strong>Danny</strong>, the person behind <em>Podo Korean</em>.
+      I just noticed you upgraded to <em>Premium</em> and wanted to reach out <u>personally</u> to say
+      <strong>thank you</strong>. Knowing that you chose to trust my little purple app on your Korean‑learning
+      journey genuinely makes my day.
+    </p>
+
+    <!-- 따뜻한 배경 이야기 -->
+    <p>
+      When I began teaching Korean back in 2017, I dreamed of building a space where learners could feel both
+      <em>trustworthy</em> and <em>cared for</em>. Your support keeps that dream alive—and lets me keep adding new lessons,
+      readings, and surprises just for you.
+    </p>
+
+    <!-- 프리미엄 혜택(간결) -->
+    <div class="perks">
+      <p style="margin-top:0;"><strong>Because you’re Premium, here’s what’s waiting for you:</strong></p>
+      <ul style="padding-left:20px;">
+        <li>Full access to <strong>every lesson &amp; reading</strong>—no locks, no limits.</li>
+        <li><strong>Unlimited flashcards</strong> to collect, edit, and review anytime.</li>
+        <li>Priority <strong>writing corrections</strong> from native teachers.</li>
+        <li>A downloadable <strong>Hangul workbook</strong> for offline practice.</li>
+        <li>And, of course, <strong>zero ads</strong>—just pure, focused learning.</li>
+      </ul>
+    </div>
+
+    <!-- 개인적 초대 -->
+    <p>
+      If you ever feel stuck—or simply want to share a win—hit reply.
+      Your email will land straight in my inbox, and I’ll be happy to help.
+    </p>
+
+    <!-- 마무리 -->
+    <p>
+      Thank you again for believing in <em>Podo Korean</em>.
+      Let’s make your Korean sparkle together!
+    </p>
+
+    <p style="margin-top:32px;">
+      Warm hugs from Seoul,<br />
+      <strong>Danny</strong><br />
+      Creator &amp; Teacher, Podo Korean
+    </p>
+
+    <!-- 푸터 -->
+    <p class="footer">
+      © 2025 Podo Korean. All rights reserved.<br />
+      Need anything? Reply to this email or adjust preferences <a href="[MANAGE_LINK]">here</a>.
+    </p>
+  </div>
+</body>
+      `,
+  };
+
+  mailTransport.sendMail(mailOptions)
+      .then(() => {
+        console.log('이메일 전송 성공');
+      })
+      .catch((error) => {
+        console.error('이메일 전송 실패:', error);
+      });
 }
+
+
 
 test2();

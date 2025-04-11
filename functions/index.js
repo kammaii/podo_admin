@@ -10,6 +10,7 @@ const deeplKey = functions.config().deepl.key;
 const translator = new deepl.Translator(deeplKey);
 const gmailKey = functions.config().gmail.key;
 const gmailKey_noReply = functions.config().gmail_noreply.key;
+const emailKey = functions.config().email.key;
 const axios = require('axios');
 const revenueCatKey = functions.config().revenuecat.key;
 
@@ -32,23 +33,38 @@ async function onDeeplFunction(request, response) {
 }
 
 const mailTransport = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'akorean.help@gmail.com',
-    pass: gmailKey,
-  },
+    host: "mail.podokorean.com",
+    port: 465,
+    secure: true,
+    auth: {
+        user: 'contact@podokorean.com',
+        pass: emailKey,
+    },
 });
 
+const mailTransportDanny = nodemailer.createTransport({
+    host: "mail.podokorean.com",
+    port: 465,
+    secure: true,
+    auth: {
+        user: 'danny@podokorean.com',
+        pass: emailKey,
+    },
+});
+
+
 const mailTransportNoReply = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'noreply.podokorean@gmail.com',
-    pass: gmailKey_noReply,
-  },
-  pool: true,  // 여러 개의 메일을 같은 연결에서 보냄 (인증 요청 최소화)
-  rateLimit: true,  // 속도 제한 활성화
-  maxConnections: 1,  // 동시 연결 개수 제한
-  maxMessages: 5,  // 한 번에 보낼 최대 이메일 개수
+    host: "mail.podokorean.com",
+    port: 465,
+    secure: true,
+    auth: {
+      user: 'noreply@podokorean.com',
+      pass: emailKey,
+    },
+    pool: true,
+    rateLimit: true,
+    maxConnections: 2,
+    maxMessages: 10,
 });
 
 async function onContactFunction(request, response) {
@@ -60,7 +76,7 @@ async function onContactFunction(request, response) {
 
   const mailOptions = {
     from: 'Contact Us <' + email + '>',
-    to: 'akorean.help@gmail.com',
+    to: 'contact@podokorean.com',
     subject: subject,
     text: message + "\n\n" + name+ "\n" + email,
   };
@@ -86,7 +102,7 @@ function onFeedbackSent(snap, context) {
   const message = feedbackData.message;
   const mailOptions = {
     from: 'Podo Korean <' + userEmail + '>',
-    to: 'akorean.help@gmail.com',
+    to: 'contact@podokorean.com',
     subject: 'Feedback from the user',
     text: message + "\n\n" + userEmail,
   };
@@ -359,7 +375,7 @@ async function sendEmail(userEmail, msgType) {
   let mailOptions;
   if(msgType == 0) {    // 계정 삭제 알림 1
       mailOptions = {
-        from: 'Podo Korean <noreply.podokorean@gmail.com>',
+        from: 'Podo Korean <noreply@podokorean.com>',
         to: userEmail,
         subject: 'Account Deletion Notice',
         html: `
@@ -369,14 +385,14 @@ async function sendEmail(userEmail, msgType) {
           <p>We want to inform you that if you haven’t logged in for the past year, your account will be deleted within the next 7 days.</p>
           <p>Please be aware that once your account is deleted, you will lose access to any stored information or data, and account recovery will not be possible.</p>
           <p>However, if you log in before your account is deleted, it will automatically be transitioned to an active status.</p>
-          <p>If you have any questions or need assistance regarding your account, please feel free to <a href="mailto:akorean.help@gmail.com">contact us</a>. We are here to help.</p>
+          <p>If you have any questions or need assistance regarding your account, please feel free to <a href="mailto:contact@podokorean.com">contact us</a>. We are here to help.</p>
           <p>Thank you.</p>
           <p>Podo Korean</p>
         `,
       };
   } else if (msgType == 1) {    // 계정 삭제 알림 2
     mailOptions = {
-          from: 'Podo Korean <noreply.podokorean@gmail.com>',
+          from: 'Podo Korean <noreply@podokorean.com>',
           to: userEmail,
           subject: 'Account Deletion Notice',
           text: 'Hello,\n\nThank you for using Podo Korean.\n\nWe regularly review unused accounts for customer account security and data management.\n\nAs previously notified, accounts that have not logged in for over a year will be automatically deleted.\n\nRegrettably, your account has been automatically deleted because you have not logged in for a week since the notification a week ago.\n\nTherefore, it is not possible to recover any data.\n\nThank you once again for using Podo Korean.\n\nWe are committed to continually improving our service to offer a better experience.\n\nThank you.\n\nThe Podo Korean'
@@ -494,6 +510,183 @@ function onKoreanBiteFunction(request, response) {
     });
 }
 
+async function sendWelcomeEmail(user) {
+  let userEmail = user.email;
+  let displayName = user.displayName || "there";
+
+  let mailOptions = {
+      from: 'Podo Korean <contact@podokorean.com>',
+      to: userEmail,
+      subject: '[Podo Korean] 안녕하세요? Let’s Start Your Korean Journey Together 🌸',
+      html: `
+      <head>
+        <meta charset="UTF-8" />
+        <style>
+            /* 기본 리셋 & 간단한 인라인 스타일 */
+            body { margin:0; padding:0; font-family: Arial, Helvetica, sans-serif; background:#f7f7f7; }
+            .container { max-width:600px; margin:0 auto; background:#ffffff; padding:24px; }
+            h1 { color:#6c2bd9; font-size:24px; margin-bottom:12px; }
+            h2 { color:#333333; font-size:18px; margin:24px 0 8px; }
+            p  { color:#555555; line-height:1.6; margin:8px 0; }
+            ul { padding-left:20px; }
+            li { margin:6px 0; }
+            .button {
+              display:inline-block; background:#6c2bd9; color:#ffffff !important;
+              padding:12px 24px; border-radius:6px; text-decoration:none; font-weight:bold;
+            }
+            .footer { font-size:12px; color:#999999; margin-top:32px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <!-- 인사말 -->
+            <h1>Welcome to Podo Korean!</h1>
+            <p>Hi <strong>${displayName}</strong>,</p>
+            <p>Thank you for installing <strong>Podo Korean</strong>. We know learning a new language can feel overwhelming—so we’re here to make it simple, accurate, and fun.</p>
+
+            <!-- 핵심 가치 -->
+            <h2>Why Podo Korean?</h2>
+            <p>With bite‑sized lessons and a friendly community, you’ll start using real‑life Korean faster than you think.</p>
+
+            <!-- 기능 하이라이트 -->
+            <h2>Here’s what you can try today:</h2>
+            <ul>
+              <li>📚 <strong>Topic &amp; Grammar Modes</strong> – follow a structured path or focus on specific points</li>
+              <li>✨ <strong>Korean Bites</strong> – master one useful phrase in just 10 seconds a day</li>
+              <li>📝 <strong>Writing Corrections</strong> – receive quick feedback from native teachers</li>
+              <li>🤝 <strong>Community</strong> – ask questions, share wins, and stay motivated together</li>
+            </ul>
+
+            <!-- 지원 안내 -->
+            <p>Any questions? Just reply to this email—we’re always happy to help.</p>
+
+            <!-- 서명 -->
+            <p>Happy learning, and see you in the app!<br /><br />
+               Warm regards,<br />
+               <strong>Danny</strong><br />
+               Podo Korean Team</p>
+
+            <!-- 푸터 -->
+            <p class="footer">
+              © 2023 Podo Korean. All rights reserved.<br />
+            </p>
+          </div>
+        </body>
+      `,
+  };
+
+  return mailTransport.sendMail(mailOptions)
+      .then(() => {
+        console.log('이메일 전송 성공');
+        response.set('Access-Control-Allow-Origin', '*');
+        response.status(200).send('Email sent');
+        return null;
+      })
+      .catch((error) => {
+        console.error('이메일 전송 실패:', error);
+        response.set('Access-Control-Allow-Origin', '*');
+        response.status(500).send('ERROR');
+        return null;
+      });
+}
+
+async function sendPremiumEmail(request, response) {
+    let userEmail = request.body['email'];
+    let userName = request.body['name'];
+    let results = [];
+    const mailOptions = {
+        from: '정우 | Danny <danny@podokorean.com>',
+        to: userEmail,
+        subject: '[Podo Korean] 고맙습니다!',
+        html: '
+            <head>
+              <meta charset="UTF-8" />
+              <title>Personal Thank‑You</title>
+              <style>
+                body { margin:0; padding:0; font-family: Georgia, 'Times New Roman', serif; background:#faf7ff; }
+                .wrapper { max-width:620px; margin:0 auto; background:#ffffff; padding:32px 28px; border-radius:10px; }
+                h1   { color:#6633cc; font-size:26px; margin:0 0 18px; }
+                p    { color:#4a4a4a; font-size:16px; line-height:1.6; margin:14px 0; }
+                em   { color:#6633cc; font-style:normal; font-weight:bold; }
+                .perks { background:#f3eeff; padding:18px 22px; border-radius:8px; }
+                .perks li { margin:8px 0; }
+                .footer { font-size:12px; color:#999999; margin-top:32px; text-align:center; }
+              </style>
+            </head>
+            <body>
+              <div class="wrapper">
+                <!-- 인사말 -->
+                <h1>Hi&nbsp;<span style="color:#6633cc;">${userName}</span>,</h1>
+
+                <!-- 개인적 감사 -->
+                <p>
+                  I’m <strong>Danny</strong>, the person behind <em>Podo Korean</em>.
+                  I just noticed you upgraded to <em>Premium</em> and wanted to reach out <u>personally</u> to say
+                  <strong>thank you</strong>. Knowing that you chose to trust my little purple app on your Korean‑learning
+                  journey genuinely makes my day.
+                </p>
+
+                <!-- 따뜻한 배경 이야기 -->
+                <p>
+                  When I began teaching Korean back in 2017, I dreamed of building a space where learners could feel both
+                  <em>trustworthy</em> and <em>cared for</em>. Your support keeps that dream alive—and lets me keep adding new lessons,
+                  readings, and surprises just for you.
+                </p>
+
+                <!-- 프리미엄 혜택(간결) -->
+                <div class="perks">
+                  <p style="margin-top:0;"><strong>Because you’re Premium, here’s what’s waiting for you:</strong></p>
+                  <ul style="padding-left:20px;">
+                    <li>Full access to <strong>every lesson &amp; reading</strong>—no locks, no limits.</li>
+                    <li><strong>Unlimited flashcards</strong> to collect, edit, and review anytime.</li>
+                    <li>Priority <strong>writing corrections</strong> from native teachers.</li>
+                    <li>A downloadable <strong>Hangul workbook</strong> for offline practice.</li>
+                    <li>And, of course, <strong>zero ads</strong>—just pure, focused learning.</li>
+                  </ul>
+                </div>
+
+                <!-- 개인적 초대 -->
+                <p>
+                  If you ever feel stuck—or simply want to share a win—hit reply.
+                  Your email will land straight in my inbox, and I’ll be happy to help.
+                </p>
+
+                <!-- 마무리 -->
+                <p>
+                  Thank you again for believing in <em>Podo Korean</em>.
+                  Let’s make your Korean sparkle together!
+                </p>
+
+                <p style="margin-top:32px;">
+                  Warm hugs from Seoul,<br />
+                  <strong>정우 | Danny</strong><br />
+                  Creator &amp; Teacher, Podo Korean
+                </p>
+
+                <!-- 푸터 -->
+                <p class="footer">
+                  © 2023 Podo Korean. All rights reserved.<br />
+                </p>
+              </div>
+            </body>
+        ',
+      };
+
+      return mailTransportDanny.sendMail(mailOptions)
+        .then(() => {
+          console.log('이메일 전송 성공');
+          response.set('Access-Control-Allow-Origin', '*');
+          response.status(200).send('Email sent');
+          return null;
+        })
+        .catch((error) => {
+          console.error('이메일 전송 실패:', error);
+          response.set('Access-Control-Allow-Origin', '*');
+          response.status(500).send('ERROR');
+          return null;
+        });
+}
+
 
 
 exports.onWritingReply = functions.firestore.document('Writings/{writingId}').onUpdate(onWritingReplied);
@@ -504,4 +697,6 @@ exports.onContact = onRequest(onContactFunction);
 exports.onKoreanBiteFcm = onRequest(onKoreanBiteFunction);
 exports.onUserCount = functions.runWith({timeoutSeconds: 540}).pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun(userCount);
 exports.onUserCleanUp = functions.runWith({timeoutSeconds: 540}).pubsub.schedule('30 23 * * *').timeZone('Asia/Seoul').onRun(userCleanUp);
+//export.onSendWelcomeEmail = functions.auth.user().onCreate(sendWelcomeEmail);
+//exports.onSendPremiumEmail = onRequest(sendPremiumEmail);
 
