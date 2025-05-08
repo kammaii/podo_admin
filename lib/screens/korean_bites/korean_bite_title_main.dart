@@ -438,7 +438,7 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
                       selectedKoreanBite = koreanBite;
                       openKoreanBiteDialog();
                     }),
-                    DataCell(Text(koreanBite.tags.join(",").substring(0, 3)), onTap: () {
+                    DataCell(Text(koreanBite.tags.join(",")), onTap: () {
                       Get.dialog(
                         StatefulBuilder(builder: (context, setDialogState) {
                           return AlertDialog(

@@ -19,7 +19,6 @@ const zohoRefreshToken = functions.config().zoho.refreshToken;
 const zohoClientId = functions.config().zoho.clientId;
 const zohoClientSecret = functions.config().zoho.clientSecret;
 const { SendMailClient } = require("zeptomail");
-const zeptoToken = functions.config().zepto.token;
 
 
 admin.initializeApp();
@@ -38,41 +37,6 @@ async function onDeeplFunction(request, response) {
     response.set('Access-Control-Allow-Origin', '*');
     response.status(200).send(results);
 }
-
-const mailTransport = nodemailer.createTransport({
-    host: "smtp.zoho.com",
-    port: 465,
-    secure: true,
-    auth: {
-        user: 'contact@podokorean.com',
-        pass: emailKey,
-    },
-});
-
-const mailTransportDanny = nodemailer.createTransport({
-    host: "smtp.zoho.com",
-    port: 465,
-    secure: true,
-    auth: {
-        user: 'danny@podokorean.com',
-        pass: emailKey,
-    },
-});
-
-
-const mailTransportNoReply = nodemailer.createTransport({
-    host: "smtp.zoho.com",
-    port: 465,
-    secure: true,
-    auth: {
-      user: 'noreply@podokorean.com',
-      pass: emailKey,
-    },
-    pool: true,
-    rateLimit: true,
-    maxConnections: 2,
-    maxMessages: 10,
-});
 
 async function onContactFunction(request, response) {
     let body = request.body;
@@ -103,26 +67,36 @@ async function onContactFunction(request, response) {
     });
 }
 
-function onFeedbackSent(snap, context) {
+async function onFeedbackSent(snap, context) {
   const feedbackData = snap.data();
   const userEmail = feedbackData.email;
   const message = feedbackData.message;
-  const mailOptions = {
-    from: 'Podo Korean <' + userEmail + '>',
-    to: 'contact@podokorean.com',
-    subject: 'Feedback from the user',
-    text: message + "\n\n" + userEmail,
-  };
+  const url = 'https://api.zeptomail.com/v1.1/email';
+  const token = functions.config().zepto.token;
+  const client = new SendMailClient({ url, token });
 
-  return mailTransport.sendMail(mailOptions)
-    .then(() => {
-      console.log('이메일 전송 성공');
-      return null;
-    })
-    .catch((error) => {
-      console.error('이메일 전송 실패:', error);
-      return null;
-    });
+      try {
+          const response = await client.sendMail({
+            subject: '[Feedback] From Podo Korean app user',
+            from: {
+              address: 'contact@podokorean.com',
+              name: 'Podo Korean'
+            },
+            to: [
+              {
+                email_address: {
+                  address: 'contact@podokorean.com',
+                  name: 'Podo Korean'
+                }
+              }
+            ],
+            htmlbody: message + "\n\n" + userEmail
+          });
+
+          console.log("✅ Email sent via ZeptoMail:");
+        } catch (error) {
+          console.error("❌ ZeptoMail send error:", error);
+        }
 }
 
 function onPodoMsgActivated(change, context) {
@@ -381,20 +355,23 @@ async function userCount(context) {
 
 async function sendEmail(userEmail, msgType) {
   let url = "https://api.zeptomail.com/v1.1/email/template";
-  let templateToken;
-  const client = new SendMailClient({ url, zeptoToken });
-
-  if(msgType == 0) {    // 계정 삭제 알림 1
-    templateToken = functions.config().zepto.cleanup1;
-
-  } else if (msgType == 1) {    // 계정 삭제 알림 2
-    templateToken = functions.config().zepto.cleanup2;
+  const token = functions.config().zepto.token;
+  const templateKeys = {
+      0: functions.config().zepto.templates.cleanup1,
+      1: functions.config().zepto.templates.cleanup2,
+  };
+  const subjects = {
+      0: '[Podo Korean] Your account is scheduled for deletion ⏳',
+      1: '[Podo Korean] Your account has been deleted ✅'
   }
+  const template_key = templateKeys[msgType];
+  const emailSubject = subjects[msgType];
+  const client = new SendMailClient({ url, token });
 
   try {
       const response = await client.sendMail({
-        subject: 'Account Deletion Notice',
-        template_key: templateToken,
+        subject: emailSubject,
+        template_key,
         from: {
           address: "noreply@podokorean.com",
           name: "Podo Korean"
@@ -402,14 +379,16 @@ async function sendEmail(userEmail, msgType) {
         to: [
           {
             email_address: {
-              address: userEmail,
+              address: userEmail
             }
           }
-        ],
+        ]
       });
-      console.log("✅ Email sent via ZeptoMail:", response);
+      console.log("✅ Email sent via ZeptoMail:");
+      return true;
     } catch (error) {
       console.error("❌ ZeptoMail send error:", error);
+      return false;
     }
 }
 
@@ -423,7 +402,7 @@ async function userCleanUp(context) {
    const aYearAgo = new Date();
    aYearAgo.setMonth(now.getMonth() - 12);
    const aWeekAgo = new Date();
-   aWeekAgo.setDate(aWeekAgo.getDate() - 7)
+   aWeekAgo.setDate(aWeekAgo.getDate() - 7);
    let inactiveUsers = await admin.firestore().collection('Users')
        .where('dateSignIn', '<=', aYearAgo)
        .where('status', '!=', 2)
