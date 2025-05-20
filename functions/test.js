@@ -8,137 +8,169 @@ const KEY = "sk_wFBDSaBEJaZWeecTyfYKNqHQmnIwT";
 const USER_ID = "l9yvPV5AqOgErjuggMlptBrN4dG3";
 const gmailKey = 'utdu jhvp yrhm wrdp';
 const revenueCatKey = 'sk_wFBDSaBEJaZWeecTyfYKNqHQmnIwT';
-
+const fs = require("fs");
+const path = require("path");
+const { SendMailClient } = require("zeptomail");
 
 
 admin.initializeApp();
+const db = admin.firestore();
 
-const mailTransport = nodemailer.createTransport({
-    host: "mail.podokorean.com",
-    port: 465,
-    secure: true,
-    auth: {
-        user: 'contact@podokorean.com',
-        pass: 'gabman84!',
-    },
-});
-
-async function test(context) {
-
-  let payload = {
-    data: {
-     'tag': 'koreanBite',
-     'koreanBiteId': '6f23ea0d-960e-4db6-ba60-74f1eb9d0561',
-    },
-    notification: {
-      title: 'title',
-      body: 'content',
-    },
-    token: 'flOsINyaT1-iO-bDtUnIvu:APA91bGSC8vmswJRCQnXxsA9BP5urYQR0Vr_b_foaVVxRnwye4duBCLbS9XCsjG6pSmpTq5H1U9mJnU_PmLT-4kKsu2gLgRVA-nyZRL-JJw4bj2dNUB8dnE',
+async function sendZeptoEmail(userEmail, msgType) {
+  let url = "https://api.zeptomail.com/v1.1/email/template";
+  const token = functions.config().zepto.token;
+  const templateKeys = {
+      0: functions.config().zepto.templates.cleanup1,
+      1: functions.config().zepto.templates.cleanup2,
+      2: functions.config().zepto.templates.welcome,
+      3: functions.config().zepto.templates.welcome_with_workbook,
   };
+  const subjects = {
+      0: '[Podo Korean] Your account is scheduled for deletion ⏳',
+      1: '[Podo Korean] Your account has been deleted ✅',
+      2: 'Welcome to Podo Korean! Let’s start your journey 🌟',
+      3: 'Welcome to Podo Korean! Let’s start your journey 🌟',
+  }
+  const template_key = templateKeys[msgType];
+  const emailSubject = subjects[msgType];
+  const client = new SendMailClient({ url, token });
 
-  admin.messaging().send(payload).then((res) => {
-    console.log('알림 전송 성공:', res);
-  })
-  .catch((error) => {
-    console.log('알림 전송 실패:', error);
-  });
-}
-
-
-
-async function test2() {
-  let userEmail = 'gabmanpark@gmail.com';
-  let displayName = 'park' || "there";
-
-  let mailOptions = {
-      from: '"Podo Korean" <contact@podokorean.com>' ,
-      to: 'kammaii@naver.com',
-      subject: '[Podo Korean] Welcome! Let’s Start Your Korean Journey Together 🌸',
-      html: `
-<head>
-  <meta charset="UTF-8" />
-  <title>Personal Thank‑You</title>
-  <style>
-    body { margin:0; padding:0; font-family: Georgia, 'Times New Roman', serif; background:#faf7ff; }
-    .wrapper { max-width:620px; margin:0 auto; background:#ffffff; padding:32px 28px; border-radius:10px; }
-    h1   { color:#6633cc; font-size:26px; margin:0 0 18px; }
-    p    { color:#4a4a4a; font-size:16px; line-height:1.6; margin:14px 0; }
-    em   { color:#6633cc; font-style:normal; font-weight:bold; }
-    .perks { background:#f3eeff; padding:18px 22px; border-radius:8px; }
-    .perks li { margin:8px 0; }
-    .footer { font-size:12px; color:#999999; margin-top:32px; text-align:center; }
-  </style>
-</head>
-<body>
-  <div class="wrapper">
-    <!-- 인사말 -->
-    <h1>Hi&nbsp;<span style="color:#6633cc;">[Name]</span>,</h1>
-
-    <!-- 개인적 감사 -->
-    <p>
-      I’m <strong>Danny</strong>, the person behind <em>Podo Korean</em>.
-      I just noticed you upgraded to <em>Premium</em> and wanted to reach out <u>personally</u> to say
-      <strong>thank you</strong>. Knowing that you chose to trust my little purple app on your Korean‑learning
-      journey genuinely makes my day.
-    </p>
-
-    <!-- 따뜻한 배경 이야기 -->
-    <p>
-      When I began teaching Korean back in 2017, I dreamed of building a space where learners could feel both
-      <em>trustworthy</em> and <em>cared for</em>. Your support keeps that dream alive—and lets me keep adding new lessons,
-      readings, and surprises just for you.
-    </p>
-
-    <!-- 프리미엄 혜택(간결) -->
-    <div class="perks">
-      <p style="margin-top:0;"><strong>Because you’re Premium, here’s what’s waiting for you:</strong></p>
-      <ul style="padding-left:20px;">
-        <li>Full access to <strong>every lesson &amp; reading</strong>—no locks, no limits.</li>
-        <li><strong>Unlimited flashcards</strong> to collect, edit, and review anytime.</li>
-        <li>Priority <strong>writing corrections</strong> from native teachers.</li>
-        <li>A downloadable <strong>Hangul workbook</strong> for offline practice.</li>
-        <li>And, of course, <strong>zero ads</strong>—just pure, focused learning.</li>
-      </ul>
-    </div>
-
-    <!-- 개인적 초대 -->
-    <p>
-      If you ever feel stuck—or simply want to share a win—hit reply.
-      Your email will land straight in my inbox, and I’ll be happy to help.
-    </p>
-
-    <!-- 마무리 -->
-    <p>
-      Thank you again for believing in <em>Podo Korean</em>.
-      Let’s make your Korean sparkle together!
-    </p>
-
-    <p style="margin-top:32px;">
-      Warm hugs from Seoul,<br />
-      <strong>Danny</strong><br />
-      Creator &amp; Teacher, Podo Korean
-    </p>
-
-    <!-- 푸터 -->
-    <p class="footer">
-      © 2025 Podo Korean. All rights reserved.<br />
-      Need anything? Reply to this email or adjust preferences <a href="[MANAGE_LINK]">here</a>.
-    </p>
-  </div>
-</body>
-      `,
-  };
-
-  mailTransport.sendMail(mailOptions)
-      .then(() => {
-        console.log('이메일 전송 성공');
-      })
-      .catch((error) => {
-        console.error('이메일 전송 실패:', error);
+  try {
+      const response = await client.sendMail({
+        subject: emailSubject,
+        template_key,
+        from: {
+          address: "noreply@podokorean.com",
+          name: "Podo Korean"
+        },
+        to: [
+          {
+            email_address: {
+              address: userEmail
+            }
+          }
+        ]
       });
+      console.log("✅ Email sent via ZeptoMail:");
+      return true;
+    } catch (error) {
+      console.error("❌ ZeptoMail send error:", error);
+      return false;
+    }
+}
+
+async function refreshAccessToken() {
+    console.log('리프레시 토큰!');
+    const refreshToken = '1000.e56a5e2784e929544d344ba58bd292f8.8d03ef64c8d42c16d5ade89a22a5d671';
+    const clientId = '1000.Q1NC1OLW71KOOV956A8YKMBG3TDQRY';
+    const clientSecret = '45a63f72100797c5883b69c1988295e8fa4777247d';
+
+    const res = await fetch('https://accounts.zoho.com/oauth/v2/token', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({
+            refresh_token: refreshToken,
+            client_id: clientId,
+            client_secret: clientSecret,
+            grant_type: 'refresh_token',
+        })
+    });
+    const result = await res.json();
+
+    if(!result.access_token) {
+        throw new Error('Failed to refresh access token!');
+    }
+
+    return result.access_token;
+}
+
+async function getValidAccessToken() {
+    const docRef = admin.firestore().collection('Tokens').doc('zoho');
+    const doc = await docRef.get();
+
+    if(doc.exists) {
+        const data = doc.data();
+        const accessToken = data.access_token;
+        const issuedAt = data.access_token_on || 0;
+        const now = Date.now();
+        console.log('IssuedAt', data.access_token_on);
+        console.log('Now', now);
+
+        if((now - issuedAt) < 50 * 60 * 1000) {     // 50분
+            console.log('유효한 access 토큰!');
+            return accessToken;
+        }
+    }
+
+    const newToken = await refreshAccessToken();
+    console.log('뉴토큰!', newToken);
+
+    await docRef.update({
+        access_token: newToken,
+        access_token_on: Date.now(),
+    });
+
+    return newToken;
+
+}
+
+async function sendRequestToZoho(url, requestBody) {
+    let accessToken = await getValidAccessToken();
+
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+            Authorization: `Zoho-oauthtoken ${accessToken}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams(requestBody),
+    });
+
+    const result = await res.json();
+    console.log('Result', result);
+
+    if (result.status === 'error') {
+        throw new Error(result.message || 'Zoho API error');
+    }
+
+    return result;
+}
+
+async function test(request, response) {
+    try {
+
+        const email = 'kammaii@naver.com';
+        if(!email) return response.status(400).send('Missing email');
+
+        let requestBody = {
+            listkey: '3z6187e64413036ac5e15cc240c22e8660774c3bad914a0a1ed1639dbe18dead80',
+            resfmt: 'JSON',
+        }
+
+        const result = await sendRequestToZoho('https://campaigns.zoho.com/api/v1.1/getlistsubscribers', requestBody);
+        const contacts = result['list_of_details'] || [];
+        const emailExists = contacts.some(
+            (contact) => contact['contact_email'].toLowerCase() === email.toLowerCase()
+        );
+        console.log('EXISTS: ' + emailExists);
+
+        if(emailExists) {
+            console.log('이메일 구독중');
+            // 워크북 미포함
+            await sendZeptoEmail(email, 2);
+            return response.status(200).send('Sent welcome email without workbook');
+        } else {
+            console.log('신규 유저');
+            // 워크북 포함
+            await sendZeptoEmail(email, 3);
+            return response.status(200).send('Sent welcome email with workbook');
+        }
+
+    } catch (e) {
+        console.error('❌ Error adding contact to Zoho:', e.message);
+        return response.status(500).send({ success: false, message: e.message });
+    }
 }
 
 
-
-test2();
+test();

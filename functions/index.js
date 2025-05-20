@@ -353,27 +353,37 @@ async function userCount(context) {
     console.log('User Count Update Completed');
 }
 
-async function sendEmail(userEmail, msgType) {
+async function sendZeptoEmail(userEmail, msgType, mergeInfo = null) {
   let url = "https://api.zeptomail.com/v1.1/email/template";
   const token = functions.config().zepto.token;
   const templateKeys = {
       0: functions.config().zepto.templates.cleanup1,
       1: functions.config().zepto.templates.cleanup2,
+      2: functions.config().zepto.templates.welcome,
+      3: functions.config().zepto.templates.welcome_with_workbook,
   };
   const subjects = {
       0: '[Podo Korean] Your account is scheduled for deletion ⏳',
-      1: '[Podo Korean] Your account has been deleted ✅'
+      1: '[Podo Korean] Your account has been deleted ✅',
+      2: 'Welcome to Podo Korean! Let’s start your journey 🌟',
+      3: 'Welcome to Podo Korean! Let’s start your journey 🌟',
   }
   const template_key = templateKeys[msgType];
   const emailSubject = subjects[msgType];
   const client = new SendMailClient({ url, token });
+  let sender;
+  if(msgType == 2 || msgType == 3) {
+    sender = "contact@podokorean.com";
+  } else {
+    sender = "noreply@podokorean.com";
+  }
 
   try {
-      const response = await client.sendMail({
+    const emailPayload = {
         subject: emailSubject,
         template_key,
         from: {
-          address: "noreply@podokorean.com",
+          address: sender,
           name: "Podo Korean"
         },
         to: [
@@ -382,14 +392,20 @@ async function sendEmail(userEmail, msgType) {
               address: userEmail
             }
           }
-        ]
-      });
-      console.log("✅ Email sent via ZeptoMail:");
-      return true;
-    } catch (error) {
-      console.error("❌ ZeptoMail send error:", error);
-      return false;
+        ],
+    };
+
+    if(mergeInfo) {
+        emailPayload.merge_info = mergeInfo;
     }
+
+    const response = await client.sendMail(emailPayload);
+    console.log("✅ Email sent via ZeptoMail:");
+    return true;
+  } catch (error) {
+    console.error("❌ ZeptoMail send error:", error);
+    return false;
+  }
 }
 
 // 비활성 유저 계정 삭제 알림 코드
@@ -418,7 +434,7 @@ async function userCleanUp(context) {
            if(dateEmailSend < aWeekAgo) {
                console.log('REMOVE ACCOUNT');
                let userId = userDoc.get('id');
-               let emailResult = await sendEmail(email, 1); // 계정 삭제 이메일
+               let emailResult = await sendZeptoEmail(email, 1); // 계정 삭제 이메일
                if(emailResult) {
                    await admin.auth()
                      .deleteUser(userId)
@@ -438,7 +454,7 @@ async function userCleanUp(context) {
                console.log('Pending Account Deletion');
            }
        } else {
-           let emailResult = await sendEmail(email, 0); // 계정 삭제 경고 이메일
+           let emailResult = await sendZeptoEmail(email, 0); // 계정 삭제 경고 이메일
            if(emailResult) {
                console.log('Email sent');
                emailSentUsers++;
@@ -492,8 +508,236 @@ function onKoreanBiteFunction(request, response) {
     });
 }
 
+async function refreshAccessToken() {
+    console.log('리프레시 토큰!');
+    const refreshToken = functions.config().zoho.refresh_token;
+    const clientId = functions.config().zoho.client_id;
+    const clientSecret = functions.config().zoho.client_secret;
 
+    const res = await fetch('https://accounts.zoho.com/oauth/v2/token', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({
+            client_id: clientId,
+            client_secret: clientSecret,
+            refresh_token: refreshToken,
+            grant_type: 'refresh_token',
+        }),
+    });
 
+    const result = await res.json();
+
+    if(!result.access_token) {
+        throw new Error('Failed to refresh access token!');
+    }
+
+    return result.access_token;
+}
+
+async function getValidAccessToken() {
+    const docRef = admin.firestore().collection('Tokens').doc('zoho');
+    const doc = await docRef.get();
+
+    if(doc.exists) {
+        const data = doc.data();
+        const accessToken = data.access_token;
+        const issuedAt = data.access_token_on || 0;
+        const now = Date.now();
+        console.log('IssuedAt', data.access_token_on);
+        console.log('Now', now);
+
+        if((now - issuedAt) < 50 * 60 * 1000) {     // 50분
+            console.log('유효한 access 토큰!');
+            return accessToken;
+        }
+    }
+
+    const newToken = await refreshAccessToken();
+    console.log('뉴토큰!', newToken);
+
+    await docRef.update({
+        access_token: newToken,
+        access_token_on: Date.now(),
+    });
+
+    return newToken;
+
+}
+
+async function sendRequestToZoho(url, method, requestBody = null) {
+    let accessToken = await getValidAccessToken();
+    console.log('URL', url);
+
+    const options = {
+        method: method,
+        headers: {
+            Authorization: `Zoho-oauthtoken ${accessToken}`,
+        },
+    };
+
+    if(method !== 'GET' && requestBody) {
+        options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        options.body = new URLSearchParams(requestBody);
+    }
+
+    const res = await fetch(url, options);
+    const result = await res.json();
+    console.log('Result', result);
+
+    if (result.status === 'error') {
+        throw new Error(result.message || 'Zoho API error');
+    }
+
+    return result;
+}
+
+async function addContactToZoho(request, response) {
+    try {
+        response.set('Access-Control-Allow-Origin', '*');
+        const {email, name, source} = request.body;
+        if(!email) return response.status(400).send('Missing email');
+
+        let requestBody = {
+            contactinfo: JSON.stringify({
+                "First Name": name || '',
+                "Contact Email": email,
+            }),
+            listkey: '3z6187e64413036ac5e15cc240c22e8660774c3bad914a0a1ed1639dbe18dead80',
+            resfmt: 'JSON',
+            source: source,
+            stage: 'Seed',
+            created_on: new Date().toISOString(),
+        };
+
+        // 앱 설치 여부 확인 (firestore)
+        const ref = admin.firestore().collection('Users');
+        const doc = await ref.where('email', '==', email).limit(1).get();
+
+        if(!doc.empty) {
+            console.log('Firestore User Exist: ' + email);
+            const data = doc.docs[0].data();
+            const userId = data.id;
+            const userName = data.name;
+            const dateSignUp = data.dateSignUp.toDate().toISOString();
+
+            requestBody['user_id'] = userId;
+            requestBody['app_installed_on'] = dateSignUp;
+            if(!name && userName) {
+                let contactInfo = JSON.parse(requestBody.contactinfo);
+                contactInfo['First Name'] = userName;
+                requestBody.contactinfo = JSON.stringify(contactInfo);
+            }
+        }
+        await sendRequestToZoho('https://campaigns.zoho.com/api/v1.1/json/listsubscribe', 'POST', requestBody);
+        response.status(200).send('Succeed to add contact');
+
+    } catch (e) {
+        console.error('❌ Error adding contact to Zoho:', e.message);
+        response.status(500).send({ success: false, message: e.message });
+    }
+}
+
+async function updateContactToZoho({
+    email,
+    userId,
+    appInstalledOn,
+    premiumOn,
+    premiumExpiredOn,
+    premiumReactivatedOn,
+}) {
+    if (!email) throw new Error('Missing email');
+
+    const requestBody = {
+        contactinfo: JSON.stringify({
+          "Contact Email": email,
+        }),
+        resfmt: 'JSON',
+    };
+
+    const optionalFields = {
+        user_id: userId,
+        app_installed_on: appInstalledOn ? new Date(appInstalledOn).toISOString() : null,
+        premium_on: premiumOn ? new Date(premiumOn).toISOString() : null,
+        premium_expired_on: premiumExpiredOn,
+        premium_reactivated_on: premiumReactivatedOn,
+    };
+
+    for (const [key, value] of Object.entries(optionalFields)) {
+        if (value) {
+          requestBody[key] = value;
+        }
+    }
+
+    await sendRequestToZoho(
+        'https://campaigns.zoho.com/api/v1.1/json/listsubscribe',
+        'POST',
+        requestBody
+    );
+}
+
+async function assignTagToZoho(email, tag) {
+    if(!email) return response.status(400).send('Missing email');
+
+    const queryParams = new URLSearchParams({
+        tagName: tag,
+        lead_email: email,
+        resfmt: 'JSON',
+    }).toString();
+
+    const url = 'https://campaigns.zoho.com/api/v1.1/tag/associate?' + queryParams;
+
+    await sendRequestToZoho(url, 'GET');
+}
+
+async function sendWelcomeEmail(request, response) {
+    // 앱 signUp 시 실행
+    try {
+        response.set('Access-Control-Allow-Origin', '*');
+        const {email, userId, appInstalledOn} = request.body;
+        console.log(email);
+        if(!email) return response.status(400).send('Missing email');
+
+        let requestBody = {
+            listkey: '3z6187e64413036ac5e15cc240c22e8660774c3bad914a0a1ed1639dbe18dead80',
+            resfmt: 'JSON',
+        }
+
+        // 이메일 구독 중인지 확인
+        const result = await sendRequestToZoho('https://campaigns.zoho.com/api/v1.1/getlistsubscribers', 'POST', requestBody);
+        const contacts = result['list_of_details'] || [];
+        const emailExists = contacts.some(
+            (contact) => contact['contact_email'].toLowerCase() === email.toLowerCase()
+        );
+
+        if(emailExists) {
+            console.log('이메일 구독중');
+            console.log('워크북 미포함 이메일 전송');
+            await sendZeptoEmail(email, 2);
+
+            console.log('Zoho Contact 필드 입력');
+            await updateContactToZoho({
+                email: email,
+                userId: userId,
+                appInstalledOn: appInstalledOn,
+            });
+
+            console.log('Zoho Contact 태그 입력');
+            await assignTagToZoho(email, 'downloaded_app');
+
+            response.status(200).send('Sent welcome email without workbook');
+
+        } else {
+            console.log('신규 유저');
+            console.log('워크북 포함 이메일 전송');
+            await sendZeptoEmail(email, 3, {'email': email});
+            response.status(200).send('Sent welcome email with workbook');
+        }
+
+    } catch(e) {
+        console.error('❌ Error in sendWelcomeEmail:', e.message);
+        response.status(500).send({ success: false, message: e.message });
+    }
+}
 
 exports.onWritingReply = functions.firestore.document('Writings/{writingId}').onUpdate(onWritingReplied);
 exports.onPodoMsgActive = functions.firestore.document('PodoMessages/{podoMessageId}').onUpdate(onPodoMsgActivated);
@@ -503,5 +747,7 @@ exports.onContact = onRequest(onContactFunction);
 exports.onKoreanBiteFcm = onRequest(onKoreanBiteFunction);
 exports.onUserCount = functions.runWith({timeoutSeconds: 540}).pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun(userCount);
 exports.onUserCleanUp = functions.runWith({timeoutSeconds: 540}).pubsub.schedule('30 23 * * *').timeZone('Asia/Seoul').onRun(userCleanUp);
+exports.onAddContactToZoho = onRequest(addContactToZoho);
+exports.onSendWelcomeEmail = onRequest(sendWelcomeEmail);
 
 
