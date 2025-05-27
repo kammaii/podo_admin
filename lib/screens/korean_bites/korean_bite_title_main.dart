@@ -645,14 +645,14 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: ResponsiveBreakpoints.of(context).largerThan(TABLET)
-                      ? Row(children: [
-                          getTagRadioBtn('All'),
-                          ...controller.tags.map((item) => getTagRadioBtn(item)),
-                        ])
-                      : const SizedBox.shrink(),
-                ),
+                // Expanded(
+                //   child: ResponsiveBreakpoints.of(context).largerThan(TABLET)
+                //       ? Row(children: [
+                //           getTagRadioBtn('All'),
+                //           ...controller.tags.map((item) => getTagRadioBtn(item)),
+                //         ])
+                //       : const SizedBox.shrink(),
+                // ),
                 ElevatedButton(
                   onPressed: () {
                     selectedKoreanBite = KoreanBite(controller.koreanBites.length);

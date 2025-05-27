@@ -19,6 +19,7 @@ const zohoRefreshToken = functions.config().zoho.refreshToken;
 const zohoClientId = functions.config().zoho.clientId;
 const zohoClientSecret = functions.config().zoho.clientSecret;
 const { SendMailClient } = require("zeptomail");
+const cors = require('cors')({ origin: 'https://www.podokorean.com' });
 
 
 admin.initializeApp();
@@ -629,6 +630,7 @@ async function addContactToZoho(request, response) {
             }
         }
         await sendRequestToZoho('https://campaigns.zoho.com/api/v1.1/json/listsubscribe', 'POST', requestBody);
+        // downloaded_app 태그는 zoho campaign 자동화에서 입력됨.
         response.status(200).send('Succeed to add contact');
 
     } catch (e) {

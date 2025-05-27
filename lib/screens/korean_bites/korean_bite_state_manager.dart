@@ -4,12 +4,16 @@ import 'package:podo_admin/screens/korean_bites/korean_bite_example.dart';
 
 class KoreanBiteStateManager extends GetxController {
   final tags = [
-    'Vocabulary',
-    'Expressions',
-    'Grammar',
-    'Pronunciation',
-    'Conversation ',
+    'DailyUsed',
+    'FunExpression',
+    'CommonMistake',
+    'Slang',
+    'GrammarTip',
+    'Emotion',
+    'Shopping',
+    'Travel',
   ];
+
   final noticeMsgs = [
     '🎉 A New Korean Bite is Here! / Learn "%" and be the first to check it out!',
     '❓ How do you say "%" in your language? / Find the answer in today’s new Korean Bite!',
