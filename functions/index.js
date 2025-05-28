@@ -19,7 +19,8 @@ const zohoRefreshToken = functions.config().zoho.refreshToken;
 const zohoClientId = functions.config().zoho.clientId;
 const zohoClientSecret = functions.config().zoho.clientSecret;
 const { SendMailClient } = require("zeptomail");
-const cors = require('cors')({ origin: 'https://www.podokorean.com' });
+const cors = require('cors');
+
 
 
 admin.initializeApp();
@@ -362,18 +363,22 @@ async function sendZeptoEmail(userEmail, msgType, mergeInfo = null) {
       1: functions.config().zepto.templates.cleanup2,
       2: functions.config().zepto.templates.welcome,
       3: functions.config().zepto.templates.welcome_with_workbook,
+      4: functions.config().zepto.templates.premium,
   };
   const subjects = {
       0: '[Podo Korean] Your account is scheduled for deletion ⏳',
       1: '[Podo Korean] Your account has been deleted ✅',
       2: 'Welcome to Podo Korean! Let’s start your journey 🌟',
       3: 'Welcome to Podo Korean! Let’s start your journey 🌟',
+      4: '[Podo Korean] 고맙습니다!',
   }
   const template_key = templateKeys[msgType];
   const emailSubject = subjects[msgType];
   const client = new SendMailClient({ url, token });
   let sender;
-  if(msgType == 2 || msgType == 3) {
+  if(msgType == 4) {
+    sender = "danny@podokorean.com";
+  } else if(msgType == 2 || msgType == 3) {
     sender = "contact@podokorean.com";
   } else {
     sender = "noreply@podokorean.com";
@@ -593,9 +598,11 @@ async function sendRequestToZoho(url, method, requestBody = null) {
 }
 
 async function addContactToZoho(request, response) {
+    console.log('시작');
     try {
         response.set('Access-Control-Allow-Origin', '*');
         const {email, name, source} = request.body;
+        console.log('바디: ' + request.body);
         if(!email) return response.status(400).send('Missing email');
 
         let requestBody = {
@@ -609,6 +616,8 @@ async function addContactToZoho(request, response) {
             stage: 'Seed',
             created_on: new Date().toISOString(),
         };
+
+        console.log('앱설치 확인 중');
 
         // 앱 설치 여부 확인 (firestore)
         const ref = admin.firestore().collection('Users');
@@ -741,6 +750,22 @@ async function sendWelcomeEmail(request, response) {
     }
 }
 
+async function sendPremiumEmail(request, response) {
+    try {
+        response.set('Access-Control-Allow-Origin', '*');
+        const {email, name} = request.body;
+        console.log(email);
+        if(!email) return response.status(400).send('Missing email');
+        let emailResult = await sendZeptoEmail(email, 4, {'name': name});
+        if(emailResult) {
+            response.status(200).send();
+        }
+
+    } catch(e) {
+        response.status(500).send(e.message);
+    }
+}
+
 exports.onWritingReply = functions.firestore.document('Writings/{writingId}').onUpdate(onWritingReplied);
 exports.onPodoMsgActive = functions.firestore.document('PodoMessages/{podoMessageId}').onUpdate(onPodoMsgActivated);
 exports.onFeedbackSent = functions.firestore.document('Feedbacks/{feedbackId}').onCreate(onFeedbackSent);
@@ -749,7 +774,12 @@ exports.onContact = onRequest(onContactFunction);
 exports.onKoreanBiteFcm = onRequest(onKoreanBiteFunction);
 exports.onUserCount = functions.runWith({timeoutSeconds: 540}).pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun(userCount);
 exports.onUserCleanUp = functions.runWith({timeoutSeconds: 540}).pubsub.schedule('30 23 * * *').timeZone('Asia/Seoul').onRun(userCleanUp);
-exports.onAddContactToZoho = onRequest(addContactToZoho);
+exports.onAddContactToZoho = onRequest((req, res) => {
+  cors(req, res, () => {
+    addContactToZoho(req, res);
+  });
+});
 exports.onSendWelcomeEmail = onRequest(sendWelcomeEmail);
+exports.onSendPremiumEmail = onRequest(sendPremiumEmail);
 
 
