@@ -137,39 +137,20 @@ async function sendRequestToZoho(url, requestBody) {
 }
 
 async function test(request, response) {
-    try {
+const snapshot = await db.collection('KoreanBites').get();
 
-        const email = 'kammaii@naver.com';
-        if(!email) return response.status(400).send('Missing email');
+  const batch = db.batch();
+  snapshot.forEach(doc => {
+    const docRef = db.collection('KoreanBites').doc(doc.id);
+    batch.update(docRef, { tags: [] });
+  });
 
-        let requestBody = {
-            listkey: '3z6187e64413036ac5e15cc240c22e8660774c3bad914a0a1ed1639dbe18dead80',
-            resfmt: 'JSON',
-        }
-
-        const result = await sendRequestToZoho('https://campaigns.zoho.com/api/v1.1/getlistsubscribers', requestBody);
-        const contacts = result['list_of_details'] || [];
-        const emailExists = contacts.some(
-            (contact) => contact['contact_email'].toLowerCase() === email.toLowerCase()
-        );
-        console.log('EXISTS: ' + emailExists);
-
-        if(emailExists) {
-            console.log('이메일 구독중');
-            // 워크북 미포함
-            await sendZeptoEmail(email, 2);
-            return response.status(200).send('Sent welcome email without workbook');
-        } else {
-            console.log('신규 유저');
-            // 워크북 포함
-            await sendZeptoEmail(email, 3);
-            return response.status(200).send('Sent welcome email with workbook');
-        }
-
-    } catch (e) {
-        console.error('❌ Error adding contact to Zoho:', e.message);
-        return response.status(500).send({ success: false, message: e.message });
-    }
+  try {
+    await batch.commit();
+    console.log('✅ 모든 문서의 tags 필드를 빈 배열로 초기화했습니다.');
+  } catch (error) {
+    console.error('❌ 초기화 중 오류 발생:', error);
+  }
 }
 
 

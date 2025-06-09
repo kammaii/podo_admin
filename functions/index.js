@@ -19,7 +19,7 @@ const zohoRefreshToken = functions.config().zoho.refreshToken;
 const zohoClientId = functions.config().zoho.clientId;
 const zohoClientSecret = functions.config().zoho.clientSecret;
 const { SendMailClient } = require("zeptomail");
-const cors = require('cors');
+const cors = require('cors')({origin: true});
 
 
 
@@ -549,17 +549,15 @@ async function getValidAccessToken() {
         const accessToken = data.access_token;
         const issuedAt = data.access_token_on || 0;
         const now = Date.now();
-        console.log('IssuedAt', data.access_token_on);
-        console.log('Now', now);
 
         if((now - issuedAt) < 50 * 60 * 1000) {     // 50분
-            console.log('유효한 access 토큰!');
+            console.log('토큰이 유효합니다.');
             return accessToken;
         }
     }
 
     const newToken = await refreshAccessToken();
-    console.log('뉴토큰!', newToken);
+    console.log('새 토큰을 발행합니다.');
 
     await docRef.update({
         access_token: newToken,
@@ -572,7 +570,7 @@ async function getValidAccessToken() {
 
 async function sendRequestToZoho(url, method, requestBody = null) {
     let accessToken = await getValidAccessToken();
-    console.log('URL', url);
+    console.log('Zoho에 요청을 시작합니다.: ', url);
 
     const options = {
         method: method,
@@ -588,7 +586,7 @@ async function sendRequestToZoho(url, method, requestBody = null) {
 
     const res = await fetch(url, options);
     const result = await res.json();
-    console.log('Result', result);
+    console.log('요청 결과: ', result);
 
     if (result.status === 'error') {
         throw new Error(result.message || 'Zoho API error');
@@ -598,11 +596,10 @@ async function sendRequestToZoho(url, method, requestBody = null) {
 }
 
 async function addContactToZoho(request, response) {
-    console.log('시작');
+    console.log('zoho 연락처 등록 시작', request.body);
     try {
         response.set('Access-Control-Allow-Origin', '*');
         const {email, name, source} = request.body;
-        console.log('바디: ' + request.body);
         if(!email) return response.status(400).send('Missing email');
 
         let requestBody = {
@@ -617,14 +614,14 @@ async function addContactToZoho(request, response) {
             created_on: new Date().toISOString(),
         };
 
-        console.log('앱설치 확인 중');
+        console.log('앱설치 확인 중...');
 
         // 앱 설치 여부 확인 (firestore)
         const ref = admin.firestore().collection('Users');
         const doc = await ref.where('email', '==', email).limit(1).get();
 
         if(!doc.empty) {
-            console.log('Firestore User Exist: ' + email);
+            console.log('앱 설치 유저');
             const data = doc.docs[0].data();
             const userId = data.id;
             const userName = data.name;
@@ -637,6 +634,8 @@ async function addContactToZoho(request, response) {
                 contactInfo['First Name'] = userName;
                 requestBody.contactinfo = JSON.stringify(contactInfo);
             }
+        } else {
+            console.log('앱 미설치 유저');
         }
         await sendRequestToZoho('https://campaigns.zoho.com/api/v1.1/json/listsubscribe', 'POST', requestBody);
         // downloaded_app 태그는 zoho campaign 자동화에서 입력됨.
@@ -774,9 +773,9 @@ exports.onContact = onRequest(onContactFunction);
 exports.onKoreanBiteFcm = onRequest(onKoreanBiteFunction);
 exports.onUserCount = functions.runWith({timeoutSeconds: 540}).pubsub.schedule('0 0 * * *').timeZone('Asia/Seoul').onRun(userCount);
 exports.onUserCleanUp = functions.runWith({timeoutSeconds: 540}).pubsub.schedule('30 23 * * *').timeZone('Asia/Seoul').onRun(userCleanUp);
-exports.onAddContactToZoho = onRequest((req, res) => {
-  cors(req, res, () => {
-    addContactToZoho(req, res);
+exports.onAddContactToZoho = onRequest(async (req, res) => {
+  cors(req, res, async () => {
+    await addContactToZoho(req, res);
   });
 });
 exports.onSendWelcomeEmail = onRequest(sendWelcomeEmail);
