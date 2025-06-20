@@ -26,6 +26,9 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
   late KoreanBiteStateManager controller;
   final KOREAN_BITES = 'KoreanBites';
   late KoreanBite selectedKoreanBite;
+  final TextEditingController _searchController = TextEditingController();
+  String? searchedTitleNo;
+
 
   @override
   void initState() {
@@ -643,7 +646,6 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
         child: Column(
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Expanded(
                 //   child: ResponsiveBreakpoints.of(context).largerThan(TABLET)
@@ -665,6 +667,48 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
                       style: TextStyle(fontSize: 20),
                     ),
                   ),
+                ),
+                const SizedBox(width: 50),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 200,
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: const InputDecoration(
+                          prefixIcon: Icon(Icons.search),
+                          labelText: '제목',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        final searchInput = _searchController.text;
+                        if (searchInput.isNotEmpty) {
+                          bool found = false;
+
+                          for(KoreanBite koreanBite in controller.koreanBites) {
+                            if(koreanBite.title['ko'] == searchInput) {
+                              setState(() {
+                                found = true;
+                                searchedTitleNo = '있음: ${koreanBite.orderId.toString()}';
+                              });
+                              break;
+                            }
+                          }
+                          if(!found) {
+                            setState(() {
+                              searchedTitleNo = '없음';
+                            });
+                          }
+                        }
+                      },
+                      child: const Text('검색'),
+                    ),
+                    const SizedBox(width: 10),
+                    searchedTitleNo != null ? Text(searchedTitleNo.toString()) : const SizedBox.shrink(),
+                  ],
                 ),
               ],
             ),
