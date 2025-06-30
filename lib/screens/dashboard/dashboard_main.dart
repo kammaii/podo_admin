@@ -52,7 +52,9 @@ class _DashboardMainState extends State<DashboardMain> {
       required List<LineChartBarData> bars,
       required int maxCount,
       double addMaxY = 10,
-      List<String>? barTitles}) {
+      double addMinY = 0,
+      List<String>? barTitles,
+      int minY = 0}) {
     return Padding(
       padding: const EdgeInsets.all(10),
       child: Column(
@@ -88,7 +90,7 @@ class _DashboardMainState extends State<DashboardMain> {
               ),
               minX: 0,
               maxX: days.toDouble() - 1,
-              minY: 0,
+              minY: minY.toDouble() - addMinY,
               maxY: ((maxCount / 10).ceil()) * 10 + addMaxY,
               lineTouchData: LineTouchData(
                   touchTooltipData: LineTouchTooltipData(getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
@@ -161,14 +163,15 @@ class _DashboardMainState extends State<DashboardMain> {
 
                     List<LineChartBarData> totalUserBars = [getBar(totalUserList, Colors.red)];
                     int totalUserMax = totalUserList.reduce((a, b) => a > b ? a : b).round();
+                    int totalUserMin = totalUserList.reduce((a, b) => a < b ? a : b).round();
 
                     List<LineChartBarData> userChangeBars = [
                       getBar(signUpUserList, Colors.blueAccent),
                       getBar(deletedUserList, Colors.red),
                     ];
 
-                    int userChangeMax = signUpUserList.reduce((a, b) => a > b ? a : b).round();
-                    userChangeMax = deletedUserList.reduce((a, b) => a > b ? a : b).round();
+                    int userChangeMax =
+                        [...signUpUserList, ...deletedUserList].reduce((a, b) => a > b ? a : b).round();
 
                     List<LineChartBarData> activeUserBars = [
                       getBar(activeNewList, Colors.yellow),
@@ -210,7 +213,9 @@ class _DashboardMainState extends State<DashboardMain> {
                                           title: 'Total Users',
                                           bars: totalUserBars,
                                           maxCount: totalUserMax,
-                                          addMaxY: 2900),
+                                          minY: totalUserMin,
+                                          addMaxY: 100,
+                                          addMinY: 100),
                                       const SizedBox(width: 30),
                                       getGraph(
                                           title: 'Status Ratio',
@@ -223,7 +228,7 @@ class _DashboardMainState extends State<DashboardMain> {
                                   Row(
                                     children: [
                                       getGraph(
-                                        title: 'User Change',
+                                        title: 'User In & Out',
                                         bars: userChangeBars,
                                         maxCount: userChangeMax,
                                         barTitles: ['SignUp', 'Deleted'],

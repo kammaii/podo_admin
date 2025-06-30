@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
           const Breakpoint(start: 801, end: 1920, name: DESKTOP),
         ]
       ),
-      title: 'Flutter Demo',
+      title: 'Podo Korean Console',
       theme: ThemeData(
         useMaterial3: false,
         colorScheme: lightColorScheme,
