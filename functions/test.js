@@ -16,142 +16,98 @@ const { SendMailClient } = require("zeptomail");
 admin.initializeApp();
 const db = admin.firestore();
 
-async function sendZeptoEmail(userEmail, msgType) {
-  let url = "https://api.zeptomail.com/v1.1/email/template";
-  const token = functions.config().zepto.token;
-  const templateKeys = {
-      0: functions.config().zepto.templates.cleanup1,
-      1: functions.config().zepto.templates.cleanup2,
-      2: functions.config().zepto.templates.welcome,
-      3: functions.config().zepto.templates.welcome_with_workbook,
-  };
-  const subjects = {
-      0: '[Podo Korean] Your account is scheduled for deletion ⏳',
-      1: '[Podo Korean] Your account has been deleted ✅',
-      2: 'Welcome to Podo Korean! Let’s start your journey 🌟',
-      3: 'Welcome to Podo Korean! Let’s start your journey 🌟',
-  }
-  const template_key = templateKeys[msgType];
-  const emailSubject = subjects[msgType];
-  const client = new SendMailClient({ url, token });
+async function test() {
+    let en = 0;
+    let es = 0;
+    let fr = 0;
+    let de = 0;
+    let pt = 0;
+    let id = 0;
+    let ru = 0;
 
-  try {
-      const response = await client.sendMail({
-        subject: emailSubject,
-        template_key,
-        from: {
-          address: "noreply@podokorean.com",
-          name: "Podo Korean"
-        },
-        to: [
-          {
-            email_address: {
-              address: userEmail
-            }
-          }
-        ]
-      });
-      console.log("✅ Email sent via ZeptoMail:");
-      return true;
-    } catch (error) {
-      console.error("❌ ZeptoMail send error:", error);
-      return false;
-    }
-}
-
-async function refreshAccessToken() {
-    console.log('리프레시 토큰!');
-    const refreshToken = '1000.e56a5e2784e929544d344ba58bd292f8.8d03ef64c8d42c16d5ade89a22a5d671';
-    const clientId = '1000.Q1NC1OLW71KOOV956A8YKMBG3TDQRY';
-    const clientSecret = '45a63f72100797c5883b69c1988295e8fa4777247d';
-
-    const res = await fetch('https://accounts.zoho.com/oauth/v2/token', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: new URLSearchParams({
-            refresh_token: refreshToken,
-            client_id: clientId,
-            client_secret: clientSecret,
-            grant_type: 'refresh_token',
-        })
-    });
-    const result = await res.json();
-
-    if(!result.access_token) {
-        throw new Error('Failed to refresh access token!');
-    }
-
-    return result.access_token;
-}
-
-async function getValidAccessToken() {
-    const docRef = admin.firestore().collection('Tokens').doc('zoho');
-    const doc = await docRef.get();
-
-    if(doc.exists) {
-        const data = doc.data();
-        const accessToken = data.access_token;
-        const issuedAt = data.access_token_on || 0;
-        const now = Date.now();
-        console.log('IssuedAt', data.access_token_on);
-        console.log('Now', now);
-
-        if((now - issuedAt) < 50 * 60 * 1000) {     // 50분
-            console.log('유효한 access 토큰!');
-            return accessToken;
+    let users = await db.collection('Users').get();
+    for(let i=0; i<users.docs.length; i++) {
+        let lang = users.docs[i].get('language');
+        if(lang == 'en') {
+            en++;
+        } else if(lang == 'es') {
+            es++;
+        } else if (lang == 'fr') {
+            fr++;
+        } else if (lang == 'de') {
+            de++;
+        } else if (lang == 'pt') {
+            pt++;
+        } else if (lang == 'id') {
+            id++;
+        } else if (lang == 'ru') {
+            ru++;
         }
+
     }
+    console.log('en: ', en);
+    console.log('es: ', es);
+    console.log('fr: ', fr);
+    console.log('de: ', de);
+    console.log('pt: ', pt);
+    console.log('id: ', id);
+    console.log('ru: ', ru);
 
-    const newToken = await refreshAccessToken();
-    console.log('뉴토큰!', newToken);
-
-    await docRef.update({
-        access_token: newToken,
-        access_token_on: Date.now(),
-    });
-
-    return newToken;
 
 }
 
-async function sendRequestToZoho(url, requestBody) {
-    let accessToken = await getValidAccessToken();
+async function sendFcm(user, key, title, body) {
 
-    const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-            Authorization: `Zoho-oauthtoken ${accessToken}`,
-            'Content-Type': 'application/x-www-form-urlencoded',
+    console.log(user.get('email'));
+
+    const payload = {
+        notification: {
+            title: title,
+            body: body,
         },
-        body: new URLSearchParams(requestBody),
-    });
+        token: user.get('fcmToken'),
+    };
 
-    const result = await res.json();
-    console.log('Result', result);
-
-    if (result.status === 'error') {
-        throw new Error(result.message || 'Zoho API error');
+    try {
+        await admin.messaging().send(payload);
+        console.log('✅ fcm 전송 성공.');
+    } catch (e) {
+        await user.ref.update({
+            [key + '_failed']: e.toString
+        });
+        console.log('❌ fcm 전송 실패: ', e);
     }
-
-    return result;
 }
 
-async function test(request, response) {
-const snapshot = await db.collection('KoreanBites').get();
+// todo: remindTrial 잘 되는지 먼저 확인하고 아래 코드는 오전에 실행시킬 것.
+async function test1() {
+        console.log('---Trial 리마인드 시작---');
+        const targetDate = new Date('2025-07-01T03:00:00Z');
 
-  const batch = db.batch();
-  snapshot.forEach(doc => {
-    const docRef = db.collection('KoreanBites').doc(doc.id);
-    batch.update(docRef, { tags: [] });
-  });
+        const startTime = new Date();
+        const now = new Date();
+        now.setMinutes(0,0,0);
+        const ago24h = new Date(now.getTime() - 24*60*60*1000);
+        const ago25h = new Date(now.getTime() - 25*60*60*1000);
 
-  try {
-    await batch.commit();
-    console.log('✅ 모든 문서의 tags 필드를 빈 배열로 초기화했습니다.');
-  } catch (error) {
-    console.error('❌ 초기화 중 오류 발생:', error);
-  }
+        console.log('-------------------');
+        console.log('1차 대상자 검색중...');
+        const users1 = await db.collection('Users')
+            .where('status', '==', 0)
+            .where('dateSignUp', '<', targetDate)
+            .where('fcmPermission', '==', true)
+            .where('fcmToken', '!=', null)
+            .get();
+
+        const title1 = '🎁 Free Premium is waiting!';
+        const body1 = 'Complete your first lesson in just 1 minute.';
+
+        for(const user of users1.docs) {
+            await user.ref.update({
+                'remind1_sentAt': startTime
+            });
+            await sendFcm(user, 'remind1', title1, body1);
+        }
 }
 
-
-test();
+test1();

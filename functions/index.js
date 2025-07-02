@@ -765,6 +765,134 @@ async function sendPremiumEmail(request, response) {
     }
 }
 
+async function sendFcm(user, key, title, body) {
+
+    console.log(user.get('email'));
+
+    const payload = {
+        notification: {
+            title: title,
+            body: body,
+        },
+        token: user.get('fcmToken'),
+    };
+
+    try {
+        await admin.messaging().send(payload);
+        console.log('✅ fcm 전송 성공.');
+    } catch (e) {
+        console.log('❌ fcm 전송 실패: ', e);
+        await user.ref.update({
+            [key + '_failed']: e.toString()
+        });
+    }
+}
+
+async function sendRemindEmail(key, userEmail, sender, subject, mergeInfo = null) {
+    const url = "https://api.zeptomail.com/v1.1/email/template";
+    const token = functions.config().zepto.token;
+    const client = new SendMailClient({ url, token });
+
+    try {
+        const emailPayload = {
+            subject: subject,
+            template_key: key,
+            from: {
+              address: sender,
+              name: "Podo Korean"
+            },
+            to: [
+              {
+                email_address: {
+                  address: userEmail
+                }
+              }
+            ],
+        };
+
+        if(mergeInfo) {
+            emailPayload.merge_info = mergeInfo;
+        }
+
+        const response = await client.sendMail(emailPayload);
+        console.log("✅ Email sent via ZeptoMail:");
+        return true;
+    } catch (error) {
+        console.error("❌ ZeptoMail send error:", error);
+        return false;
+    }
+}
+
+async function remindTrial(context) {
+    console.log('---Trial 리마인드 시작---');
+    const startTime = new Date();
+    const now = new Date();
+    now.setMinutes(0,0,0);
+    const ago24h = new Date(now.getTime() - 24*60*60*1000);
+    const ago25h = new Date(now.getTime() - 25*60*60*1000);
+
+    console.log('-------------------');
+    console.log('1차 대상자 검색중...');
+    const users1 = await admin.firestore().collection('Users')
+        .where('status', '==', 0)
+        .where('dateSignUp', '<=', admin.firestore.Timestamp.fromDate(ago24h))
+        .where('dateSignUp', '>', admin.firestore.Timestamp.fromDate(ago25h))
+        .where('fcmPermission', '==', true)
+        .where('fcmToken', '!=', null)
+        .get();
+
+    const title1 = '🎁 Free Premium is waiting!';
+    const body1 = 'Complete your first lesson in just 1 minute.';
+
+    for(const user of users1.docs) {
+        await user.ref.update({
+            'remind1_sentAt': startTime
+        });
+        await sendFcm(user, 'remind1', title1, body1);
+    }
+
+    console.log('-------------------');
+    console.log('2차 대상자 검색중...');   // remind1_sentAt + 3days
+    const ago72h = new Date(now.getTime() - 72*60*60*1000);
+    const ago73h = new Date(now.getTime() - 73*60*60*1000);
+    const users2 = await admin.firestore().collection('Users')
+        .where('status', '==', 0)
+        .where('remind1_sentAt', '<=', admin.firestore.Timestamp.fromDate(ago72h))
+        .where('remind1_sentAt', '>', admin.firestore.Timestamp.fromDate(ago73h))
+        .get();
+
+    const title2 = '⏰ Free Premium is expiring soon!';
+    const body2 = 'Start your first lesson now and don’t miss your 7-day free access!';
+    for(const user of users2.docs) {
+        await user.ref.update({
+            'remind2_sentAt': startTime
+        });
+        await sendFcm(user, 'remind2', title2, body2);
+    }
+
+    console.log('-------------------');
+    console.log('3차 대상자 검색중...');   // remind2_sentAt + 3days
+    const ago144h = new Date(now.getTime() - 144*60*60*1000);
+    const ago145h = new Date(now.getTime() - 145*60*60*1000);
+    const users3 = await admin.firestore().collection('Users')
+        .where('status', '==', 0)
+        .where('remind2_sentAt', '<=', admin.firestore.Timestamp.fromDate(ago144h))
+        .where('remind2_sentAt', '>', admin.firestore.Timestamp.fromDate(ago145h))
+        .get();
+
+    for (const user of users3.docs) {
+        const key = functions.config().zepto.templates.remind_trial;
+        const userEmail = user.get('email');
+        const sender = 'contact@podokorean.com';
+        const title = '[Podo Korean] Finish the First Lesson & Claim Your 7-Day Premium 🎁';
+        const mergeInfo = {'name': user.get('name')};
+        await user.ref.update({
+            'remind3_sentAt':startTime
+        });
+        await sendRemindEmail(key, userEmail, sender, title, mergeInfo);
+    }
+}
+
 exports.onWritingReply = functions.firestore.document('Writings/{writingId}').onUpdate(onWritingReplied);
 exports.onPodoMsgActive = functions.firestore.document('PodoMessages/{podoMessageId}').onUpdate(onPodoMsgActivated);
 exports.onFeedbackSent = functions.firestore.document('Feedbacks/{feedbackId}').onCreate(onFeedbackSent);
@@ -780,5 +908,7 @@ exports.onAddContactToZoho = onRequest(async (req, res) => {
 });
 exports.onSendWelcomeEmail = onRequest(sendWelcomeEmail);
 exports.onSendPremiumEmail = onRequest(sendPremiumEmail);
+// 1일 단위로 함수를 작동 시키지 않는 이유? 유저가 앱을 사용했던 시간에 알림을 보내기 위해 매 시간 함수를 실행 시켜서 dateSignUp 기준으로 알림을 전송함.
+exports.onRemindTrial = functions.runWith({timeoutSeconds: 540}).pubsub.schedule('0 * * * *').timeZone('Asia/Seoul').onRun(remindTrial);
 
 
