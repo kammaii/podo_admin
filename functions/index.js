@@ -771,6 +771,30 @@ async function sendPremiumEmail(request, response) {
     }
 }
 
+async function sendFeedbackEmail(request, response) {
+  try {
+    response.set('Access-Control-Allow-Origin', '*');
+    const { appName, userEmail, feedback, userId } = request.body;
+    console.log(userEmail);
+
+    const url = "https://api.zeptomail.com/v1.1/email/template";
+    const token = functions.config().zepto.token;
+    const client = new SendMailClient({ url, token });
+
+    await sendZeptoEmail(
+        functions.config().zepto.templates.feedback,
+        "contact@podokorean.com",
+        "contact@podokorean.com",
+        "[Feedback] From " + appName + " user",
+        {'message': feedback, 'userEmail': userEmail, 'userId': userId, 'appName': appName},
+    )
+    response.status(200).send('Sent feedback email');
+
+  } catch (e) {
+    response.status(500).send('Internal Server Error');
+  }
+}
+
 async function sendFcm(user, title, body) {
     console.log(user.get('email'));
 
@@ -859,6 +883,8 @@ async function remindTrial(context) {
     }
 }
 
+
+
 exports.onWritingReply = functions.firestore.document('Writings/{writingId}').onUpdate(onWritingReplied);
 exports.onPodoMsgActive = functions.firestore.document('PodoMessages/{podoMessageId}').onUpdate(onPodoMsgActivated);
 exports.onFeedbackSent = functions.firestore.document('Feedbacks/{feedbackId}').onCreate(onFeedbackSent);
@@ -874,6 +900,7 @@ exports.onAddContactToZoho = onRequest(async (req, res) => {
 });
 exports.onSendWelcomeEmail = onRequest(sendWelcomeEmail);
 exports.onSendPremiumEmail = onRequest(sendPremiumEmail);
+exports.onSendFeedbackEmail = onRequest(sendFeedbackEmail);
 // 1일 단위로 함수를 작동 시키지 않는 이유? 유저가 앱을 사용했던 시간에 알림을 보내기 위해 매 시간 함수를 실행 시켜서 dateSignUp 기준으로 알림을 전송함.
 exports.onRemindTrial = functions.runWith({timeoutSeconds: 540}).pubsub.schedule('0 * * * *').timeZone('Asia/Seoul').onRun(remindTrial);
 
