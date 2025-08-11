@@ -771,6 +771,32 @@ async function sendPremiumEmail(request, response) {
     }
 }
 
+async function sendAuthEmail(request, response) {
+    try {
+        response.set('Access-Control-Allow-Origin', '*');
+        const {email} = request.body;
+        console.log(email);
+        if(!email) return response.status(400).send('Missing email');
+        const link = await admin.auth().generateEmailVerificationLink(email, {
+            url: 'https://link.podokorean.com/korean?mode=verifyEmail',
+            handleCodeInApp: false,
+        });
+        const emailResult = await sendZeptoEmail(
+            functions.config().zepto.templates.auth,
+            email,
+            "contact@podokorean.com",
+            'Verify your email for Podo Korean',
+            {'link': link}
+        )
+        if(emailResult) {
+            response.status(200).send();
+        }
+
+    } catch(e) {
+        response.status(500).send(e.message);
+    }
+}
+
 async function sendFeedbackEmail(request, response) {
   try {
     response.set('Access-Control-Allow-Origin', '*');
@@ -901,7 +927,9 @@ exports.onAddContactToZoho = onRequest(async (req, res) => {
 exports.onSendWelcomeEmail = onRequest(sendWelcomeEmail);
 exports.onSendPremiumEmail = onRequest(sendPremiumEmail);
 exports.onSendFeedbackEmail = onRequest(sendFeedbackEmail);
+exports.onSendAuthEmail = onRequest(sendAuthEmail);
 // 1일 단위로 함수를 작동 시키지 않는 이유? 유저가 앱을 사용했던 시간에 알림을 보내기 위해 매 시간 함수를 실행 시켜서 dateSignUp 기준으로 알림을 전송함.
 exports.onRemindTrial = functions.runWith({timeoutSeconds: 540}).pubsub.schedule('0 * * * *').timeZone('Asia/Seoul').onRun(remindTrial);
+
 
 
