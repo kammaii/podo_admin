@@ -18,7 +18,8 @@ const messages = require('./fcm_messages');
 admin.initializeApp();
 const db = admin.firestore();
 
-async function test() {
+// 언어별 유저 수
+async function getUserCountByLang() {
     let en = 0;
     let es = 0;
     let fr = 0;
@@ -58,77 +59,52 @@ async function test() {
 
 }
 
-async function sendFcm(user, title, body) {
 
-    console.log(user.get('email'));
+// 리마인드 후 trial 모드 진입 유저 수
+async function calcConvertRate() {
+  const snapshots = await db.collection('Users').where('remind1_sentAt', '!=', null).get();
 
+  let convertCount = 0;
+
+  for(const doc of snapshots.docs) {
+    if(doc.get('status') !== 0) {
+        convertCount++;
+    }
+  }
+
+  console.log('리마인드 유저 수 : ', snapshots.size);
+  console.log('전환 유저 수: ', convertCount);
+  console.log('전환 비율: ', (convertCount/snapshots.size * 100).toFixed(2) + '%');
+}
+
+async function sendTestFcm() {
+    const fcmToken = "cy_1UDuGQ4-fw-7dfp1wZX:APA91bFDRneC2vPrYIHziEELMUUaCYf1iu5Iw8jnAOx59Gpz4C1irnra7M0bxflR4TmvfRfc5d0iHPDwEKcwCZlEaLDlHTD4tp0dEBdHRs6KWRq34SQ6MV4";
     const payload = {
-        notification: {
-            title: title,
-            body: body,
-        },
-        token: user.get('fcmToken'),
-    };
+            data: {
+                'tag': 'test',
+            },
+            notification: {
+                title: '테스트 메시지 입니다.',
+                body: '안녕하세요?',
+            },
+            token: fcmToken,
+        };
 
-    try {
-        await admin.messaging().send(payload);
-        console.log('✅ fcm 전송 성공.');
-    } catch (e) {
-        console.log('❌ fcm 전송 실패: ', e);
-    }
+        try {
+            await admin.messaging().send(payload);
+            console.log('✅ fcm 전송 성공.');
+        } catch (e) {
+            console.log('❌ fcm 전송 실패: ', e);
+        }
 }
 
-// todo: remindTrial 잘 되는지 먼저 확인하고 아래 코드는 오전에 실행시킬 것.
-async function test1() {
-    console.log('---Trial 리마인드 시작---');
-
-    const targetDate = new Date('2025-07-01T03:00:00Z');
-    const startTime = new Date();
-
-    const now = new Date();
-    now.setMinutes(0, 0, 0);
-    const ago24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const ago25h = new Date(now.getTime() - 25 * 60 * 60 * 1000);
-
-    console.log('-------------------');
-    console.log('1차 대상자 검색중...');
-
-    const users1 = await db.collection('Users')
-        .where('status', '==', 0)
-        .where('dateSignUp', '<', targetDate)
-        .where('fcmPermission', '==', true)
-        .where('fcmToken', '!=', null)
-        .get();
-
-    console.log(`🎯 총 대상자: ${users1.docs.length}명`);
-
-    const chunkSize = 300;
-
-    for (let i = 0; i < users1.docs.length; i += chunkSize) {
-        const chunk = users1.docs.slice(i, i + chunkSize);
-
-        const promises = chunk.map(async (user) => {
-            try {
-                await user.ref.update({
-                    'remind1_sentAt': startTime
-                });
-                const userLang = user.get('language') ?? 'en';
-                await sendFcm(user, messages[userLang].title1, messages[userLang].body1);
-                console.log(`✅ FCM 전송 성공: ${user.get('email')}`);
-            } catch (e) {
-                console.error(`❌ FCM 전송 실패: ${user.get('email')}`, e);
-            }
-        });
-
-        await Promise.all(promises);
-        console.log(`✅ ${i + 1} ~ ${i + chunk.length}명 전송 완료`);
-
-        // FCM rate limit 방지를 위한 대기 시간
-        await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-
-    console.log('🎉 모든 대상자 전송 완료');
-
+async function test() {
+    const link = await admin.auth().generateEmailVerificationLink('kammaii@naver.com', {
+        url: 'https://link.podokorean.com/korean?mode=verifyEmail',
+        handleCodeInApp: true,
+    });
+    console.log(link);
 }
 
-test1();
+
+test();

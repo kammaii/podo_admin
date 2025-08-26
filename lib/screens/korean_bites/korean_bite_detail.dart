@@ -10,6 +10,7 @@ import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/screens/korean_bites/korean_bite.dart';
 import 'package:podo_admin/screens/korean_bites/korean_bite_example.dart';
 import 'package:podo_admin/screens/korean_bites/korean_bite_state_manager.dart';
+import 'package:podo_admin/screens/korean_bites/recording.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 
@@ -193,6 +194,8 @@ class _KoreanBiteDetailState extends State<KoreanBiteDetail> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        if(!isExplain)
+        Recording(lessonId: koreanBite.id, audioId: widgetId),
         Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),

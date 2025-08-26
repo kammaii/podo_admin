@@ -5,8 +5,7 @@ import 'package:podo_admin/common/my_textfield.dart';
 class Login extends StatelessWidget {
   Login({Key? key}) : super(key: key);
 
-  final String adminEmail = 'admin@akorean.kr';
-  final int adminPass = 123123;
+  final String adminEmail = 'danny@podokorean.com';
   late String email;
   late String pass;
 
