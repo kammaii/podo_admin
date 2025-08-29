@@ -4,20 +4,15 @@ const auth = require('firebase/auth');
 const nodemailer = require('nodemailer');
 const OpenAI = require("openai");
 const {onRequest} = require('firebase-functions/v1/https');
+const {defineString} = require('firebase-functions/params');
 const {v4: uuidv4} = require('uuid');
 const deepl = require('deepl-node');
-const deeplKey = functions.config().deepl.key;
+const deeplKey = defineString("DEEPL_KEY");
 const translator = new deepl.Translator(deeplKey);
-const gmailKey = functions.config().gmail.key;
-const gmailKey_noReply = functions.config().gmail_noreply.key;
-const emailKey = functions.config().email.key;
 const axios = require('axios');
-const revenueCatKey = functions.config().revenuecat.key;
+const revenueCatKey = defineString("REVENUECAT_KEY");
 const fs = require("fs");
 const path = require("path");
-const zohoRefreshToken = functions.config().zoho.refreshToken;
-const zohoClientId = functions.config().zoho.clientId;
-const zohoClientSecret = functions.config().zoho.clientSecret;
 const { SendMailClient } = require("zeptomail");
 const cors = require('cors')({origin: true});
 const messages = require('./fcm_messages');
@@ -75,7 +70,7 @@ async function onFeedbackSent(snap, context) {
   const userEmail = feedbackData.email;
   const message = feedbackData.message;
   const url = 'https://api.zeptomail.com/v1.1/email';
-  const token = functions.config().zepto.token;
+  const token = defineString("ZEPTO_TOKEN");
   const client = new SendMailClient({ url, token });
 
       try {
@@ -358,7 +353,7 @@ async function userCount(context) {
 
 async function sendZeptoEmail(key, userEmail, sender, subject, mergeInfo = null) {
     const url = "https://api.zeptomail.com/v1.1/email/template";
-    const token = functions.config().zepto.token;
+    const token = defineString("ZEPTO_TOKEN");
     const client = new SendMailClient({ url, token });
 
     try {
@@ -418,7 +413,7 @@ async function userCleanUp(context) {
                console.log('REMOVE ACCOUNT');
                const userId = userDoc.get('id');
                const emailResult = await sendZeptoEmail(
-                    functions.config().zepto.templates.cleanup2,
+                    defineString("ZEPTO_TEMPLATES_ACCOUNT_DELETED"),
                     email,
                     "noreply@podokorean.com",
                     '[Podo Korean] Your account has been deleted ✅'
@@ -443,7 +438,7 @@ async function userCleanUp(context) {
            }
        } else {
            const emailResult = await sendZeptoEmail(
-                functions.config().zepto.templates.cleanup1,
+                defineString("ZEPTO_TEMPLATES_ACCOUNT_DELETE_WARNING"),
                 email,
                 "noreply@podokorean.com",
                 '[Podo Korean] Your account is scheduled for deletion ⏳'
@@ -503,9 +498,9 @@ function onKoreanBiteFunction(request, response) {
 
 async function refreshAccessToken() {
     console.log('리프레시 토큰!');
-    const refreshToken = functions.config().zoho.refresh_token;
-    const clientId = functions.config().zoho.client_id;
-    const clientSecret = functions.config().zoho.client_secret;
+    const refreshToken = defineString("ZOHO_REFRESH_TOKEN");
+    const clientId = defineString("ZOHO_CLIENT_ID");
+    const clientSecret = defineString("ZOHO_CLIENT_SECRET");
 
     const res = await fetch('https://accounts.zoho.com/oauth/v2/token', {
         method: 'POST',
@@ -709,10 +704,8 @@ async function sendWelcomeEmail(request, response) {
         if(emailExists) {
             console.log('이메일 구독중');
             console.log('워크북 미포함 이메일 전송');
-            const key = functions.config().zepto.templates.welcome;
-            const sender =
             await sendZeptoEmail(
-                functions.config().zepto.templates.welcome,
+                defineString("ZEPTO_TEMPLATES_WELCOME"),
                 email,
                 "contact@podokorean.com",
                 'Welcome to Podo Korean! Let’s start your journey 🌟'
@@ -734,7 +727,7 @@ async function sendWelcomeEmail(request, response) {
             console.log('신규 유저');
             console.log('워크북 포함 이메일 전송');
             await sendZeptoEmail(
-                functions.config().zepto.templates.welcome_with_workbook,
+                defineString("ZEPTO_TEMPLATES_WELCOME_W_WORKBOOK"),
                 email,
                 "contact@podokorean.com",
                 'Welcome to Podo Korean! Let’s start your journey 🌟',
@@ -756,7 +749,7 @@ async function sendPremiumEmail(request, response) {
         console.log(email);
         if(!email) return response.status(400).send('Missing email');
         const emailResult = await sendZeptoEmail(
-            functions.config().zepto.templates.premium,
+            defineString("ZEPTO_TEMPLATES_PREMIUM"),
             email,
             "danny@podokorean.com",
             '[Podo Korean] Thank You for Subscribing to Premium!',
@@ -782,7 +775,7 @@ async function sendAuthEmail(request, response) {
             handleCodeInApp: false,
         });
         const emailResult = await sendZeptoEmail(
-            functions.config().zepto.templates.auth,
+            defineString("ZEPTO_TEMPLATES_AUTH"),
             email,
             "contact@podokorean.com",
             'Verify your email for Podo Korean',
@@ -804,11 +797,11 @@ async function sendFeedbackEmail(request, response) {
     console.log(userEmail);
 
     const url = "https://api.zeptomail.com/v1.1/email/template";
-    const token = functions.config().zepto.token;
+    const token = defineString("ZEPTO_TOKEN");
     const client = new SendMailClient({ url, token });
 
     await sendZeptoEmail(
-        functions.config().zepto.templates.feedback,
+        defineString("ZEPTO_TEMPLATES_FEEDBACK"),
         "contact@podokorean.com",
         "contact@podokorean.com",
         "[Feedback] From " + appName + " user",
@@ -900,7 +893,7 @@ async function remindTrial(context) {
             'remind3_sentAt':startTime
         });
         await sendZeptoEmail(
-            functions.config().zepto.templates.remind_trial,
+            defineString("ZEPTO_TEMPLATES_REMIND_TRIAL"),
             user.get('email'),
             'contact@podokorean.com',
             '[Podo Korean] Finish the First Lesson & Claim Your 7-Day Premium 🎁',
