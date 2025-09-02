@@ -13,6 +13,8 @@ class KoreanBite {
   bool isReleased = false;
   late int like;
 
+  bool? hasAudio;
+
   KoreanBite(int index) {
     id = const Uuid().v4();
     orderId = index;
@@ -31,6 +33,7 @@ class KoreanBite {
   static const String EXPLAIN = 'explain';
   static const String IS_RELEASED = 'isReleased';
   static const String LIKE = 'like';
+  static const String HAS_AUDIO = 'hasAudio';
 
   KoreanBite.fromJson(Map<String, dynamic> json) {
     id = json[ID];
@@ -44,6 +47,9 @@ class KoreanBite {
     explain = json[EXPLAIN];
     isReleased = json[IS_RELEASED];
     like = json[LIKE] ?? 0;
+    if(json[HAS_AUDIO] != null) {
+      hasAudio = json[HAS_AUDIO];
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -54,5 +60,6 @@ class KoreanBite {
     DATE: Timestamp.fromDate(date),
     EXPLAIN: explain,
     IS_RELEASED: isReleased,
+    HAS_AUDIO: hasAudio,
   };
 }

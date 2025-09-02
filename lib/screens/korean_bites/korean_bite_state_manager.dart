@@ -1,3 +1,4 @@
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
 import 'package:podo_admin/screens/korean_bites/korean_bite.dart';
 import 'package:podo_admin/screens/korean_bites/korean_bite_example.dart';
@@ -45,11 +46,28 @@ class KoreanBiteStateManager extends GetxController {
     selectedNoticeMsg = noticeMsgs[0];
   }
 
-  fetchExamples(List<dynamic> docs) {
+  Future<bool> checkExampleAudioExists({required String koreanBiteId, required String exampleId}) async {
+    final storageRef = FirebaseStorage.instance.ref();
+    final path = 'KoreanBitesAudios/$koreanBiteId/$exampleId.m4a';
+    try {
+      await storageRef.child(path).getDownloadURL();
+      return true;
+    } on FirebaseException catch (e) {
+      print('exception: $e');
+      return false;
+    } catch(e) {
+      print('catch error: $e');
+      return false;
+    }
+  }
+
+  fetchExamples(String koreanBiteId, List<dynamic> docs) async {
     examples = [];
     fetchedExamples = [];
     for (dynamic doc in docs) {
-      examples.add(KoreanBiteExample.fromJson(doc));
+      final example = KoreanBiteExample.fromJson(doc);
+      example.hasAudio = await checkExampleAudioExists(koreanBiteId: koreanBiteId, exampleId: example.id);
+      examples.add(example);
     }
     fetchedExamples = List.from(examples);
   }

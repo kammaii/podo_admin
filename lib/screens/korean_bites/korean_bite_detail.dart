@@ -195,7 +195,7 @@ class _KoreanBiteDetailState extends State<KoreanBiteDetail> {
           ),
         ),
         if(!isExplain)
-        Recording(lessonId: koreanBite.id, audioId: widgetId),
+        Recording(lessonId: koreanBite.id, audioId: widgetId, hasAudio: _controller.examples[index!].hasAudio),
         Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -247,7 +247,7 @@ class _KoreanBiteDetailState extends State<KoreanBiteDetail> {
     Database()
         .getDocs(collection: 'KoreanBites/${koreanBite.id}/Examples', orderBy: 'orderId', descending: false)
         .then((docs) async {
-      _controller.fetchExamples(docs);
+      await _controller.fetchExamples(koreanBite.id, docs);
       setState(() {
         isLoaded = true;
       });

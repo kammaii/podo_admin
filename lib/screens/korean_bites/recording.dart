@@ -1,18 +1,16 @@
 import 'dart:async';
-import 'dart:io';
-import 'dart:typed_data';
-import 'package:flutter/material.dart';
-import 'package:record/record.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'dart:typed_data';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:just_audio/just_audio.dart';
+import 'package:record/record.dart';
 
 class Recording extends StatefulWidget {
   final String lessonId;
   final String audioId;
+  final bool hasAudio;
 
-  const Recording({required this.lessonId, required this.audioId, super.key});
+  const Recording({required this.lessonId, required this.audioId, required this.hasAudio, super.key});
 
   @override
   State<Recording> createState() => _RecordingState();
@@ -23,11 +21,11 @@ class _RecordingState extends State<Recording> {
   final _audioPlayer = AudioPlayer();
   bool _isRecording = false;
   String? _recordedFilePath;
-  Uint8List? _recordedFileBytes;
   bool _isPlaying = false;
   String _statusMessage = '녹음 준비 중...';
   late final String lessonId;
   late final String audioId;
+  late final bool hasAudio;
   double _amplitude = 0.0;
   StreamSubscription<Amplitude>? _amplitudeSubscription;
 
@@ -36,6 +34,7 @@ class _RecordingState extends State<Recording> {
     super.initState();
     lessonId = widget.lessonId;
     audioId = widget.audioId;
+    hasAudio = widget.hasAudio;
     _requestPermissions();
   }
 
@@ -77,7 +76,6 @@ class _RecordingState extends State<Recording> {
         setState(() {
           _isRecording = true;
           _recordedFilePath = null;
-          _recordedFileBytes = null;
           _statusMessage = '녹음 중...';
         });
       }
@@ -177,6 +175,7 @@ class _RecordingState extends State<Recording> {
       print('오디오바이트: ${audioBytes.length}');
 
       setState(() {
+        hasAudio = true;
         _statusMessage = '저장 완료! ✨';
         _recordedFilePath = null; // 성공적으로 저장 후 초기화
       });
@@ -255,6 +254,8 @@ class _RecordingState extends State<Recording> {
                     ),
                   ),
                 ),
+                const SizedBox(width: 10),
+                if(hasAudio) const Icon(Icons.audio_file_outlined, color: Colors.purple),
               ],
             ),
           ),

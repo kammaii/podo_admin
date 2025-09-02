@@ -175,7 +175,7 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
                 columns: const [
                   DataColumn2(label: Text('순서'), size: ColumnSize.S),
                   DataColumn2(label: Text('아이디'), size: ColumnSize.S),
-                  DataColumn2(label: Text('제목'), size: ColumnSize.L),
+                  DataColumn2(label: Text('제목'), size: ColumnSize.S),
                   DataColumn2(label: Text('부제목'), size: ColumnSize.L),
                   DataColumn2(label: Text('태그'), size: ColumnSize.S),
                   DataColumn2(label: Text('좋아요'), size: ColumnSize.S),
@@ -183,6 +183,7 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
                   DataColumn2(label: Text('삭제'), size: ColumnSize.S),
                   DataColumn2(label: Text(''), size: ColumnSize.S),
                   DataColumn2(label: Text('알림'), size: ColumnSize.S),
+                  DataColumn2(label: Text('녹음'), size: ColumnSize.S),
                 ],
                 rows: List<DataRow>.generate(koreanBites.length, (i) {
                   KoreanBite koreanBite = koreanBites[i];
@@ -335,7 +336,7 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
                       ),
                     ),
                     DataCell(ElevatedButton(
-                      child: const Text('상세보기'),
+                      child: const Text('상세'),
                       onPressed: () {
                         Get.to(const KoreanBiteDetail(), arguments: koreanBite);
                       },
@@ -417,7 +418,26 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
                           },
                         ));
                       },
-                    ))
+                    )),
+                    DataCell(Icon(Icons.audio_file_outlined, color: koreanBite.hasAudio != null && koreanBite.hasAudio == true ? Colors.purple : Colors.grey), onTap: () {
+                      Get.dialog(AlertDialog(
+                        content: const Text('오디오 상태를 변경하겠습니까?'),
+                        actions: [
+                          TextButton(
+                              onPressed: () {
+                                updateDB(
+                                    collection: KOREAN_BITES, docId: koreanBite.id, value: {'hasAudio': true});
+                              },
+                              child: const Text('오디오 있음')),
+                          TextButton(
+                              onPressed: () {
+                                updateDB(
+                                    collection: KOREAN_BITES, docId: koreanBite.id, value: {'hasAudio': false});
+                              },
+                              child: const Text('오디오 없음')),
+                        ],
+                      ));
+                    }),
                   ]);
                 }),
               );
