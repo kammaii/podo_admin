@@ -7,7 +7,68 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1025269170157:android:55d085b01732fbacfcf1e4",
+        "mobilesdk_app_id": "1:1025269170157:android:81e89893bd00fbd3fcf1e4",
+        "android_client_info": {
+          "package_name": "net.awesomekorean.newpodo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1025269170157-d0tq6uta9rp3jrtcns8hth1bps6rnvrn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "net.awesomekorean.newpodo",
+            "certificate_hash": "ea34e43aeece64ac84ae4f6765a5e5756f3d18b7"
+          }
+        },
+        {
+          "client_id": "1025269170157-fovkfgg9gf1o9iesghbgt6b077k773ke.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "net.awesomekorean.newpodo",
+            "certificate_hash": "f25bb9ec602c16ef0718064c97998497ddda83e6"
+          }
+        },
+        {
+          "client_id": "1025269170157-vhvo2htl5old9cer0ehdnh45bil2fgoi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "net.awesomekorean.newpodo",
+            "certificate_hash": "c752a7698f67a626416c1805c4a3f6d855fe482a"
+          }
+        },
+        {
+          "client_id": "1025269170157-gs1mu6cifu03d73sa1dg58s05335rp88.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8UMNwruFZ9e07l_-cEAHhYz_71O9D2bM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1025269170157-7qtb08h3ovj3pj15h7q2kapicfg2g662.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1025269170157-bo8encbak25jgt9cpkdkh9rtm71nv1q8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "net.awesomekorean.podo"
+              }
+            }
+          ]
+        }
+      },
+      "admob_app_id": "ca-app-pub-2526130301535877~2249268822"
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1025269170157:android:69d88fe9e262f843fcf1e4",
         "android_client_info": {
           "package_name": "net.awesomekorean.podo_admin"
         }
@@ -27,14 +88,14 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "1025269170157-gs1mu6cifu03d73sa1dg58s05335rp88.apps.googleusercontent.com",
+              "client_id": "1025269170157-7qtb08h3ovj3pj15h7q2kapicfg2g662.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "1025269170157-c9v76aisudo5gjb5jonk868m8s7fdnv8.apps.googleusercontent.com",
+              "client_id": "1025269170157-bo8encbak25jgt9cpkdkh9rtm71nv1q8.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.podoAdmin"
+                "bundle_id": "net.awesomekorean.podo"
               }
             }
           ]

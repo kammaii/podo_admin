@@ -8,7 +8,7 @@ import 'package:flutter/foundation.dart'
 ///
 /// Example:
 /// ```dart
-/// import 'firebase_options.dart';
+/// import 'podo_words_firebase_options.dart';
 /// // ...
 /// await Firebase.initializeApp(
 ///   options: DefaultFirebaseOptions.currentPlatform,
@@ -53,12 +53,13 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCYuJcFMihqxeYCzl35TcN2o16IsI9-WCg',
-    appId: '1:1025269170157:web:14efada846a0dd97fcf1e4',
-    messagingSenderId: '1025269170157',
-    projectId: 'podo-49335',
-    authDomain: 'podo-49335.firebaseapp.com',
-    storageBucket: 'podo-49335.appspot.com',
-    measurementId: 'G-5RL1NL4E5D',
+    apiKey: 'AIzaSyBhUY-eWYEXZdfCn4XJp76cvm6TVX_QV28',
+    appId: '1:410427289728:web:b49d97391e611b3517b665',
+    messagingSenderId: '410427289728',
+    projectId: 'podo-words',
+    authDomain: 'podo-words.firebaseapp.com',
+    storageBucket: 'podo-words.firebasestorage.app',
+    measurementId: 'G-0Z5W9B1BB5',
   );
+
 }

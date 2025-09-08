@@ -40,5 +40,24 @@
         "destination": "/index.html"
       }
     ]
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "podo-49335",
+          "appId": "1:1025269170157:android:69d88fe9e262f843fcf1e4",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "podo-words",
+          "configurations": {
+            "web": "1:410427289728:web:b49d97391e611b3517b665"
+          }
+        }
+      }
+    }
   }
 }

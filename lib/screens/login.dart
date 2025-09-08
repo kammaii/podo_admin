@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:podo_admin/common/my_textfield.dart';
 
@@ -41,9 +42,12 @@ class Login extends StatelessWidget {
               const SizedBox(height: 20),
               ElevatedButton(
                   onPressed: () async {
-                    if (email == adminEmail) {
-                      await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: pass);
-                    }
+                    // if (email == adminEmail) {
+                    //   await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: pass);
+                    //   FirebaseAuth.instanceFor(app: Firebase.app('podoWords')).signInWithEmailAndPassword(email: email, password: pass);
+                    // }
+                    await FirebaseAuth.instance.signInWithEmailAndPassword(email: 'danny@podokorean.com', password: '123123');
+                    FirebaseAuth.instanceFor(app: Firebase.app('podoWords')).signInWithEmailAndPassword(email: 'danny@podokorean.com', password: '123123');
                   },
                   child: const Padding(
                     padding: EdgeInsets.all(8),

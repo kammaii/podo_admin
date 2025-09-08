@@ -7,6 +7,8 @@ import 'package:podo_admin/screens/korean_bites/korean_bite_title_main.dart';
 import 'package:podo_admin/screens/lesson/lesson_course_main.dart';
 import 'package:podo_admin/screens/loading_controller.dart';
 import 'package:podo_admin/screens/podo_message/podo_message_main.dart';
+import 'package:podo_admin/screens/podo_words/podo_words_state_manager.dart';
+import 'package:podo_admin/screens/podo_words/topics_main.dart';
 import 'package:podo_admin/screens/reading/reading_state_manager.dart';
 import 'package:podo_admin/screens/reading/reading_title_main.dart';
 import 'package:podo_admin/screens/user/user_main.dart';
@@ -21,14 +23,17 @@ class MainFrame extends StatefulWidget {
 
 class _MainFrameState extends State<MainFrame> {
   final List<Widget> _buildScreens = [
+    const TopicsMain(),
+
     WritingMain(),
     FeedbackMain(),
     const KoreanBiteTitleMain(),
+
+    UserMain(),
+    const DashboardMain(),
     PodoMessageMain(),
     LessonCourseMain(),
     ReadingTitleMain(),
-    UserMain(),
-    const DashboardMain(),
     // const Research(),
   ];
 
@@ -68,6 +73,21 @@ class _MainFrameState extends State<MainFrame> {
                     label: Text('Korean Bites'),
                   ),
                   NavigationRailDestination(
+                    icon: Icon(Icons.outlined_flag_sharp),
+                    selectedIcon: Icon(Icons.flag_sharp),
+                    label: Text('Podo Words'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.people_outline),
+                    selectedIcon: Icon(Icons.people_rounded),
+                    label: Text('유저'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.home_outlined),
+                    selectedIcon: Icon(Icons.home),
+                    label: Text('대시보드'),
+                  ),
+                  NavigationRailDestination(
                     icon: Icon(Icons.cloud_outlined),
                     selectedIcon: Icon(Icons.cloud),
                     label: Text('포도메시지'),
@@ -82,22 +102,6 @@ class _MainFrameState extends State<MainFrame> {
                     selectedIcon: Icon(Icons.menu_book),
                     label: Text('읽기'),
                   ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.people_outline),
-                    selectedIcon: Icon(Icons.people_rounded),
-                    label: Text('유저'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.home_outlined),
-                    selectedIcon: Icon(Icons.home),
-                    label: Text('대시보드'),
-                  ),
-
-                  // NavigationRailDestination(
-                  //   icon: Icon(Icons.check_circle_outline),
-                  //   selectedIcon: Icon(Icons.check_circle),
-                  //   label: Text('조사'),
-                  // ),
                 ],
                 selectedIndex: _selectedIndex,
                 onDestinationSelected: (index) {
