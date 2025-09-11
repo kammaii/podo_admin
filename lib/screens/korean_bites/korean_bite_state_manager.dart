@@ -46,27 +46,11 @@ class KoreanBiteStateManager extends GetxController {
     selectedNoticeMsg = noticeMsgs[0];
   }
 
-  Future<bool> checkExampleAudioExists({required String koreanBiteId, required String exampleId}) async {
-    final storageRef = FirebaseStorage.instance.ref();
-    final path = 'KoreanBitesAudios/$koreanBiteId/$exampleId.m4a';
-    try {
-      await storageRef.child(path).getDownloadURL();
-      return true;
-    } on FirebaseException catch (e) {
-      print('exception: $e');
-      return false;
-    } catch(e) {
-      print('catch error: $e');
-      return false;
-    }
-  }
-
   fetchExamples(String koreanBiteId, List<dynamic> docs) async {
     examples = [];
     fetchedExamples = [];
     for (dynamic doc in docs) {
       final example = KoreanBiteExample.fromJson(doc);
-      example.hasAudio = await checkExampleAudioExists(koreanBiteId: koreanBiteId, exampleId: example.id);
       examples.add(example);
     }
     fetchedExamples = List.from(examples);

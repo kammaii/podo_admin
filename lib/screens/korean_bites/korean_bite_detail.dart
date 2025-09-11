@@ -1,3 +1,4 @@
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -10,7 +11,7 @@ import 'package:podo_admin/common/my_textfield.dart';
 import 'package:podo_admin/screens/korean_bites/korean_bite.dart';
 import 'package:podo_admin/screens/korean_bites/korean_bite_example.dart';
 import 'package:podo_admin/screens/korean_bites/korean_bite_state_manager.dart';
-import 'package:podo_admin/screens/korean_bites/recording.dart';
+import 'package:podo_admin/common/recording_widget.dart';
 import 'package:podo_admin/screens/value/my_strings.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 
@@ -195,7 +196,7 @@ class _KoreanBiteDetailState extends State<KoreanBiteDetail> {
           ),
         ),
         if(!isExplain)
-        Recording(lessonId: koreanBite.id, audioId: widgetId, hasAudio: _controller.examples[index!].hasAudio),
+          RecordingWidget(path: 'KoreanBitesAudios/${koreanBite.id}/$widgetId', storage: FirebaseStorage.instance),
         Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),

@@ -1,46 +1,51 @@
 
+import 'package:uuid/uuid.dart';
+
 class Word {
-  final String id;
-  final int orderId;
-  final String front;
-  final String back;
-  final String pronunciation;
-  final String audio;
-  final String? image;
+  late final String id;
+  late int orderId;
+  late String front;
+  late String back;
+  late String pronunciation;
+  String? image;
+  late bool isReleased;
 
-  int? wordId;
-  bool isActive = true;
-  bool isChecked = false;
-  bool? shouldQuiz;
+  static const String ID = 'id';
+  static const String ORDERID = 'orderId';
+  static const String FRONT = 'front';
+  static const String BACK = 'back';
+  static const String PRONUNCIATION = 'pronunciation';
+  static const String IMAGE = 'image';
+  static const String IS_RELEASED = 'isReleased';
 
+  Word(int index) {
+    id = const Uuid().v4();
+    orderId = index;
+    front = '';
+    back = '';
+    pronunciation = '';
+    isReleased = false;
+  }
 
-  Word({
-    required this.id,
-    required this.orderId,
-    required this.front,
-    required this.back,
-    required this.pronunciation,
-    required this.audio,
-    this.image,
-  });
+  Word.fromJson(Map<String, dynamic> json) {
+    id = json[ID];
+    orderId = json[ORDERID];
+    front = json[FRONT];
+    back = json[BACK];
+    pronunciation = json[PRONUNCIATION];
+    if(json[IMAGE] != null) {
+      image = json[IMAGE];
+    }
+    isReleased = json[IS_RELEASED];
+  }
 
   Map<String, dynamic> toJson() => {
-    'front' : front,
-    'back' : back,
-    'pronunciation' : pronunciation,
-    'audio' : audio,
-    'image' : image
+    ID : id,
+    ORDERID : orderId,
+    FRONT : front,
+    BACK : back,
+    PRONUNCIATION : pronunciation,
+    IMAGE : image,
+    IS_RELEASED : isReleased,
   };
-
-  factory Word.fromJson(Map<String, dynamic> json) {
-    return Word(
-      id: json['id'] as String,
-      orderId: json['orderId'] as int,
-      front: json['front'] as String,
-      back: json['back'] as String,
-      pronunciation: json['pronunciation'] as String,
-      audio: json['audio'] as String,
-      image: json['image'] as String?,
-    );
-  }
 }

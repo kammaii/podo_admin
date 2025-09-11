@@ -10,8 +10,6 @@ class KoreanBiteExample {
   String? pronunciation;
   bool isPlay = false;
 
-  late bool hasAudio;
-
   KoreanBiteExample(int index) {
     id = const Uuid().v4();
     orderId = index;
