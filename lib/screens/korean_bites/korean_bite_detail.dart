@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -196,7 +197,7 @@ class _KoreanBiteDetailState extends State<KoreanBiteDetail> {
           ),
         ),
         if(!isExplain)
-          RecordingWidget(path: 'KoreanBitesAudios/${koreanBite.id}/$widgetId', storage: FirebaseStorage.instance),
+          RecordingWidget(path: 'KoreanBitesAudios/${koreanBite.id}/$widgetId', storage: FirebaseStorage.instance,db: FirebaseFirestore.instance),
         Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),

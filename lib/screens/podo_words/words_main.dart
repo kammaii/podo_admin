@@ -38,6 +38,7 @@ class _WordsMainState extends State<WordsMain> {
   late Word selectedWord;
   final FirebaseApp podoWordsFirebase = Firebase.app('podoWords');
   late final FirebaseStorage podoWordsStorage;
+  final FirebaseFirestore db = FirebaseFirestore.instanceFor(app: Firebase.app('podoWords'));
 
 
   @override
@@ -262,7 +263,7 @@ class _WordsMainState extends State<WordsMain> {
                             selectedWord = word;
                             openTopicDialog();
                           }),
-                          DataCell(RecordingWidget(path: 'audios/$topicId/${word.id}', storage: podoWordsStorage)),
+                          DataCell(RecordingWidget(path: 'audios/$topicId/${word.id}', storage: podoWordsStorage, db: db)),
                           DataCell(Icon(Icons.circle, color: word.isReleased ? Colors.green : Colors.red),
                               onTap: () {
                                 Get.dialog(AlertDialog(

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -8,8 +9,9 @@ import 'package:record/record.dart';
 class RecordingWidget extends StatefulWidget {
   final String path;
   final FirebaseStorage storage;
+  final FirebaseFirestore db;
 
-  const RecordingWidget({required this.path, required this.storage, super.key});
+  const RecordingWidget({required this.path, required this.storage, required this.db, super.key});
 
   @override
   State<RecordingWidget> createState() => _RecordingWidgetState();
@@ -204,9 +206,29 @@ class _RecordingWidgetState extends State<RecordingWidget> {
       final storageRef = widget.storage.ref().child(fileName);
 
       // 바이트 데이터 업로드
-      await storageRef.putData(audioBytes);
+      await storageRef.putData(audioBytes, SettableMetadata(contentType: 'audio/m4a'));
 
-      print('오디오바이트: ${audioBytes.length}');
+      final String downloadUrl = await storageRef.getDownloadURL();
+
+      // Firestore 문서의 'audio' 필드 업데이트
+      // widget.path (예: 'audios/{topicId}/{wordId}')에서 ID들을 추출합니다.
+      final pathParts = widget.path.split('/');
+      if (pathParts.length == 3) {
+        final topicId = pathParts[1];
+        final wordId = pathParts[2];
+
+        final wordDocRef = widget.db
+            .collection('Topics')
+            .doc(topicId)
+            .collection('Words')
+            .doc(wordId);
+
+        // Firestore 문서 업데이트
+        await wordDocRef.update({'audio': downloadUrl});
+      } else {
+        // 경로 형식이 예상과 다를 경우 에러 처리
+        throw Exception('잘못된 파일 경로 형식입니다.');
+      }
 
       setState(() {
         hasAudio = true;
