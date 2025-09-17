@@ -99,11 +99,37 @@ async function sendTestFcm() {
 }
 
 async function test() {
-    const link = await admin.auth().generateEmailVerificationLink('kammaii@naver.com', {
-        url: 'https://link.podokorean.com/korean?mode=verifyEmail',
-        handleCodeInApp: true,
-    });
-    console.log(link);
+    const collectionRef = db.collection('KoreanBites');
+      console.log('KoreanBites 컬렉션의 문서를 가져오는 중...');
+
+      try {
+        // 컬렉션의 모든 문서 스냅샷 가져오기
+        const snapshot = await collectionRef.get();
+
+        if (snapshot.empty) {
+          console.log('업데이트할 문서가 없습니다.');
+          return;
+        }
+
+        // 모든 업데이트 작업을 Promise 배열에 저장
+        const updatePromises = [];
+        snapshot.forEach(doc => {
+          console.log(`ID: ${doc.id} 문서 업데이트 준비 중...`);
+          // 각 문서에 대해 update 작업을 Promise 배열에 추가
+          // set 메서드에 { merge: true } 옵션을 사용해도 동일한 결과를 얻을 수 있습니다.
+          const updatePromise = doc.ref.update({
+            hasAudio: true
+          });
+          updatePromises.push(updatePromise);
+        });
+
+        // 모든 업데이트 Promise가 완료될 때까지 기다림 (병렬 처리)
+        await Promise.all(updatePromises);
+
+        console.log(`✅ 성공: 총 ${snapshot.size}개의 문서를 업데이트했습니다.`);
+      } catch (error) {
+        console.error('❌ 오류가 발생했습니다:', error);
+      }
 }
 
 
