@@ -161,7 +161,7 @@ class PodoWordsStateManager extends GetxController {
 
   Future<void> addWord(String topicId, Word word) async {
     final ref = _db.collection('Topics/$topicId/Words').doc(word.id);
-    return await ref.set(word.toJson()).then((value) {
+    return await ref.set(word.toJson(), SetOptions(merge: true)).then((value) {
       print('단어 저장 완료');
       Get.snackbar('단어가 저장 되었습니다.', word.id,
           snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 1));
