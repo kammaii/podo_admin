@@ -29,6 +29,8 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
   final TextEditingController _searchController = TextEditingController();
   String? searchedTitleNo;
 
+  bool _isLoading = false;
+  String _message = '';
 
   @override
   void initState() {
@@ -395,10 +397,12 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
 
                                             if (response.statusCode == 200) {
                                               print('fcm 전송 성공');
-                                              Get.snackbar('알람을 전송했습니다.', koreanBite.id, snackPosition: SnackPosition.BOTTOM);
+                                              Get.snackbar('알람을 전송했습니다.', koreanBite.id,
+                                                  snackPosition: SnackPosition.BOTTOM);
                                             } else {
                                               print('오류 발생: ${response.statusCode}');
-                                              Get.snackbar('알람을 전송을 실패 했습니다.', response.statusCode.toString(), snackPosition: SnackPosition.BOTTOM);
+                                              Get.snackbar('알람을 전송을 실패 했습니다.', response.statusCode.toString(),
+                                                  snackPosition: SnackPosition.BOTTOM);
                                             }
                                           },
                                           child: const Padding(
@@ -419,7 +423,11 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
                         ));
                       },
                     )),
-                    DataCell(Icon(Icons.audio_file_outlined, color: koreanBite.hasAudio != null && koreanBite.hasAudio == true ? Colors.purple : Colors.grey), onTap: () {
+                    DataCell(
+                        Icon(Icons.audio_file_outlined,
+                            color: koreanBite.hasAudio != null && koreanBite.hasAudio == true
+                                ? Colors.purple
+                                : Colors.grey), onTap: () {
                       Get.dialog(AlertDialog(
                         content: const Text('오디오 상태를 변경하겠습니까?'),
                         actions: [
@@ -454,7 +462,7 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
                 rows: List<DataRow>.generate(koreanBites.length, (i) {
                   KoreanBite koreanBite = koreanBites[i];
                   return DataRow(cells: [
-                    DataCell(Text(koreanBite.orderId.toString()), onTap: (){
+                    DataCell(Text(koreanBite.orderId.toString()), onTap: () {
                       Get.to(const KoreanBiteDetail(), arguments: koreanBite);
                     }),
                     DataCell(Text(koreanBite.title['ko'] ?? ''), onTap: () {
@@ -600,11 +608,12 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
 
                                             if (response.statusCode == 200) {
                                               print('fcm 전송 성공');
-                                              Get.snackbar('알람을 전송했습니다.', koreanBite.id, snackPosition: SnackPosition.BOTTOM);
-
+                                              Get.snackbar('알람을 전송했습니다.', koreanBite.id,
+                                                  snackPosition: SnackPosition.BOTTOM);
                                             } else {
                                               print('오류 발생: ${response.statusCode}');
-                                              Get.snackbar('알람을 전송을 실패 했습니다.', response.statusCode.toString(), snackPosition: SnackPosition.BOTTOM);
+                                              Get.snackbar('알람을 전송을 실패 했습니다.', response.statusCode.toString(),
+                                                  snackPosition: SnackPosition.BOTTOM);
                                             }
                                           },
                                           child: const Padding(
@@ -708,8 +717,8 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
                         if (searchInput.isNotEmpty) {
                           bool found = false;
 
-                          for(KoreanBite koreanBite in controller.koreanBites) {
-                            if(koreanBite.title['ko'] == searchInput) {
+                          for (KoreanBite koreanBite in controller.koreanBites) {
+                            if (koreanBite.title['ko'] == searchInput) {
                               setState(() {
                                 found = true;
                                 searchedTitleNo = '있음: ${koreanBite.orderId.toString()}';
@@ -717,7 +726,7 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
                               break;
                             }
                           }
-                          if(!found) {
+                          if (!found) {
                             setState(() {
                               searchedTitleNo = '없음';
                             });
@@ -728,6 +737,87 @@ class _KoreanBitesTitleMainState extends State<KoreanBiteTitleMain> {
                     ),
                     const SizedBox(width: 10),
                     searchedTitleNo != null ? Text(searchedTitleNo.toString()) : const SizedBox.shrink(),
+                  ],
+                ),
+                const SizedBox(width: 50),
+                Row(
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        if (_isLoading) return;
+
+                        setState(() {
+                          _isLoading = true;
+                          _message = '새 레슨 요청 중... 잠시만 기다려주세요.';
+                        });
+
+                        try {
+                          // POST 요청 실행
+                          final response = await http.post(
+                            Uri.parse(
+                                'https://primary-production-64dc8.up.railway.app/webhook/0a1c9667-3280-44de-95e6-c0f84a3ba6a6'),
+                            headers: <String, String>{
+                              // JSON 본문을 보내지 않더라도 기본 헤더를 설정하는 것이 좋습니다.
+                              'Content-Type': 'application/json',
+                            },
+                          );
+
+                          // 응답 상태 코드에 따라 메시지 업데이트
+                          if (response.statusCode == 200) {
+                            // 성공적으로 응답을 받음 (웹훅 실행 성공)
+                            String responseBody = utf8.decode(response.bodyBytes);
+                            setState(() {
+                              _message = '성공! Slack으로 새 레슨을 전송했습니다.';
+                            });
+                          } else {
+                            // 서버에서 오류 상태 코드를 반환
+                            setState(() {
+                              _message = '레슨 생성 실패! (상태 코드: ${response.statusCode})\n응답 본문: ${response.body}';
+                            });
+                          }
+                        } catch (e) {
+                          // 네트워크 연결 등 예외 발생
+                          setState(() {
+                            _message = '요청 중 오류 발생: $e';
+                          });
+                        } finally {
+                          // 로딩 상태 해제
+                          setState(() {
+                            _isLoading = false;
+                          });
+                        }
+                      }, // 로딩 중일 때는 버튼 비활성화
+                      icon: const Icon(Icons.send_rounded),
+                      label: const Text(
+                        '새 레슨 요청',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(200, 50), // 버튼 크기 설정
+                        backgroundColor: Colors.blue.shade600,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 32),
+                    // 로딩 인디케이터
+                    if (_isLoading)
+                      const CircularProgressIndicator(color: Colors.blue)
+                    else
+                      // 실행 결과 메시지
+                      SelectableText(
+                        _message,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: _message.contains('성공')
+                              ? Colors.green.shade700
+                              : _message.contains('실패')
+                                  ? Colors.red.shade700
+                                  : Colors.black87,
+                        ),
+                      ),
                   ],
                 ),
               ],
